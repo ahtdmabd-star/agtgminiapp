@@ -1,0 +1,9 @@
+{
+  "name": "agtgminiapp",
+  "version": "1.0.0",
+  "main": "api/check-verification.js",
+  "dependencies": {
+    "mysql2": "^3.9.1",
+    "node-fetch": "^2.7.0"
+  }
+}
