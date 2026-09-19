@@ -17,14 +17,22 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 16px; }
-        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding-bottom: 20px; }
+        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding-bottom: 30px; }
         
         .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); padding: 12px 16px; border-radius: 14px; }
-        .page-title { font-size: 1rem; font-weight: 800; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.5px; }
+        .page-title { font-size: 0.95rem; font-weight: 800; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.5px; }
         .nav-btn { background: rgba(56, 189, 248, 0.15); color: var(--accent-color); border: 1px solid var(--glass-border); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; text-decoration: none; }
 
         .section-header { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
         
+        /* Number Manager Drawer/Section */
+        #number-manager-section { display: none; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--accent-color); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(56,189,248,0.15); }
+        .form-group { margin-bottom: 10px; }
+        .form-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block; font-weight: 600; }
+        .form-input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; }
+        .btn-save-num { background: var(--success-color); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; width: 100%; cursor: pointer; font-size: 0.85rem; margin-top: 6px; }
+
+        /* Deposit Cards */
         .deposit-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .deposit-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
         .deposit-row:last-of-type { border-bottom: none; margin-bottom: 12px; }
@@ -39,7 +47,7 @@
         .btn-approve { background: var(--success-color); color: #fff; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
         .btn-reject { background: var(--danger-color); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
 
-        .no-data { text-align: center; color: var(--text-muted); padding: 40px 0; font-size: 0.9rem; background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); }
+        .no-data { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 0.85rem; background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -49,9 +57,44 @@
         <div class="top-nav">
             <div class="page-title">Deposit Management</div>
             <div style="display: flex; gap: 8px;">
-                <a href="numbers.html" class="nav-btn">Manage Numbers</a>
+                <button id="toggle-numbers-btn" class="nav-btn" onclick="toggleNumberManager()">Manage Numbers</button>
                 <a href="index.html" class="nav-btn">← Back</a>
             </div>
+        </div>
+
+        <!-- Inline Number Management Section -->
+        <div id="number-manager-section">
+            <div style="font-size: 0.9rem; font-weight: 800; color: var(--accent-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Update Payment Numbers</span>
+                <span style="font-size: 0.75rem; cursor: pointer; color: var(--danger-color);" onclick="toggleNumberManager()">Close [X]</span>
+            </div>
+            <form id="number-update-form">
+                <div class="form-group">
+                    <label class="form-label">bKash Number</label>
+                    <input type="text" id="num-bkash" class="form-input" placeholder="e.g. 017XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nagad Number</label>
+                    <input type="text" id="num-nagad" class="form-input" placeholder="e.g. 018XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rocket Number</label>
+                    <input type="text" id="num-rocket" class="form-input" placeholder="e.g. 019XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Upay Number</label>
+                    <input type="text" id="num-upay" class="form-input" placeholder="e.g. 013XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">USDT TRC20 Wallet Address</label>
+                    <input type="text" id="num-trc20" class="form-input" placeholder="TRC20 Wallet Address">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">USDT BEP20 Wallet Address</label>
+                    <input type="text" id="num-bep20" class="form-input" placeholder="BEP20 Wallet Address">
+                </div>
+                <button type="submit" class="btn-save-num">Save Numbers</button>
+            </form>
         </div>
 
         <div class="section-header">Pending Deposit Requests</div>
@@ -66,10 +109,69 @@
         tg.expand();
 
         const adminId = tg.initDataUnsafe?.user?.id;
+        const currentAdminId = adminId || 8191704137; // টেস্ট করার জন্য ফলব্যাক আইডি
 
-        // যদি ব্রাউজার থেকে টেস্ট করেন এবং টেলিগ্রাম অবজেক্ট না থাকে তবে লোকাল টেস্টিং আইডি সেট করতে পারেন
-        const currentAdminId = adminId || 8191704137; 
+        // নাম্বার ম্যানেজার টগল করার ফাংশন
+        function toggleNumberManager() {
+            const section = document.getElementById('number-manager-section');
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'block';
+                loadCurrentNumbers(); // ওপেন হওয়ার সাথে সাথে বর্তমান ডাটা লোড করবে
+            }
+        }
 
+        // বর্তমান নাম্বারগুলো সার্ভার থেকে এনে ইনপুটে বসানোর ফাংশন
+        async function loadCurrentNumbers() {
+            try {
+                const res = await fetch('/api/get-deposit-methods');
+                const data = await res.json();
+                if (data.success && data.methods) {
+                    document.getElementById('num-bkash').value = data.methods['bKash'] || '';
+                    document.getElementById('num-nagad').value = data.methods['Nagad'] || '';
+                    document.getElementById('num-rocket').value = data.methods['Rocket'] || '';
+                    document.getElementById('num-upay').value = data.methods['Upay'] || '';
+                    document.getElementById('num-trc20').value = data.methods['USDT-TRC20'] || '';
+                    document.getElementById('num-bep20').value = data.methods['USDT-BEP20'] || '';
+                }
+            } catch (err) {
+                console.error("Failed to load numbers");
+            }
+        }
+
+        // নাম্বার আপডেট ফর্ম সাবমিট হ্যান্ডলার
+        document.getElementById('number-update-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const methodsData = {
+                bKash: document.getElementById('num-bkash').value.trim(),
+                Nagad: document.getElementById('num-nagad').value.trim(),
+                Rocket: document.getElementById('num-rocket').value.trim(),
+                Upay: document.getElementById('num-upay').value.trim(),
+                'USDT-TRC20': document.getElementById('num-trc20').value.trim(),
+                'USDT-BEP20': document.getElementById('num-bep20').value.trim(),
+                telegram_id: currentAdminId
+            };
+
+            try {
+                const res = await fetch('/api/admin/update-deposit-methods', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(methodsData)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert("Payment numbers updated successfully!");
+                    toggleNumberManager();
+                } else {
+                    alert(result.message || "Failed to update numbers.");
+                }
+            } catch (err) {
+                alert("Network error. Try again.");
+            }
+        });
+
+        // পেন্ডিং ডিপোজিট রিকোয়েস্ট লোড করার ফাংশন
         async function loadDeposits() {
             const container = document.getElementById('deposits-container');
             container.innerHTML = `<div class="no-data">Loading pending requests...</div>`;
@@ -94,7 +196,7 @@
                             <div class="deposit-row"><span class="label">Send Amount:</span><span class="value">${dep.send_amount}</span></div>
                             <div class="deposit-row"><span class="label">Will Get (USD):</span><span class="value highlight">$${dep.get_amount}</span></div>
                             <div class="deposit-row"><span class="label">TrxID / Hash:</span><span class="value trx">${dep.transaction_id}</span></div>
-                            <div class="deposit-row"><span class="label">Time:</span><span class="value" style="font-size: 0.75rem; color: #94a3b8;">${new Date(dep.created_at || Date.now()).toLocaleString()}</span></div>
+                            <div class="deposit-row"><span class="label">Time:</span><span class="value" style="font-size: 0.72rem; color: #94a3b8;">${new Date(dep.created_at || Date.now()).toLocaleString()}</span></div>
                             <div class="action-buttons">
                                 <button class="btn btn-approve" onclick="processDeposit(${dep.id}, 'approve')">Approve</button>
                                 <button class="btn btn-reject" onclick="processDeposit(${dep.id}, 'reject')">Reject</button>
@@ -110,6 +212,7 @@
             }
         }
 
+        // ডিপোজিট Approve বা Reject করার ফাংশন
         async function processDeposit(depositId, action) {
             if (!confirm(`Are you sure you want to ${action} this deposit?`)) return;
 
@@ -123,7 +226,6 @@
 
                 if (result.success) {
                     alert(result.message);
-                    // অ্যাকশন সফল হওয়ার সাথে সাথে নির্দিষ্ট কার্ডটি পেজ থেকে রিমুভ করে দেওয়া হবে
                     const cardElement = document.getElementById(`deposit-card-${depositId}`);
                     if (cardElement) {
                         cardElement.style.transition = 'all 0.3s ease';
@@ -131,7 +233,6 @@
                         cardElement.style.transform = 'scale(0.9)';
                         setTimeout(() => cardElement.remove(), 300);
                     }
-                    // তালিকা সম্পূর্ণ খালি হলে নো-ডাটা মেসেজ দেখাবে
                     setTimeout(() => {
                         const container = document.getElementById('deposits-container');
                         if (container.children.length === 0) {
