@@ -14,7 +14,9 @@ module.exports = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Forbidden' });
         }
 
-        const [deposits] = await conn.execute('SELECT * FROM deposits WHERE status = "pending" ORDER BY id DESC');
+        // আগের কুয়েরির পরিবর্তে এটি দিন যাতে সব ডিপোজিট দেখায় (অথবা স্ট্যাটাস চেক রিলাক্স করা যায়)
+const [deposits] = await conn.execute('SELECT * FROM deposits ORDER BY id DESC');
+        
         return res.status(200).json({ success: true, deposits });
     } catch (err) {
         return res.status(500).json({ success: false, message: err.message });
