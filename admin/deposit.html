@@ -97,8 +97,7 @@
         tg.ready();
         tg.expand();
 
-        const adminId = tg.initDataUnsafe?.user?.id;
-        const currentAdminId = adminId || 8191704137; 
+        const adminId = tg.initDataUnsafe?.user?.id || 8191704137; 
 
         function toggleNumberManager() {
             const section = document.getElementById('number-manager-section');
@@ -109,18 +108,18 @@
         async function loadCurrentNumbers() {
             try {
                 let res = await fetch('/api/get-deposit-methods');
-                if(!res.ok) res = await fetch('/api/admin/get-deposit-methods');
                 const data = await res.json();
                 if (data.success && data.methods) {
-                    document.getElementById('num-bkash').value = data.methods['bKash'] || '';
-                    document.getElementById('num-nagad').value = data.methods['Nagad'] || '';
-                    document.getElementById('num-rocket').value = data.methods['Rocket'] || '';
-                    document.getElementById('num-upay').value = data.methods['Upay'] || '';
-                    document.getElementById('num-trc20').value = data.methods['USDT-TRC20'] || '';
-                    document.getElementById('num-bep20').value = data.methods['USDT-BEP20'] || '';
+                    const m = Array.isArray(data.methods) ? data.methods[0] : data.methods;
+                    document.getElementById('num-bkash').value = m.bkash || m.bKash || '';
+                    document.getElementById('num-nagad').value = m.nagad || m.Nagad || '';
+                    document.getElementById('num-rocket').value = m.rocket || m.Rocket || '';
+                    document.getElementById('num-upay').value = m.upay || m.Upay || '';
+                    document.getElementById('num-trc20').value = m.trc20 || m['USDT-TRC20'] || '';
+                    document.getElementById('num-bep20').value = m.bep20 || m['USDT-BEP20'] || '';
                 }
             } catch (err) {
-                // ডিফল্ট সেভড ভ্যালু বা ফাঁকা রাখা
+                console.error("Error loading numbers", err);
             }
         }
 
@@ -133,7 +132,7 @@
                 Upay: document.getElementById('num-upay').value.trim(),
                 'USDT-TRC20': document.getElementById('num-trc20').value.trim(),
                 'USDT-BEP20': document.getElementById('num-bep20').value.trim(),
-                telegram_id: currentAdminId
+                telegram_id: adminId
             };
 
             try {
@@ -142,57 +141,40 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(methodsData)
                 });
-                if(!res.ok) res = await fetch('/api/update-deposit-methods', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(methodsData)
-                });
                 const result = await res.json();
                 if (result.success) {
-                    alert("Payment numbers updated successfully!");
+                    alert("Payment numbers updated successfully in database!");
                     toggleNumberManager();
                 } else {
                     alert(result.message || "Failed to update numbers.");
                 }
             } catch (err) {
-                alert("Numbers saved locally / Network warning bypassed.");
-                toggleNumberManager();
+                alert("Network error updating numbers.");
             }
         });
 
         async function loadDeposits() {
             const container = document.getElementById('deposits-container');
-            container.innerHTML = `<div class="no-data">Loading deposit history...</div>`;
+            container.innerHTML = `<div class="no-data">Loading deposit records from database...</div>`;
 
             try {
                 let res = await fetch('/api/admin/get-deposits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_id: currentAdminId })
+                    body: JSON.stringify({ telegram_id: adminId })
                 });
-
-                if(!res.ok) {
-                    res = await fetch('/api/admin/deposits', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ telegram_id: currentAdminId })
-                    });
-                }
 
                 const data = await res.json();
 
                 if (data.success && data.deposits && data.deposits.length > 0) {
-                    renderDeposits(data.deposits);
+                    // নতুন ডিপোজিটগুলো উপরে দেখানোর জন্য আইডি অনুযায়ী সর্ট করা
+                    const sortedDeposits = data.deposits.sort((a, b) => b.id - a.id);
+                    renderDeposits(sortedDeposits);
                 } else {
-                    container.innerHTML = `<div class="no-data">No deposit history found.</div>`;
+                    container.innerHTML = `<div class="no-data">No deposit history found in database.</div>`;
                 }
             } catch (err) {
-                // সার্ভার রাউট না পেলে টেস্ট করার জন্য ডামি ডাটা প্রদর্শন যাতে স্ক্রিন খালি না থাকে
-                const dummyDeposits = [
-                    { id: 1, telegram_id: "8191704137", method: "bKash", send_amount: "700 BDT", get_amount: 5.00, transaction_id: "TRX987654321", status: "pending", created_at: Date.now() },
-                    { id: 2, telegram_id: "1234567890", method: "Nagad", send_amount: "1400 BDT", get_amount: 10.00, transaction_id: "TRX123456789", status: "approved", created_at: Date.now() - 3600000 }
-                ];
-                renderDeposits(dummyDeposits);
+                container.innerHTML = `<div class="no-data" style="color: var(--danger-color);">Failed to connect to database server.</div>`;
             }
         }
 
@@ -211,58 +193,50 @@
                 card.innerHTML = `
                     <div class="deposit-row"><span class="label">User Telegram ID:</span><span class="value">${dep.telegram_id}</span></div>
                     <div class="deposit-row"><span class="label">Method:</span><span class="value highlight">${dep.method}</span></div>
-                    <div class="deposit-row"><span class="label">Send Amount:</span><span class="value">${dep.send_amount}</span></div>
+                    <div class="deposit-row"><span class="label">Send Amount:</span><span class="value">${dep.send_amount} BDT</span></div>
                     <div class="deposit-row"><span class="label">Will Get (USD):</span><span class="value highlight">$${dep.get_amount}</span></div>
                     <div class="deposit-row"><span class="label">TrxID / Hash:</span><span class="value trx">${dep.transaction_id}</span></div>
-                    <div class="deposit-row"><span class="label">Status:</span><span class="value"><span class="badge ${badgeClass}">${dep.status}</span></span></div>
+                    <div class="deposit-row"><span class="label">Status:</span><span class="value" id="status-badge-${dep.id}"><span class="badge ${badgeClass}">${dep.status}</span></span></div>
                     <div class="deposit-row"><span class="label">Time:</span><span class="value" style="font-size: 0.72rem; color: #94a3b8;">${new Date(dep.created_at || Date.now()).toLocaleString()}</span></div>
                     
-                    ${isPending ? `
-                    <div class="action-buttons" id="actions-${dep.id}">
+                    <div class="action-buttons" id="actions-${dep.id}" style="${isPending ? '' : 'display: none;'}">
                         <button class="btn btn-approve" onclick="processDeposit(${dep.id}, 'approve')">Approve</button>
                         <button class="btn btn-reject" onclick="processDeposit(${dep.id}, 'reject')">Reject</button>
-                    </div>` : ''}
+                    </div>
                 `;
                 container.appendChild(card);
             });
         }
 
         async function processDeposit(depositId, action) {
-            if (!confirm(`Are you sure you want to ${action} this deposit?`)) return;
+            if (!confirm(`Are you sure you want to ${action} this deposit and update user balance?`)) return;
 
             try {
                 let res = await fetch('/api/admin/process-deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_id: currentAdminId, deposit_id: depositId, action: action })
+                    body: JSON.stringify({ telegram_id: adminId, deposit_id: depositId, action: action })
                 });
-
-                if(!res.ok) {
-                    res = await fetch('/api/process-deposit', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ telegram_id: currentAdminId, deposit_id: depositId, action: action })
-                    });
-                }
 
                 const result = await res.json();
                 if (result.success) {
-                    alert(result.message || `Deposit successfully ${action}ed!`);
+                    // সফল হলে তাৎক্ষণিকভাবে বাটনগুলো অদৃশ্য করে স্ট্যাটাস আপডেট করা
+                    const actionDiv = document.getElementById(`actions-${depositId}`);
+                    if (actionDiv) actionDiv.style.display = 'none';
+
+                    const statusSpan = document.getElementById(`status-badge-${depositId}`);
+                    const newStatusClass = action === 'approve' ? 'approved' : 'rejected';
+                    const newStatusText = action === 'approve' ? 'approved' : 'rejected';
+                    if (statusSpan) {
+                        statusSpan.innerHTML = `<span class="badge ${newStatusClass}">${newStatusText}</span>`;
+                    }
+
+                    alert(result.message);
+                } else {
+                    alert(result.message || "Failed to process action.");
                 }
             } catch (err) {
-                alert(`Deposit marked as ${action} successfully!`);
-            }
-
-            // ফ্রন্টএন্ড থেকে ইনস্ট্যান্ট অ্যাকشن বাটন সরিয়ে স্ট্যাটাস আপডেট করা
-            const card = document.getElementById(`deposit-card-${depositId}`);
-            if (card) {
-                const actionDiv = card.querySelector('.action-buttons');
-                if(actionDiv) actionDiv.remove();
-                const badge = card.querySelector('.badge');
-                if(badge) {
-                    badge.className = `badge ${action === 'approve' ? 'approved' : 'rejected'}`;
-                    badge.innerText = action === 'approve' ? 'approved' : 'rejected';
-                }
+                alert("Network error while processing deposit.");
             }
         }
 
