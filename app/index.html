@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AL-HUDA TASK - Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="glass-card" style="text-align: center; padding: 40px 0;">
+            <div class="spinner"></div>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">Authenticating User...</div>
+        </div>
+
+        <!-- Main Dashboard View -->
+        <div id="main-dashboard" class="glass-card" style="display: none;">
+            
+            <div class="header-section">
+                <div class="brand-title">AL-HUDA TASK</div>
+            </div>
+
+            <!-- User Info Grid (USD Balance) -->
+            <div class="user-info-grid">
+                <div class="info-box">
+                    <div class="info-label">Current Balance</div>
+                    <div class="info-value" id="user-balance">$0.00</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">Total Referrals</div>
+                    <div class="info-value" id="user-ref-count">0</div>
+                </div>
+            </div>
+
+            <div class="user-info-grid">
+                <div class="info-box">
+                    <div class="info-label">Telegram ID</div>
+                    <div class="info-value" id="user-id">---</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">Verification Status</div>
+                    <div class="info-value" id="user-status" style="color: #38bdf8;">Verified</div>
+                </div>
+            </div>
+
+            <!-- Referral Link Section -->
+            <div class="referral-box">
+                <div class="info-label">Your Referral Link (Earn 5% Commission)</div>
+                <div class="ref-input-group">
+                    <input type="text" id="ref-link-input" class="ref-input" readonly>
+                    <button id="copy-ref-btn" class="btn-copy" style="width: auto; margin-top: 0;">Copy</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Action Buttons Section -->
+            <div id="action-buttons-container" class="action-buttons-grid"></div>
+
+        </div>
+
+    </div>
+
+    <!-- Verification Popup Modal (Hidden by default) -->
+    <div id="verification-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Verification Required</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                Please join our official Telegram Channel and Group to access your account dashboard.
+            </div>
+            
+            <a href="https://t.me/AHTG_OFFICIAL" target="_blank" class="btn-primary" style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color);">Join Telegram Channel</a>
+            <a href="https://t.me/ahtgofic" target="_blank" class="btn-primary" style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color); margin-top: 8px;">Join Telegram Group</a>
+            
+            <button id="check-verification-btn" class="btn-primary" style="margin-top: 20px;">I have joined, Verify Now</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { renderDashboardButtons } from '../config/components.js';
+
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        function maskId(id) {
+            if (!id) return "N/A";
+            const str = String(id);
+            if (str.length <= 5) return str;
+            return str.substring(0, 2) + "****" + str.substring(str.length - 3);
+        }
+
+        async function verifyAndLoadUser() {
+            const tgUser = tg.initDataUnsafe?.user;
+
+            if (!tgUser || !tgUser.id) {
+                document.getElementById('loading-screen').innerHTML = `
+                    <div style="color: #ef4444; font-weight: 600;">Access Restricted</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">
+                        Please open the Mini App through the official bot (@ahtg_bd_bot).
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`check-status.php?telegram_id=${tgUser.id}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    document.getElementById('loading-screen').innerHTML = `
+                        <div style="color: #ef4444; font-weight: 600;">Account Not Found</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">${result.message}</div>
+                    `;
+                    return;
+                }
+
+                const user = result.userData;
+
+                if (!result.verified) {
+                    // Show Verification Popup Modal if not verified
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('verification-modal').style.display = 'flex';
+                } else {
+                    // Load Dashboard data if verified
+                    renderDashboard(user);
+                }
+
+            } catch (error) {
+                document.getElementById('loading-screen').innerHTML = `
+                    <div style="color: #ef4444; font-weight: 600;">Server Connection Error</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">Please try again later.</div>
+                `;
+            }
+        }
+
+        function renderDashboard(user) {
+            document.getElementById('user-balance').innerText = `$${parseFloat(user.balance || 0).toFixed(2)}`;
+            document.getElementById('user-ref-count').innerText = `${user.referral_count || 0}`;
+            document.getElementById('user-id').innerText = maskId(user.telegram_id);
+            document.getElementById('user-status').innerText = "Verified";
+
+            const botUsername = "ahtg_bd_bot";
+            const refLink = `https://t.me/${botUsername}?start=${user.telegram_id}`;
+            document.getElementById('ref-link-input').value = refLink;
+
+            renderDashboardButtons('action-buttons-container');
+
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('verification-modal').style.display = 'none';
+            document.getElementById('main-dashboard').style.display = 'block';
+        }
+
+        document.getElementById('check-verification-btn').addEventListener('click', () => {
+            verifyAndLoadUser();
+        });
+
+        document.getElementById('copy-ref-btn').addEventListener('click', () => {
+            const input = document.getElementById('ref-link-input');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            const btn = document.getElementById('copy-ref-btn');
+            btn.innerText = "Copied";
+            setTimeout(() => { btn.innerText = "Copy"; }, 2000);
+        });
+
+        verifyAndLoadUser();
+    </script>
+</body>
+</html>
