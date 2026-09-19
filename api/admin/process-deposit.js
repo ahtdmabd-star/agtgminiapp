@@ -16,7 +16,8 @@ module.exports = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Forbidden' });
         }
 
-        const [depRows] = await conn.execute('SELECT * FROM deposits WHERE id = ? AND status = "pending"', [deposit_id]);
+        // এখানে 'pending' স্ট্রিংটি ঠিকমতো কোটেশনের ভেতরে থাকতে হবে
+        const [depRows] = await conn.execute('SELECT * FROM deposits WHERE id = ? AND status = ?', [deposit_id, 'pending']);
         if (depRows.length === 0) {
             return res.status(404).json({ success: false, message: 'Deposit not found or already processed.' });
         }
@@ -24,22 +25,19 @@ module.exports = async (req, res) => {
         const dep = depRows[0];
 
         if (action === 'approve') {
-            // ১. ইউজারের ব্যালেন্স বাড়ানো
             await conn.execute('UPDATE users SET balance = balance + ? WHERE telegram_id = ?', [dep.get_amount, dep.telegram_id]);
 
-            // ২. ট্রানজেকশন হিস্টরি টেবিলে অটোমেটিক রেকর্ড জমা করা
             const txnId = `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
             await conn.execute(
                 'INSERT INTO transactions (transaction_id, telegram_id, amount, type, description, status) VALUES (?, ?, ?, ?, ?, ?)',
                 [txnId, dep.telegram_id, dep.get_amount, 'DEPOSIT', `Deposit approved via ${dep.method} (TrxID: ${dep.transaction_id})`, 'success']
             );
 
-            // ৩. ডিপোজিট স্ট্যাটাস approved করা
-            await conn.execute('UPDATE deposits SET status = "approved" WHERE id = ?', [deposit_id]);
+            await conn.execute('UPDATE deposits SET status = ? WHERE id = ?', ['approved', deposit_id]);
 
             return res.status(200).json({ success: true, message: 'Deposit approved and balance added successfully!' });
         } else {
-            await conn.execute('UPDATE deposits SET status = "rejected" WHERE id = ?', [deposit_id]);
+            await conn.execute('UPDATE deposits SET status = ? WHERE id = ?', ['rejected', deposit_id]);
             return res.status(200).json({ success: true, message: 'Deposit request rejected.' });
         }
     } catch (err) {
