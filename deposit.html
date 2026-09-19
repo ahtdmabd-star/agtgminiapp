@@ -12,15 +12,17 @@
             --accent-color: #38bdf8;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --card-bg: rgba(15, 23, 42, 0.75);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 16px; }
-        .app-container { width: 100%; max-width: 440px; margin: 0 auto; padding-bottom: 20px; }
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .app-container { width: 100%; max-width: 440px; margin: 0 auto; padding-bottom: 30px; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         
         .form-group { margin-bottom: 14px; }
-        .form-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block; font-weight: 600; }
+        .form-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block; font-weight: 600; letter-spacing: 0.5px; }
         .form-select, .form-input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); color: var(--text-main); padding: 12px; border-radius: 10px; font-size: 0.9rem; outline: none; }
         .form-select option { background: #0f172a; color: #f8fafc; }
 
@@ -30,8 +32,19 @@
         .btn-copy-num { background: var(--accent-color); color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
         .rate-notice { font-size: 0.75rem; color: #34d399; margin-top: 4px; font-weight: 600; }
         
-        .btn-submit { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #0f172a; border: none; padding: 14px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
+        .btn-submit { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #0f172a; border: none; padding: 14px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transition: transform 0.1s; }
         .btn-submit:active { transform: scale(0.98); }
+
+        /* History Section Styling */
+        .section-title { font-size: 0.95rem; font-weight: 800; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+        .history-item { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 0.83rem; }
+        .history-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .history-row:last-child { margin-bottom: 0; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px; }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .badge.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning-color); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge.approved { background: rgba(34, 197, 94, 0.2); color: var(--success-color); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge.rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger-color); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .no-history { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 15px; }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -40,11 +53,11 @@
     <div id="site-header"></div>
 
     <div class="app-container">
+        <!-- Deposit Form Card -->
         <div class="glass-card">
             <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent-color); margin-bottom: 16px; text-align: center;">DEPOSIT FUNDS</div>
 
             <form id="deposit-form">
-                
                 <div class="form-group">
                     <label class="form-label">Select Payment Method</label>
                     <select id="deposit-method" class="form-select" required>
@@ -85,6 +98,17 @@
                 <button type="submit" class="btn-submit">Submit Deposit Request</button>
             </form>
         </div>
+
+        <!-- Deposit History Card -->
+        <div class="glass-card">
+            <div class="section-title">
+                <span>Deposit History</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">Recent Transactions</span>
+            </div>
+            <div id="deposit-history-container">
+                <div class="no-history">Loading history...</div>
+            </div>
+        </div>
     </div>
 
     <div id="site-footer"></div>
@@ -96,6 +120,9 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+
+        const tgUser = tg.initDataUnsafe?.user;
+        const currentTelegramId = tgUser ? tgUser.id : 8191704137; // টেস্টিংয়ের জন্য ফলব্যাক আইডি
 
         let activeMethodsData = {};
 
@@ -111,6 +138,51 @@
             }
         }
         loadPaymentMethods();
+
+        // ইউজার ডিপোজিট হিস্টরি লোড করার ফাংশন
+        async function loadDepositHistory() {
+            const historyContainer = document.getElementById('deposit-history-container');
+            try {
+                const res = await fetch('/api/user/deposit-history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegram_id: currentTelegramId })
+                });
+                const data = await res.json();
+
+                if (data.success && data.history && data.history.length > 0) {
+                    historyContainer.innerHTML = '';
+                    data.history.forEach(item => {
+                        let badgeClass = 'pending';
+                        if (item.status === 'approved') badgeClass = 'approved';
+                        if (item.status === 'rejected') badgeClass = 'rejected';
+
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.innerHTML = `
+                            <div class="history-row">
+                                <span style="font-weight: 700; color: var(--accent-color);">${item.method}</span>
+                                <span class="badge ${badgeClass}">${item.status}</span>
+                            </div>
+                            <div class="history-row">
+                                <span style="color: var(--text-muted);">Send: ${item.send_amount} | Get: <b>$${item.get_amount}</b></span>
+                                <span style="font-family: monospace; color: #facc15;">${item.transaction_id}</span>
+                            </div>
+                            <div class="history-row" style="font-size: 0.7rem; color: var(--text-muted);">
+                                <span>${new Date(item.created_at || Date.now()).toLocaleString()}</span>
+                            </div>
+                        `;
+                        historyContainer.appendChild(historyItem);
+                    });
+                } else {
+                    historyContainer.innerHTML = `<div class="no-history">No deposit history found.</div>`;
+                }
+            } catch (err) {
+                historyContainer.innerHTML = `<div class="no-history" style="color: var(--danger-color);">Failed to load history.</div>`;
+            }
+        }
+
+        loadDepositHistory();
 
         const methodSelect = document.getElementById('deposit-method');
         const instructionBox = document.getElementById('payment-instruction-box');
@@ -174,7 +246,6 @@
 
         document.getElementById('deposit-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const tgUser = tg.initDataUnsafe?.user;
             if (!tgUser) {
                 alert("Open through Telegram Bot!");
                 return;
@@ -211,7 +282,9 @@
                 const result = await res.json();
                 if (result.success) {
                     alert("Deposit request submitted successfully! Pending admin approval.");
-                    window.location.reload();
+                    document.getElementById('deposit-form').reset();
+                    instructionBox.style.display = 'none';
+                    loadDepositHistory(); // নতুন রিকোয়েস্ট সাবমিট হওয়ার সাথে সাথে হিস্টরি রিফ্রেশ হবে
                 } else {
                     alert(result.message || "Submission failed.");
                 }
