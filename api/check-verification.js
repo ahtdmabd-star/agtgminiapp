@@ -45,32 +45,47 @@ module.exports = async (req, res) => {
     try {
         connection = await mysql.createConnection(dbConfig);
 
-        const isChannelMember = await checkTelegramMembership(channelUsername, telegramId);
-        const isGroupMember = await checkTelegramMembership(groupUsername, telegramId);
-
-        const newStatus = (isChannelMember && isGroupMember) ? 'active' : 'unverified';
-
-        await connection.execute(
-            'UPDATE users SET status = ? WHERE telegram_id = ?',
-            [newStatus, telegramId]
-        );
-
         const [rows] = await connection.execute(
             'SELECT * FROM users WHERE telegram_id = ?',
             [telegramId]
         );
 
-        if (rows.length > 0) {
-            const user = rows[0];
-            const isVerified = (isChannelMember && isGroupMember);
-            return res.status(200).json({
-                success: true,
-                verified: isVerified,
-                userData: user
-            });
-        } else {
+        if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'User account not found in database.' });
         }
+
+        const user = rows[0];
+
+        if (user.status === 'banned') {
+            return res.status(200).json({
+                success: true,
+                verified: false,
+                message: 'Your account has been banned.'
+            });
+        }
+
+        // একসাথে চ্যানেল এবং গ্রুপের মেম্বারশিপ চেক করা হচ্ছে যাতে সময় কম লাগে (Fast Execution)
+        const [isChannelMember, isGroupMember] = await Promise.all([
+            checkTelegramMembership(channelUsername, telegramId),
+            checkTelegramMembership(groupUsername, telegramId)
+        ]);
+
+        const isVerified = (isChannelMember && isGroupMember);
+        const newTelegramStatus = isVerified ? 'verified' : 'unverified';
+
+        // ডাটাবেজে স্ট্যাটাস আপডেট করা
+        await connection.execute(
+            'UPDATE users SET telegram_status = ? WHERE telegram_id = ?',
+            [newTelegramStatus, telegramId]
+        );
+
+        user.telegram_status = newTelegramStatus;
+
+        return res.status(200).json({
+            success: true,
+            verified: isVerified,
+            userData: user
+        });
 
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
