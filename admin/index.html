@@ -18,8 +18,14 @@
         .admin-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .admin-title { font-size: 1.25rem; font-weight: 800; color: var(--accent-color); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
         .admin-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
-        .btn-manage { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #0f172a; border: none; padding: 14px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; width: 100%; text-decoration: none; display: block; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transition: transform 0.2s; }
+        
+        .admin-btn-group { display: flex; flex-direction: column; gap: 12px; }
+        
+        .btn-manage { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #0f172a; border: none; padding: 14px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: block; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transition: transform 0.2s; }
         .btn-manage:active { transform: scale(0.97); }
+
+        .btn-user-index { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: var(--text-main); padding: 14px 20px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: block; transition: 0.2s; }
+        .btn-user-index:hover { border-color: var(--accent-color); background: rgba(56, 189, 248, 0.1); }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -32,7 +38,10 @@
         <div class="admin-title">Admin Management Portal</div>
         <div class="admin-desc">Manage your entire website infrastructure, user balances, security controls, and system configurations from the master administration panel.</div>
         
-        <a href="/admin/dashboard.html" class="btn-manage">Go to Admin Management Panel</a>
+        <div class="admin-btn-group">
+            <a href="/admin/dashboard.html" class="btn-manage">Go to Admin Management Panel</a>
+            <a href="/app/index.html" class="btn-user-index">Go to User Index</a>
+        </div>
     </div>
 
     <script>
