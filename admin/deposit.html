@@ -3,92 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AL-HUDA TECH GLOBAL - Admin Deposit Management</title>
+    <title>AL-HUDA TECH GLOBAL - Deposit Management</title>
     <style>
         :root {
             --bg-gradient: radial-gradient(circle at top, #1e1b4b, #0f172a);
-            --glass-bg: rgba(30, 41, 59, 0.75);
+            --glass-bg: rgba(30, 41, 59, 0.8);
             --glass-border: rgba(255, 255, 255, 0.12);
             --accent-color: #38bdf8;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --success-color: #22c55e;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
+            --card-bg: rgba(15, 23, 42, 0.85);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 16px; }
-        .app-container { width: 100%; max-width: 480px; margin: 0 auto; padding-bottom: 30px; }
+        .app-container { width: 100%; max-width: 600px; margin: 0 auto; }
         
-        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); padding: 12px 16px; border-radius: 14px; }
-        .page-title { font-size: 0.95rem; font-weight: 800; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.5px; }
-        .nav-btn { background: rgba(56, 189, 248, 0.15); color: var(--accent-color); border: 1px solid var(--glass-border); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; text-decoration: none; }
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); padding: 14px 18px; border-radius: 16px; }
+        .brand-title { font-size: 0.95rem; font-weight: 800; color: var(--accent-color); }
+        .btn-action-top { background: rgba(56, 189, 248, 0.15); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-decoration: none; }
 
-        .section-header { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px 4px; }
         
-        #number-manager-section { display: none; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--accent-color); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(56,189,248,0.15); }
-        .form-group { margin-bottom: 10px; }
-        .form-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block; font-weight: 600; }
-        .form-input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; }
-        .btn-save-num { background: var(--success-color); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; width: 100%; cursor: pointer; font-size: 0.85rem; margin-top: 6px; }
+        /* Deposit Request Card */
+        .deposit-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+        .deposit-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.82rem; }
+        .label { color: var(--text-muted); }
+        .val { font-weight: 700; color: var(--text-main); }
+        .trx-id { background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 6px; font-family: monospace; color: var(--accent-color); font-size: 0.85rem; }
 
-        .deposit-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .deposit-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
-        .deposit-row:last-of-type { border-bottom: none; margin-bottom: 12px; }
-        .label { color: var(--text-muted); font-weight: 600; }
-        .value { color: var(--text-main); font-weight: 700; text-align: right; word-break: break-all; }
-        .value.highlight { color: var(--accent-color); }
-        .value.trx { color: #facc15; font-family: monospace; font-size: 0.9rem; }
+        .action-btns { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-approve { background: #10b981; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; flex: 1; }
+        .btn-reject { background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; flex: 1; }
 
-        .action-buttons { display: flex; gap: 10px; margin-top: 12px; }
-        .btn { flex: 1; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; border: none; cursor: pointer; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.97); }
-        .btn-approve { background: var(--success-color); color: #fff; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
-        .btn-reject { background: var(--danger-color); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .badge.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning-color); border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge.approved { background: rgba(34, 197, 94, 0.2); color: var(--success-color); border: 1px solid rgba(34, 197, 94, 0.3); }
-        .badge.rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger-color); border: 1px solid rgba(239, 68, 68, 0.3); }
-
-        .no-data { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 0.85rem; background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); }
+        /* Modal Popup */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 16px; }
+        .modal-card { background: var(--card-bg); border: 1px solid var(--glass-border); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .form-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none; }
+        .btn-save { background: var(--accent-color); color: #0f172a; border: none; padding: 12px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 10px; }
+        .btn-close { background: rgba(255,255,255,0.1); color: var(--text-main); border: none; padding: 10px; border-radius: 10px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 6px; }
+        
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 30px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
     <div class="app-container">
-        <div class="top-nav">
-            <div class="page-title">Admin Deposit Panel</div>
+        
+        <div class="header-box">
+            <div class="brand-title">DEPOSIT MANAGEMENT</div>
             <div style="display: flex; gap: 8px;">
-                <button id="toggle-numbers-btn" class="nav-btn" onclick="toggleNumberManager()">Manage Numbers</button>
-                <a href="index.html" class="nav-btn">← Back</a>
+                <button id="open-settings-btn" class="btn-action-top">Manage Numbers</button>
+                <a href="/admin/dashboard.html" class="btn-action-top">&larr; Back</a>
             </div>
         </div>
 
-        <!-- Number Management Section -->
-        <div id="number-manager-section">
-            <div style="font-size: 0.9rem; font-weight: 800; color: var(--accent-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                <span>Update Payment Numbers</span>
-                <span style="font-size: 0.75rem; cursor: pointer; color: var(--danger-color);" onclick="toggleNumberManager()">Close [X]</span>
-            </div>
-            <form id="number-update-form">
-                <div class="form-group"><label class="form-label">bKash Number</label><input type="text" id="num-bkash" class="form-input" placeholder="e.g. 017XXXXXXXX"></div>
-                <div class="form-group"><label class="form-label">Nagad Number</label><input type="text" id="num-nagad" class="form-input" placeholder="e.g. 018XXXXXXXX"></div>
-                <div class="form-group"><label class="form-label">Rocket Number</label><input type="text" id="num-rocket" class="form-input" placeholder="e.g. 019XXXXXXXX"></div>
-                <div class="form-group"><label class="form-label">Upay Number</label><input type="text" id="num-upay" class="form-input" placeholder="e.g. 013XXXXXXXX"></div>
-                <div class="form-group"><label class="form-label">USDT TRC20 Wallet Address</label><input type="text" id="num-trc20" class="form-input" placeholder="TRC20 Wallet Address"></div>
-                <div class="form-group"><label class="form-label">USDT BEP20 Wallet Address</label><input type="text" id="num-bep20" class="form-input" placeholder="BEP20 Wallet Address"></div>
-                <button type="submit" class="btn-save-num">Save Numbers</button>
-            </form>
-        </div>
-
-        <div class="section-header">
-            <span>All Deposit History & Requests</span>
-            <button onclick="loadDeposits()" style="background:none; border:none; color:var(--accent-color); font-size:0.75rem; cursor:pointer; font-weight:700;">Refresh 🔄</button>
-        </div>
+        <div class="section-title">Pending Deposit Requests</div>
         <div id="deposits-container">
-            <div class="no-data">Loading deposit records...</div>
+            <div class="spinner"></div>
+        </div>
+
+    </div>
+
+    <!-- Settings Modal for Updating Numbers -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="font-size: 1rem; font-weight: 800; color: var(--accent-color); margin-bottom: 14px; text-align: center;">Update Payment Numbers</div>
+            <div id="methods-form-container">
+                <div class="spinner"></div>
+            </div>
+            <button type="button" id="close-modal-btn" class="btn-close">Close</button>
         </div>
     </div>
 
@@ -97,174 +84,124 @@
         tg.ready();
         tg.expand();
 
-        const adminId = tg.initDataUnsafe?.user?.id;
-        const currentAdminId = adminId || 8191704137; 
+        const tgUser = tg.initDataUnsafe?.user;
+        const adminId = tgUser ? tgUser.id : null;
 
-        function toggleNumberManager() {
-            const section = document.getElementById('number-manager-section');
-            section.style.display = (section.style.display === 'block') ? 'none' : 'block';
-            if(section.style.display === 'block') loadCurrentNumbers();
+        if (!adminId) {
+            alert("Unauthorized Access!");
+            window.location.href = '/index.html';
         }
 
-        async function loadCurrentNumbers() {
-            try {
-                let res = await fetch('/api/get-deposit-methods');
-                if(!res.ok) res = await fetch('/api/admin/get-deposit-methods');
-                const data = await res.json();
-                if (data.success && data.methods) {
-                    document.getElementById('num-bkash').value = data.methods['bKash'] || '';
-                    document.getElementById('num-nagad').value = data.methods['Nagad'] || '';
-                    document.getElementById('num-rocket').value = data.methods['Rocket'] || '';
-                    document.getElementById('num-upay').value = data.methods['Upay'] || '';
-                    document.getElementById('num-trc20').value = data.methods['USDT-TRC20'] || '';
-                    document.getElementById('num-bep20').value = data.methods['USDT-BEP20'] || '';
-                }
-            } catch (err) {
-                // ডিফল্ট সেভড ভ্যালু বা ফাঁকা রাখা
-            }
-        }
-
-        document.getElementById('number-update-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const methodsData = {
-                bKash: document.getElementById('num-bkash').value.trim(),
-                Nagad: document.getElementById('num-nagad').value.trim(),
-                Rocket: document.getElementById('num-rocket').value.trim(),
-                Upay: document.getElementById('num-upay').value.trim(),
-                'USDT-TRC20': document.getElementById('num-trc20').value.trim(),
-                'USDT-BEP20': document.getElementById('num-bep20').value.trim(),
-                telegram_id: currentAdminId
-            };
-
-            try {
-                let res = await fetch('/api/admin/update-deposit-methods', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(methodsData)
-                });
-                if(!res.ok) res = await fetch('/api/update-deposit-methods', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(methodsData)
-                });
-                const result = await res.json();
-                if (result.success) {
-                    alert("Payment numbers updated successfully!");
-                    toggleNumberManager();
-                } else {
-                    alert(result.message || "Failed to update numbers.");
-                }
-            } catch (err) {
-                alert("Numbers saved locally / Network warning bypassed.");
-                toggleNumberManager();
-            }
-        });
-
+        // Fetch Pending Deposits
         async function loadDeposits() {
-            const container = document.getElementById('deposits-container');
-            container.innerHTML = `<div class="no-data">Loading deposit history...</div>`;
-
             try {
-                let res = await fetch('/api/admin/get-deposits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_id: currentAdminId })
-                });
-
-                if(!res.ok) {
-                    res = await fetch('/api/admin/deposits', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ telegram_id: currentAdminId })
-                    });
-                }
-
+                const res = await fetch(`/api/admin/get-deposits?telegram_id=${adminId}`);
                 const data = await res.json();
-
-                if (data.success && data.deposits && data.deposits.length > 0) {
-                    renderDeposits(data.deposits);
-                } else {
-                    container.innerHTML = `<div class="no-data">No deposit history found.</div>`;
+                
+                const container = document.getElementById('deposits-container');
+                if (!data.success || data.deposits.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No pending deposit requests.</div>`;
+                    return;
                 }
+
+                let html = '';
+                data.deposits.forEach(dep => {
+                    html += `
+                        <div class="deposit-card">
+                            <div class="deposit-row"><span class="label">User Telegram ID:</span><span class="val">${dep.telegram_id}</span></div>
+                            <div class="deposit-row"><span class="label">Method:</span><span class="val" style="color: var(--accent-color);">${dep.method}</span></div>
+                            <div class="deposit-row"><span class="label">Send Amount:</span><span class="val">${dep.send_amount}</span></div>
+                            <div class="deposit-row"><span class="label">Will Get (USD):</span><span class="val" style="color: #34d399;">$${dep.get_amount}</span></div>
+                            <div class="deposit-row"><span class="label">TrxID / Hash:</span><span class="trx-id">${dep.transaction_id}</span></div>
+                            <div class="deposit-row"><span class="label">Time:</span><span class="val" style="font-size: 0.75rem; color: var(--text-muted);">${dep.created_at}</span></div>
+                            
+                            <div class="action-btns">
+                                <button class="btn-approve" onclick="processDeposit(${dep.id}, 'approve')">Approve</button>
+                                <button class="btn-reject" onclick="processDeposit(${dep.id}, 'reject')">Reject</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
             } catch (err) {
-                // সার্ভার রাউট না পেলে টেস্ট করার জন্য ডামি ডাটা প্রদর্শন যাতে স্ক্রিন খালি না থাকে
-                const dummyDeposits = [
-                    { id: 1, telegram_id: "8191704137", method: "bKash", send_amount: "700 BDT", get_amount: 5.00, transaction_id: "TRX987654321", status: "pending", created_at: Date.now() },
-                    { id: 2, telegram_id: "1234567890", method: "Nagad", send_amount: "1400 BDT", get_amount: 10.00, transaction_id: "TRX123456789", status: "approved", created_at: Date.now() - 3600000 }
-                ];
-                renderDeposits(dummyDeposits);
+                document.getElementById('deposits-container').innerHTML = `<div style="text-align: center; color: #ef4444;">Failed to load deposits.</div>`;
             }
         }
 
-        function renderDeposits(deposits) {
-            const container = document.getElementById('deposits-container');
-            container.innerHTML = '';
-            deposits.forEach(dep => {
-                const isPending = dep.status === 'pending';
-                let badgeClass = 'pending';
-                if (dep.status === 'approved') badgeClass = 'approved';
-                if (dep.status === 'rejected') badgeClass = 'rejected';
-
-                const card = document.createElement('div');
-                card.className = 'deposit-card';
-                card.id = `deposit-card-${dep.id}`;
-                card.innerHTML = `
-                    <div class="deposit-row"><span class="label">User Telegram ID:</span><span class="value">${dep.telegram_id}</span></div>
-                    <div class="deposit-row"><span class="label">Method:</span><span class="value highlight">${dep.method}</span></div>
-                    <div class="deposit-row"><span class="label">Send Amount:</span><span class="value">${dep.send_amount}</span></div>
-                    <div class="deposit-row"><span class="label">Will Get (USD):</span><span class="value highlight">$${dep.get_amount}</span></div>
-                    <div class="deposit-row"><span class="label">TrxID / Hash:</span><span class="value trx">${dep.transaction_id}</span></div>
-                    <div class="deposit-row"><span class="label">Status:</span><span class="value"><span class="badge ${badgeClass}">${dep.status}</span></span></div>
-                    <div class="deposit-row"><span class="label">Time:</span><span class="value" style="font-size: 0.72rem; color: #94a3b8;">${new Date(dep.created_at || Date.now()).toLocaleString()}</span></div>
-                    
-                    ${isPending ? `
-                    <div class="action-buttons" id="actions-${dep.id}">
-                        <button class="btn btn-approve" onclick="processDeposit(${dep.id}, 'approve')">Approve</button>
-                        <button class="btn btn-reject" onclick="processDeposit(${dep.id}, 'reject')">Reject</button>
-                    </div>` : ''}
-                `;
-                container.appendChild(card);
-            });
-        }
-
+        // Approve or Reject Action
         async function processDeposit(depositId, action) {
             if (!confirm(`Are you sure you want to ${action} this deposit?`)) return;
 
             try {
-                let res = await fetch('/api/admin/process-deposit', {
+                const res = await fetch('/api/admin/process-deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegram_id: currentAdminId, deposit_id: depositId, action: action })
+                    body: JSON.stringify({ telegram_id: adminId, deposit_id: depositId, action: action })
                 });
-
-                if(!res.ok) {
-                    res = await fetch('/api/process-deposit', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ telegram_id: currentAdminId, deposit_id: depositId, action: action })
-                    });
-                }
-
                 const result = await res.json();
-                if (result.success) {
-                    alert(result.message || `Deposit successfully ${action}ed!`);
-                }
+                alert(result.message);
+                loadDeposits();
             } catch (err) {
-                alert(`Deposit marked as ${action} successfully!`);
-            }
-
-            // ফ্রন্টএন্ড থেকে ইনস্ট্যান্ট অ্যাকشن বাটন সরিয়ে স্ট্যাটাস আপডেট করা
-            const card = document.getElementById(`deposit-card-${depositId}`);
-            if (card) {
-                const actionDiv = card.querySelector('.action-buttons');
-                if(actionDiv) actionDiv.remove();
-                const badge = card.querySelector('.badge');
-                if(badge) {
-                    badge.className = `badge ${action === 'approve' ? 'approved' : 'rejected'}`;
-                    badge.innerText = action === 'approve' ? 'approved' : 'rejected';
-                }
+                alert("Action failed.");
             }
         }
+
+        // Load Methods into Modal for Editing Numbers
+        async function loadMethodSettings() {
+            try {
+                const res = await fetch(`/api/admin/get-methods?telegram_id=${adminId}`);
+                const data = await res.json();
+                
+                const container = document.getElementById('methods-form-container');
+                if (!data.success) {
+                    container.innerHTML = "Failed to load methods.";
+                    return;
+                }
+
+                let html = '';
+                data.methods.forEach(m => {
+                    html += `
+                        <div class="form-group">
+                            <label class="form-label">${m.method_name} (${m.account_type || 'Account'})</label>
+                            <input type="text" id="method-input-${m.id}" class="form-input" value="${m.account_number}">
+                            <button onclick="updateMethodNumber(${m.id}, '${m.method_name}')" style="margin-top: 4px; background: rgba(56,189,248,0.2); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer;">Update Number</button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function updateMethodNumber(id, name) {
+            const newNum = document.getElementById(`method-input-${id}`).value.trim();
+            if (!newNum) {
+                alert("Number cannot be empty");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/update-method', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegram_id: adminId, method_id: id, account_number: newNum })
+                });
+                const result = await res.json();
+                alert(result.message);
+            } catch (err) {
+                alert("Update failed.");
+            }
+        }
+
+        document.getElementById('open-settings-btn').addEventListener('click', () => {
+            document.getElementById('settings-modal').style.display = 'flex';
+            loadMethodSettings();
+        });
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('settings-modal').style.display = 'none';
+        });
 
         loadDeposits();
     </script>
