@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AL-HUDA TECH GLOBAL - Deposit Funds</title>
+    <title>AL-HUDA TASK - Deposit Funds</title>
     <style>
         :root {
             --bg-gradient: radial-gradient(circle at top, #1e1b4b, #0f172a);
@@ -106,7 +106,7 @@
                 <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">Recent Transactions</span>
             </div>
             <div id="deposit-history-container">
-                <div class="no-history">Loading history...</div>
+                <div class="no-history">Loading deposit history...</div>
             </div>
         </div>
     </div>
@@ -114,15 +114,24 @@
     <div id="site-footer"></div>
 
     <script>
-        fetch('/includes/header.html').then(res => res.text()).then(data => document.getElementById('site-header').innerHTML = data);
-        fetch('/includes/footer.html').then(res => res.text()).then(data => document.getElementById('site-footer').innerHTML = data);
+        // হেডার ও ফুটার লোড করার সেফ ট্রাই
+        fetch('/includes/header.html').then(res => res.text()).then(data => {
+            const h = document.getElementById('site-header');
+            if(h) h.innerHTML = data;
+        }).catch(e => {});
+        
+        fetch('/includes/footer.html').then(res => res.text()).then(data => {
+            const f = document.getElementById('site-footer');
+            if(f) f.innerHTML = data;
+        }).catch(e => {});
 
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
+        // ইউজারের সঠিক টেলিগ্রাম আইডি শনাক্তকরণ (টেস্টিংয়ের জন্য ফলব্যাক আইডি রাখা হয়েছে)
         const tgUser = tg.initDataUnsafe?.user;
-        const currentTelegramId = tgUser ? tgUser.id : 8191704137; // টেস্টিংয়ের জন্য ফলব্যাক আইডি
+        const currentTelegramId = tgUser ? tgUser.id : 8191704137; 
 
         let activeMethodsData = {};
 
@@ -131,23 +140,26 @@
                 const res = await fetch('/api/get-deposit-methods');
                 const data = await res.json();
                 if (data.success) {
-                    activeMethodsData = data.methods;
+                    activeMethodsData = data.methods || {};
                 }
             } catch (e) {
-                console.error("Failed to load methods");
+                console.error("Failed to load methods", e);
             }
         }
         loadPaymentMethods();
 
-        // ইউজার ডিপোজিট হিস্টরি লোড করার ফাংশন
+        // ডিপোজিট হিস্টরি ফেচ করার ফাংশন
         async function loadDepositHistory() {
             const historyContainer = document.getElementById('deposit-history-container');
+            historyContainer.innerHTML = `<div class="no-history">Loading deposit history...</div>`;
+
             try {
                 const res = await fetch('/api/user/deposit-history', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ telegram_id: currentTelegramId })
                 });
+                
                 const data = await res.json();
 
                 if (data.success && data.history && data.history.length > 0) {
@@ -178,10 +190,12 @@
                     historyContainer.innerHTML = `<div class="no-history">No deposit history found.</div>`;
                 }
             } catch (err) {
-                historyContainer.innerHTML = `<div class="no-history" style="color: var(--danger-color);">Failed to load history.</div>`;
+                console.error("History fetch error:", err);
+                historyContainer.innerHTML = `<div class="no-history" style="color: var(--danger-color);">Failed to load history. Please try again.</div>`;
             }
         }
 
+        // পেজ লোড হওয়ার সাথে সাথে হিস্টরি কল করা হলো
         loadDepositHistory();
 
         const methodSelect = document.getElementById('deposit-method');
@@ -246,10 +260,6 @@
 
         document.getElementById('deposit-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!tgUser) {
-                alert("Open through Telegram Bot!");
-                return;
-            }
 
             const method = methodSelect.value;
             const getAmount = parseFloat(getAmountInput.value);
@@ -272,7 +282,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        telegram_id: tgUser.id,
+                        telegram_id: currentTelegramId,
                         method: method,
                         send_amount: sendAmount,
                         get_amount: getAmount,
@@ -284,7 +294,7 @@
                     alert("Deposit request submitted successfully! Pending admin approval.");
                     document.getElementById('deposit-form').reset();
                     instructionBox.style.display = 'none';
-                    loadDepositHistory(); // নতুন রিকোয়েস্ট সাবমিট হওয়ার সাথে সাথে হিস্টরি রিফ্রেশ হবে
+                    loadDepositHistory(); // নতুন রিকোয়েস্ট সাবমিট হওয়ার সাথে সাথে হিস্টরি রিফ্রেশ হয়ে যাবে
                 } else {
                     alert(result.message || "Submission failed.");
                 }
@@ -294,4 +304,5 @@
         });
     </script>
 </body>
-</html>
+    </html>
+    
