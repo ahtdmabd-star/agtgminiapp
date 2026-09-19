@@ -35,7 +35,6 @@
         .btn-submit { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #0f172a; border: none; padding: 14px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transition: transform 0.1s; }
         .btn-submit:active { transform: scale(0.98); }
 
-        /* History Section Styling */
         .section-title { font-size: 0.95rem; font-weight: 800; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
         .history-item { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 0.83rem; }
         .history-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
@@ -49,8 +48,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-
-    <div id="site-header"></div>
 
     <div class="app-container">
         <!-- Deposit Form Card -->
@@ -103,7 +100,7 @@
         <div class="glass-card">
             <div class="section-title">
                 <span>Deposit History</span>
-                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">Recent Transactions</span>
+                <button onclick="loadDepositHistory()" style="background:none; border:none; color:var(--accent-color); font-size:0.75rem; cursor:pointer; font-weight:700;">Refresh 🔄</button>
             </div>
             <div id="deposit-history-container">
                 <div class="no-history">Loading deposit history...</div>
@@ -111,25 +108,11 @@
         </div>
     </div>
 
-    <div id="site-footer"></div>
-
     <script>
-        // হেডার ও ফুটার লোড করার সেফ ট্রাই
-        fetch('/includes/header.html').then(res => res.text()).then(data => {
-            const h = document.getElementById('site-header');
-            if(h) h.innerHTML = data;
-        }).catch(e => {});
-        
-        fetch('/includes/footer.html').then(res => res.text()).then(data => {
-            const f = document.getElementById('site-footer');
-            if(f) f.innerHTML = data;
-        }).catch(e => {});
-
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // ইউজারের সঠিক টেলিগ্রাম আইডি শনাক্তকরণ (টেস্টিংয়ের জন্য ফলব্যাক আইডি রাখা হয়েছে)
         const tgUser = tg.initDataUnsafe?.user;
         const currentTelegramId = tgUser ? tgUser.id : 8191704137; 
 
@@ -137,7 +120,8 @@
 
         async function loadPaymentMethods() {
             try {
-                const res = await fetch('/api/get-deposit-methods');
+                let res = await fetch('/api/get-deposit-methods');
+                if(!res.ok) res = await fetch('/api/deposit-methods');
                 const data = await res.json();
                 if (data.success) {
                     activeMethodsData = data.methods || {};
@@ -148,17 +132,25 @@
         }
         loadPaymentMethods();
 
-        // ডিপোজিট হিস্টরি ফেচ করার ফাংশন
+        // শক্তিশালী ফলব্যাক হিস্টরি ফেচ ফাংশন
         async function loadDepositHistory() {
             const historyContainer = document.getElementById('deposit-history-container');
             historyContainer.innerHTML = `<div class="no-history">Loading deposit history...</div>`;
 
             try {
-                const res = await fetch('/api/user/deposit-history', {
+                let res = await fetch('/api/user/deposit-history', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ telegram_id: currentTelegramId })
                 });
+
+                if (!res.ok) {
+                    res = await fetch('/api/deposit-history', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ telegram_id: currentTelegramId })
+                    });
+                }
                 
                 const data = await res.json();
 
@@ -195,7 +187,6 @@
             }
         }
 
-        // পেজ লোড হওয়ার সাথে সাথে হিস্টরি কল করা হলো
         loadDepositHistory();
 
         const methodSelect = document.getElementById('deposit-method');
@@ -278,7 +269,7 @@
             let sendAmount = method.includes('USDT') ? getAmount : (getAmount * 140);
 
             try {
-                const res = await fetch('/api/submit-deposit', {
+                let res = await fetch('/api/submit-deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -289,12 +280,27 @@
                         transaction_id: txnId
                     })
                 });
+
+                if(!res.ok) {
+                    res = await fetch('/api/deposit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            telegram_id: currentTelegramId,
+                            method: method,
+                            send_amount: sendAmount,
+                            get_amount: getAmount,
+                            transaction_id: txnId
+                        })
+                    });
+                }
+
                 const result = await res.json();
                 if (result.success) {
                     alert("Deposit request submitted successfully! Pending admin approval.");
                     document.getElementById('deposit-form').reset();
                     instructionBox.style.display = 'none';
-                    loadDepositHistory(); // নতুন রিকোয়েস্ট সাবমিট হওয়ার সাথে সাথে হিস্টরি রিফ্রেশ হয়ে যাবে
+                    loadDepositHistory(); 
                 } else {
                     alert(result.message || "Submission failed.");
                 }
@@ -304,5 +310,4 @@
         });
     </script>
 </body>
-    </html>
-    
+</html>
