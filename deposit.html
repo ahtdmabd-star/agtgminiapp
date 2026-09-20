@@ -32,6 +32,28 @@
         
         .btn-submit { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #0f172a; border: none; padding: 14px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
         .btn-submit:active { transform: scale(0.98); }
+
+        .history-btn { background: rgba(56, 189, 248, 0.12); color: var(--accent-color); border: 1px solid rgba(56, 189, 248, 0.35); padding: 9px 14px; border-radius: 10px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: block; margin: -6px auto 16px; }
+        .history-btn:active { transform: scale(0.98); }
+        .history-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.78); backdrop-filter: blur(7px); z-index: 9999; display: none; align-items: flex-start; justify-content: center; padding: 22px 14px; overflow-y: auto; }
+        .history-overlay.show { display: flex; }
+        .history-modal { width: 100%; max-width: 440px; background: #0f172a; border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.45); overflow: hidden; animation: historyIn .18s ease-out; }
+        @keyframes historyIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+        .history-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; background: #0f172a; z-index: 2; }
+        .history-title { font-size: 1rem; font-weight: 800; color: var(--accent-color); }
+        .history-close { width: 34px; height: 34px; border: 0; border-radius: 9px; background: rgba(255,255,255,.08); color: #fff; font-size: 20px; cursor: pointer; }
+        .history-body { padding: 14px; max-height: 72vh; overflow-y: auto; }
+        .history-item { background: rgba(30,41,59,.72); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+        .history-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+        .history-method { font-weight: 800; font-size: .92rem; }
+        .history-status { font-size: .68rem; font-weight: 800; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; background: rgba(148,163,184,.14); color: #cbd5e1; }
+        .history-status.pending { color: #fbbf24; background: rgba(251,191,36,.12); }
+        .history-status.approved, .history-status.completed, .history-status.success { color: #34d399; background: rgba(52,211,153,.12); }
+        .history-status.rejected, .history-status.failed, .history-status.cancelled { color: #fb7185; background: rgba(251,113,133,.12); }
+        .history-row { display: flex; justify-content: space-between; gap: 12px; font-size: .76rem; color: var(--text-muted); padding-top: 5px; }
+        .history-row strong { color: var(--text-main); font-weight: 700; text-align: right; word-break: break-word; }
+        .history-empty, .history-loading, .history-error { text-align: center; color: var(--text-muted); padding: 28px 10px; font-size: .85rem; }
+        .history-refresh { display: block; width: 100%; margin-top: 10px; background: rgba(56,189,248,.1); color: var(--accent-color); border: 1px solid rgba(56,189,248,.25); padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -42,6 +64,7 @@
     <div class="app-container">
         <div class="glass-card">
             <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent-color); margin-bottom: 16px; text-align: center;">DEPOSIT FUNDS</div>
+            <button type="button" id="deposit-history-btn" class="history-btn">Deposit History</button>
 
             <form id="deposit-form">
                 
@@ -84,6 +107,19 @@
 
                 <button type="submit" class="btn-submit">Submit Deposit Request</button>
             </form>
+        </div>
+    </div>
+
+
+    <div id="deposit-history-overlay" class="history-overlay" aria-hidden="true">
+        <div class="history-modal" role="dialog" aria-modal="true" aria-labelledby="deposit-history-title">
+            <div class="history-head">
+                <div id="deposit-history-title" class="history-title">DEPOSIT HISTORY</div>
+                <button type="button" id="deposit-history-close" class="history-close" aria-label="Close">&times;</button>
+            </div>
+            <div id="deposit-history-body" class="history-body">
+                <div class="history-loading">Loading deposit history...</div>
+            </div>
         </div>
     </div>
 
@@ -218,6 +254,94 @@
             } catch (err) {
                 alert("Network error. Try again.");
             }
+        });
+
+        const historyOverlay = document.getElementById('deposit-history-overlay');
+        const historyBody = document.getElementById('deposit-history-body');
+        const historyBtn = document.getElementById('deposit-history-btn');
+        const historyClose = document.getElementById('deposit-history-close');
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[char]));
+        }
+
+        function formatHistoryDate(value) {
+            if (!value) return '—';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return escapeHtml(value);
+            return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+        }
+
+        function renderDepositHistory(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                historyBody.innerHTML = '<div class="history-empty">No deposit history found.</div><button type="button" class="history-refresh" id="history-refresh-btn">Refresh</button>';
+                document.getElementById('history-refresh-btn').onclick = loadDepositHistory;
+                return;
+            }
+
+            historyBody.innerHTML = items.map(item => {
+                const status = String(item.status || 'pending').toLowerCase();
+                const method = escapeHtml(item.method || 'Unknown');
+                const transactionId = escapeHtml(item.transaction_id || '—');
+                const sendAmount = Number(item.send_amount);
+                const getAmount = Number(item.get_amount);
+                const sendText = Number.isFinite(sendAmount) ? sendAmount.toFixed(2) : escapeHtml(item.send_amount || '—');
+                const getText = Number.isFinite(getAmount) ? getAmount.toFixed(2) : escapeHtml(item.get_amount || '—');
+                return `
+                    <div class="history-item">
+                        <div class="history-top">
+                            <div class="history-method">${method}</div>
+                            <div class="history-status ${escapeHtml(status)}">${escapeHtml(status)}</div>
+                        </div>
+                        <div class="history-row"><span>You Send</span><strong>${sendText} ${method.includes('USDT') ? 'USDT' : 'BDT'}</strong></div>
+                        <div class="history-row"><span>You Get</span><strong>${getText} USD</strong></div>
+                        <div class="history-row"><span>Transaction ID</span><strong>${transactionId}</strong></div>
+                        <div class="history-row"><span>Date</span><strong>${formatHistoryDate(item.created_at)}</strong></div>
+                    </div>`;
+            }).join('') + '<button type="button" class="history-refresh" id="history-refresh-btn">Refresh</button>';
+            document.getElementById('history-refresh-btn').onclick = loadDepositHistory;
+        }
+
+        async function loadDepositHistory() {
+            const tgUser = tg.initDataUnsafe?.user;
+            if (!tgUser) {
+                historyBody.innerHTML = '<div class="history-error">Please open this page through Telegram.</div>';
+                return;
+            }
+
+            historyBody.innerHTML = '<div class="history-loading">Loading deposit history...</div>';
+            try {
+                const res = await fetch(`/api/submit-deposit?telegram_id=${encodeURIComponent(tgUser.id)}`, { cache: 'no-store' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'Failed to load history.');
+                renderDepositHistory(data.deposits);
+            } catch (error) {
+                console.error('Deposit history error:', error);
+                historyBody.innerHTML = `<div class="history-error">${escapeHtml(error.message || 'Unable to load deposit history.')}</div><button type="button" class="history-refresh" id="history-refresh-btn">Try Again</button>`;
+                document.getElementById('history-refresh-btn').onclick = loadDepositHistory;
+            }
+        }
+
+        function openDepositHistory() {
+            historyOverlay.classList.add('show');
+            historyOverlay.setAttribute('aria-hidden', 'false');
+            loadDepositHistory();
+        }
+
+        function closeDepositHistory() {
+            historyOverlay.classList.remove('show');
+            historyOverlay.setAttribute('aria-hidden', 'true');
+        }
+
+        historyBtn.addEventListener('click', openDepositHistory);
+        historyClose.addEventListener('click', closeDepositHistory);
+        historyOverlay.addEventListener('click', (event) => {
+            if (event.target === historyOverlay) closeDepositHistory();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeDepositHistory();
         });
     </script>
 </body>
