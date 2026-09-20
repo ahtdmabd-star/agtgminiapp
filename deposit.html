@@ -137,7 +137,7 @@
 
         async function loadPaymentMethods() {
             try {
-                const res = await fetch('/api/get-deposit-methods');
+                const res = await fetch('/api/api-combined?route=get-deposit-methods');
                 const data = await res.json();
                 if (data.success) {
                     activeMethodsData = data.methods;
@@ -233,7 +233,7 @@
             let sendAmount = method.includes('USDT') ? getAmount : (getAmount * 140);
 
             try {
-                const res = await fetch('/api/submit-deposit', {
+                const res = await fetch('/api/api-combined?route=submit-deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -313,7 +313,7 @@
 
             historyBody.innerHTML = '<div class="history-loading">Loading deposit history...</div>';
             try {
-                const res = await fetch(`/api/submit-deposit?telegram_id=${encodeURIComponent(tgUser.id)}`, { cache: 'no-store' });
+                const res = await fetch(`/api/api-combined?route=submit-deposit&telegram_id=${encodeURIComponent(tgUser.id)}`, { cache: 'no-store' });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'Failed to load history.');
                 renderDepositHistory(data.deposits);
