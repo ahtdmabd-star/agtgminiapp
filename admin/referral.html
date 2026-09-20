@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Referral Settings - AL-HUDA TECH GLOBAL</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        :root {
+            --bg: #020617;
+            --card: rgba(15, 23, 42, 0.78);
+            --card-dark: rgba(2, 6, 23, 0.52);
+            --border: rgba(148, 163, 184, 0.14);
+            --blue: #38bdf8;
+            --blue-dark: #0284c7;
+            --green: #34d399;
+            --red: #fb7185;
+            --white: #f8fafc;
+            --muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+
+            padding: 14px;
+
+            color: var(--white);
+
+            background:
+                radial-gradient(
+                    circle at 50% -10%,
+                    rgba(14, 165, 233, 0.18),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    180deg,
+                    #0f172a,
+                    #020617
+                );
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding: 15px 16px;
+
+            margin-bottom: 14px;
+
+            border-radius: 18px;
+
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+
+            box-shadow:
+                0 18px 45px rgba(0,0,0,0.22);
+        }
+
+        .brand {
+            min-width: 0;
+        }
+
+        .brand-title {
+            color: var(--blue);
+
+            font-size: 0.95rem;
+
+            font-weight: 800;
+
+            letter-spacing: 0.02em;
+        }
+
+        .brand-subtitle {
+            margin-top: 3px;
+
+            color: var(--muted);
+
+            font-size: 0.68rem;
+        }
+
+        .back-btn {
+            flex-shrink: 0;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 7px;
+
+            min-height: 38px;
+
+            padding: 0 12px;
+
+            border-radius: 10px;
+
+            color: var(--white);
+
+            background:
+                rgba(255,255,255,0.055);
+
+            border: 1px solid
+                rgba(255,255,255,0.12);
+
+            text-decoration: none;
+
+            font-size: 0.74rem;
+
+            font-weight: 750;
+        }
+
+        /* MAIN CARD */
+
+        .card {
+            padding: 20px;
+
+            border-radius: 22px;
+
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+
+            box-shadow:
+                0 22px 55px rgba(0,0,0,0.25);
+        }
+
+        .title {
+            font-size: 1.05rem;
+
+            font-weight: 800;
+
+            margin-bottom: 5px;
+        }
+
+        .description {
+            color: var(--muted);
+
+            font-size: 0.74rem;
+
+            line-height: 1.5;
+
+            margin-bottom: 20px;
+        }
+
+        /* CURRENT RATE */
+
+        .rate-card {
+            position: relative;
+
+            overflow: hidden;
+
+            padding: 18px;
+
+            margin-bottom: 18px;
+
+            border-radius: 17px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(56,189,248,0.12),
+                    rgba(2,6,23,0.35)
+                );
+
+            border: 1px solid
+                rgba(56,189,248,0.20);
+        }
+
+        .rate-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 130px;
+            height: 130px;
+
+            right: -65px;
+            top: -65px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(56,189,248,0.08);
+        }
+
+        .rate-label {
+            position: relative;
+            z-index: 1;
+
+            color: var(--muted);
+
+            font-size: 0.68rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.1em;
+        }
+
+        .rate-value {
+            position: relative;
+            z-index: 1;
+
+            margin-top: 6px;
+
+            color: var(--blue);
+
+            font-size: 2rem;
+
+            line-height: 1;
+
+            font-weight: 850;
+        }
+
+        .rate-help {
+            position: relative;
+            z-index: 1;
+
+            margin-top: 8px;
+
+            color: var(--muted);
+
+            font-size: 0.7rem;
+        }
+
+        /* FORM */
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: #cbd5e1;
+
+            font-size: 0.73rem;
+
+            font-weight: 700;
+        }
+
+        .input,
+        .textarea {
+            width: 100%;
+
+            color: var(--white);
+
+            background:
+                rgba(2,6,23,0.55);
+
+            border: 1px solid
+                rgba(148,163,184,0.15);
+
+            outline: none;
+
+            border-radius: 12px;
+
+            transition: 0.2s ease;
+        }
+
+        .input {
+            height: 46px;
+
+            padding: 0 13px;
+
+            font-size: 0.88rem;
+        }
+
+        .textarea {
+            min-height: 115px;
+
+            padding: 12px 13px;
+
+            resize: vertical;
+
+            font-size: 0.82rem;
+
+            line-height: 1.55;
+        }
+
+        .input:focus,
+        .textarea:focus {
+            border-color:
+                rgba(56,189,248,0.45);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(56,189,248,0.07);
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .percent-symbol {
+            position: absolute;
+
+            right: 14px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: var(--blue);
+
+            font-weight: 800;
+
+            pointer-events: none;
+        }
+
+        /* SAVE */
+
+        .save-btn {
+            width: 100%;
+
+            min-height: 48px;
+
+            border: none;
+
+            border-radius: 13px;
+
+            color: #082f49;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7dd3fc,
+                    #38bdf8
+                );
+
+            font-size: 0.85rem;
+
+            font-weight: 850;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 8px 25px
+                rgba(56,189,248,0.16);
+
+            transition: 0.18s ease;
+        }
+
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.55;
+
+            cursor: wait;
+        }
+
+        /* MESSAGE */
+
+        .message {
+            display: none;
+
+            margin-top: 13px;
+
+            padding: 11px 12px;
+
+            border-radius: 11px;
+
+            font-size: 0.74rem;
+
+            line-height: 1.45;
+        }
+
+        .message.success {
+            display: block;
+
+            color: var(--green);
+
+            background:
+                rgba(52,211,153,0.07);
+
+            border: 1px solid
+                rgba(52,211,153,0.18);
+        }
+
+        .message.error {
+            display: block;
+
+            color: var(--red);
+
+            background:
+                rgba(251,113,133,0.07);
+
+            border: 1px solid
+                rgba(251,113,133,0.18);
+        }
+
+        /* LOADING */
+
+        .loading {
+            text-align: center;
+
+            padding: 45px 20px;
+
+            color: var(--muted);
+
+            font-size: 0.78rem;
+        }
+
+        .spinner {
+            width: 34px;
+            height: 34px;
+
+            margin: 0 auto 13px;
+
+            border-radius: 50%;
+
+            border:
+                3px solid
+                rgba(255,255,255,0.08);
+
+            border-top-color:
+                var(--blue);
+
+            animation:
+                spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 360px) {
+
+            body {
+                padding: 9px;
+            }
+
+            .header {
+                padding: 13px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .rate-value {
+                font-size: 1.8rem;
+            }
+
+            .brand-title {
+                font-size: 0.86rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="header">
+
+        <div class="brand">
+
+            <div class="brand-title">
+                AL-HUDA TECH GLOBAL
+            </div>
+
+            <div class="brand-subtitle">
+                Referral Program Control
+            </div>
+
+        </div>
+
+        <a
+            href="/admin/index.html"
+            class="back-btn">
+
+            <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="M19 12H5"></path>
+                <path d="M12 19l-7-7 7-7"></path>
+
+            </svg>
+
+            Back
+
+        </a>
+
+    </header>
+
+
+    <main class="card">
+
+        <div class="title">
+            Referral Settings
+        </div>
+
+        <div class="description">
+            Control the direct referral commission percentage and the
+            description displayed to users.
+        </div>
+
+
+        <!-- Current Percentage -->
+
+        <div class="rate-card">
+
+            <div class="rate-label">
+                Current Commission
+            </div>
+
+            <div
+                class="rate-value"
+                id="current-rate">
+
+                5%
+
+            </div>
+
+            <div class="rate-help">
+                This percentage will be applied to eligible new balance
+                credits of directly referred users.
+            </div>
+
+        </div>
+
+
+        <!-- Percentage -->
+
+        <div class="form-group">
+
+            <label class="label">
+                Referral Commission Percentage
+            </label>
+
+            <div class="input-wrap">
+
+                <input
+                    type="number"
+                    id="percentage"
+                    class="input"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="5.00"
+                >
+
+                <span class="percent-symbol">
+                    %
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Description -->
+
+        <div class="form-group">
+
+            <label class="label">
+                Referral Description
+            </label>
+
+            <textarea
+                id="description"
+                class="textarea"
+                maxlength="1000"
+                placeholder="Enter referral program description..."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="save-btn"
+            class="save-btn">
+
+            Save Referral Settings
+
+        </button>
+
+
+        <div
+            id="message"
+            class="message">
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    /* =========================================
+       TELEGRAM
+    ========================================= */
+
+    const tg =
+        window.Telegram.WebApp;
+
+    tg.ready();
+    tg.expand();
+
+
+    const tgUser =
+        tg.initDataUnsafe?.user;
+
+    const adminId =
+        tgUser?.id || null;
+
+
+    /* =========================================
+       ELEMENTS
+    ========================================= */
+
+    const percentageInput =
+        document.getElementById('percentage');
+
+    const descriptionInput =
+        document.getElementById('description');
+
+    const currentRate =
+        document.getElementById('current-rate');
+
+    const saveButton =
+        document.getElementById('save-btn');
+
+    const messageBox =
+        document.getElementById('message');
+
+
+    /* =========================================
+       MESSAGE
+    ========================================= */
+
+    function showMessage(text, type) {
+
+        messageBox.textContent = text;
+
+        messageBox.className =
+            `message ${type}`;
+
+    }
+
+
+    /* =========================================
+       LOAD SETTINGS
+       
+       Backend endpoint will be connected
+       in the next step.
+    ========================================= */
+
+    async function loadSettings() {
+
+        /*
+         * We intentionally do not invent the
+         * existing API endpoint here.
+         *
+         * The next step will connect this page
+         * to your actual combined API.
+         */
+
+        percentageInput.value = '5.00';
+
+        descriptionInput.value =
+            'Invite friends and earn commission whenever they receive new balance.';
+
+        currentRate.textContent =
+            '5%';
+    }
+
+
+    /* =========================================
+       SAVE SETTINGS
+    ========================================= */
+
+    async function saveSettings() {
+
+        if (!adminId) {
+
+            showMessage(
+                'Please open this page through the Telegram Mini App.',
+                'error'
+            );
+
+            return;
+        }
+
+
+        const percentage =
+            parseFloat(
+                percentageInput.value
+            );
+
+
+        const description =
+            descriptionInput.value.trim();
+
+
+        if (
+            Number.isNaN(percentage) ||
+            percentage < 0 ||
+            percentage > 100
+        ) {
+
+            showMessage(
+                'Commission percentage must be between 0 and 100.',
+                'error'
+            );
+
+            return;
+        }
+
+
+        if (!description) {
+
+            showMessage(
+                'Referral description cannot be empty.',
+                'error'
+            );
+
+            return;
+        }
+
+
+        /*
+         * API connection will be added
+         * in the next backend step.
+         */
+
+        showMessage(
+            'The settings form is ready. Backend connection will be enabled in the next step.',
+            'success'
+        );
+
+    }
+
+
+    /* =========================================
+       EVENTS
+    ========================================= */
+
+    saveButton.addEventListener(
+        'click',
+        saveSettings
+    );
+
+
+    percentageInput.addEventListener(
+        'input',
+        () => {
+
+            const value =
+                parseFloat(
+                    percentageInput.value
+                );
+
+            if (
+                !Number.isNaN(value) &&
+                value >= 0 &&
+                value <= 100
+            ) {
+
+                currentRate.textContent =
+                    `${value}%`;
+
+            }
+
+        }
+    );
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    loadSettings();
+
+</script>
+
+</body>
+</html>
