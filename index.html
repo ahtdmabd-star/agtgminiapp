@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AL-HUDA TECH GLOBAL</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+    <!-- হেডার সেকশন -->
+    <header class="app-header">
+        <div class="menu-toggle" onclick="toggleSidebar()">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="brand-title">AL-HUDA <span>TECH GLOBAL</span></div>
+        <div class="header-space"></div>
+    </header>
+
+    <!-- মূল কন্টেন্ট -->
+    <main class="app-container">
+        <div class="glass-card">
+            <h2>Welcome to Dashboard</h2>
+            <p id="user-welcome">Loading user info...</p>
+        </div>
+    </main>
+
+    <!-- সাইডবার মেনু -->
+    <div id="app-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+            <span onclick="toggleSidebar()">✕</span>
+        </div>
+        <div class="sidebar-links">
+            <a href="privacy.html">🔒 Privacy Policy</a>
+            <button onclick="logoutUser()">🚪 Logout</button>
+        </div>
+    </div>
+    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
