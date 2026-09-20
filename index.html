@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,22 +9,23 @@
 </head>
 <body>
     <div class="container">
-        <h2>অ্যাকাউন্ট ভেরিফিকেশন</h2>
+        <h2>Account Verification</h2>
         <div id="loading-section">
             <div class="loader"></div>
-            <p>আপনার অ্যাকাউন্ট ও মেম্বারশিপ চেক করা হচ্ছে...</p>
+            <p>Checking your account and membership status...</p>
         </div>
 
         <div id="verify-section" class="hidden">
-            <p style="color: #f87171;">⚠️ আপনি আমাদের অফিসিয়াল চ্যানেল ও গ্রুপে জয়েন করেননি!</p>
-            <p>মিনি অ্যাপ ব্যবহার করতে হলে নিচের চ্যানেল ও গ্রুপে জয়েন করুন:</p>
+            <p style="color: #f87171;">⚠️ You have not joined our official channel and group yet!</p>
+            <p>To use this mini app, please join our official channel and group below:</p>
             <a href="https://t.me/AHTG_OFFICIAL" target="_blank" class="btn">📢 Official Channel</a>
             <a href="https://t.me/ahtgofic" target="_blank" class="btn">💬 Official Group</a>
-            <button class="btn btn-success" onclick="checkMembershipAndLogin()">✅ আমি জয়েন করেছি, ভেরিফাই করুন</button>
+            <button class="btn btn-success" onclick="checkMembershipAndLogin()">✅ I have joined, verify now</button>
         </div>
     </div>
 
     <script>
+        const BACKEND_URL = 'https://ahtdma-star.vercel.app';
         let userTelegramId = null;
 
         window.onload = async function() {
@@ -34,7 +35,7 @@
             const user = tg.initDataUnsafe?.user;
             
             if (!user) {
-                alert("দয়া করে টেলিগ্রাম বট থেকে মিনি অ্যাপটি ওপেন করুন!");
+                alert("Please open this mini app from the official Telegram bot!");
                 return;
             }
 
@@ -44,19 +45,17 @@
 
         async function verifyUserSession(telegramId) {
             try {
-                // ডাটাবেজ বা ব্যাকএন্ড থেকে ইউজারের স্ট্যাটাস চেক করার রিকোয়েস্ট
-                // এখানে আপনার বটের ব্যাকএন্ড বা ডাটাবেজ এপিআই লিংক বসবে
-                let response = await fetch(`https://your-bot-domain.com/api/check-user?telegram_id=${telegramId}`);
+                let response = await fetch(`${BACKEND_URL}/api/check-user?telegram_id=${telegramId}`);
                 let data = await response.json();
 
-                if (data.exists && data.isJoined) {
+                if (data.success && data.exists && data.isJoined) {
                     redirectToPanel(data.role);
                 } else {
                     document.getElementById('loading-section').classList.add('hidden');
                     document.getElementById('verify-section').classList.remove('hidden');
                 }
             } catch (err) {
-                // যদি সরাসরি এপিআই কানেক্ট করা না থাকে, তবে বাইপাস রোধ করার জন্য ভেরিফাই সেকশন দেখাবে
+                console.error('Verification error:', err);
                 document.getElementById('loading-section').classList.add('hidden');
                 document.getElementById('verify-section').classList.remove('hidden');
             }
@@ -64,25 +63,24 @@
 
         async function checkMembershipAndLogin() {
             const btn = document.querySelector('.btn-success');
-            btn.innerText = "যাচাই করা হচ্ছে...";
+            btn.innerText = "Verifying...";
             btn.disabled = true;
 
             try {
-                // সার্ভারে রিকোয়েস্ট পাঠিয়ে রিয়েল-টাইম চেক করা যে ইউজার জয়েন করেছে কিনা
-                let response = await fetch(`https://your-bot-domain.com/api/verify-membership?telegram_id=${userTelegramId}`);
+                let response = await fetch(`${BACKEND_URL}/api/verify-membership?telegram_id=${userTelegramId}`);
                 let data = await response.json();
 
                 if (data.success && data.isJoined) {
-                    alert('ভেরিফিকেশন সফল হয়েছে!');
-                    redirectToPanel(data.role);
+                    alert('Verification successful!');
+                    redirectToPanel(data.role || 'user');
                 } else {
-                    alert('⚠️ আপনি এখনো চ্যানেল বা গ্রুপে জয়েন করেননি! দয়া করে জয়েন করে আবার ভেরিফাই করুন।');
-                    btn.innerText = "✅ আমি জয়েন করেছি, ভেরিফাই করুন";
+                    alert('⚠️ You have not joined the channel or group yet! Please join and verify again.');
+                    btn.innerText = "✅ I have joined, verify now";
                     btn.disabled = false;
                 }
             } catch (err) {
-                alert('সার্ভারে সমস্যা হচ্ছে। দয়া করে কিছুক্ষণ পর আবার চেষ্টা করুন।');
-                btn.innerText = "✅ আমি জয়েন করেছি, ভেরিফাই করুন";
+                alert('Server error occurred. Please try again later.');
+                btn.innerText = "✅ I have joined, verify now";
                 btn.disabled = false;
             }
         }
