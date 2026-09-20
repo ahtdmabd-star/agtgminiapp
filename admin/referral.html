@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -13,469 +12,200 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        :root {
-            --bg: #020617;
-            --card: rgba(15, 23, 42, 0.78);
-            --card-dark: rgba(2, 6, 23, 0.52);
-            --border: rgba(148, 163, 184, 0.14);
-            --blue: #38bdf8;
-            --blue-dark: #0284c7;
-            --green: #34d399;
-            --red: #fb7185;
-            --white: #f8fafc;
-            --muted: #94a3b8;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                Roboto,
-                Arial,
-                sans-serif;
         }
 
         body {
             min-height: 100vh;
-
-            padding: 14px;
-
-            color: var(--white);
-
+            font-family: Arial, sans-serif;
             background:
-                radial-gradient(
-                    circle at 50% -10%,
-                    rgba(14, 165, 233, 0.18),
-                    transparent 35%
-                ),
-                linear-gradient(
-                    180deg,
-                    #0f172a,
-                    #020617
-                );
+                radial-gradient(circle at top left, rgba(0, 180, 255, .12), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(0, 255, 170, .10), transparent 35%),
+                #07111f;
+            color: #fff;
+            padding: 20px;
         }
 
         .container {
             width: 100%;
-            max-width: 520px;
-            margin: 0 auto;
+            max-width: 600px;
+            margin: auto;
         }
 
-        /* HEADER */
-
-        .header {
+        .topbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-
             gap: 12px;
-
-            padding: 15px 16px;
-
-            margin-bottom: 14px;
-
-            border-radius: 18px;
-
-            background: var(--card);
-
-            border: 1px solid var(--border);
-
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-
-            box-shadow:
-                0 18px 45px rgba(0,0,0,0.22);
-        }
-
-        .brand {
-            min-width: 0;
-        }
-
-        .brand-title {
-            color: var(--blue);
-
-            font-size: 0.95rem;
-
-            font-weight: 800;
-
-            letter-spacing: 0.02em;
-        }
-
-        .brand-subtitle {
-            margin-top: 3px;
-
-            color: var(--muted);
-
-            font-size: 0.68rem;
-        }
-
-        .back-btn {
-            flex-shrink: 0;
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            gap: 7px;
-
-            min-height: 38px;
-
-            padding: 0 12px;
-
-            border-radius: 10px;
-
-            color: var(--white);
-
-            background:
-                rgba(255,255,255,0.055);
-
-            border: 1px solid
-                rgba(255,255,255,0.12);
-
-            text-decoration: none;
-
-            font-size: 0.74rem;
-
-            font-weight: 750;
-        }
-
-        /* MAIN CARD */
-
-        .card {
-            padding: 20px;
-
-            border-radius: 22px;
-
-            background: var(--card);
-
-            border: 1px solid var(--border);
-
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-
-            box-shadow:
-                0 22px 55px rgba(0,0,0,0.25);
-        }
-
-        .title {
-            font-size: 1.05rem;
-
-            font-weight: 800;
-
-            margin-bottom: 5px;
-        }
-
-        .description {
-            color: var(--muted);
-
-            font-size: 0.74rem;
-
-            line-height: 1.5;
-
             margin-bottom: 20px;
         }
 
-        /* CURRENT RATE */
-
-        .rate-card {
-            position: relative;
-
-            overflow: hidden;
-
-            padding: 18px;
-
-            margin-bottom: 18px;
-
-            border-radius: 17px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(56,189,248,0.12),
-                    rgba(2,6,23,0.35)
-                );
-
-            border: 1px solid
-                rgba(56,189,248,0.20);
+        .back-btn {
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 14px;
+            background: rgba(255,255,255,.06);
+            color: #fff;
+            cursor: pointer;
+            font-size: 20px;
         }
 
-        .rate-card::after {
-            content: "";
+        .title-area h1 {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
 
-            position: absolute;
+        .title-area p {
+            font-size: 13px;
+            color: #8fa2b8;
+        }
 
-            width: 130px;
-            height: 130px;
+        .card {
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.10);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 22px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 15px 45px rgba(0,0,0,.20);
+        }
 
-            right: -65px;
-            top: -65px;
-
-            border-radius: 50%;
-
-            background:
-                rgba(56,189,248,0.08);
+        .rate-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .rate-label {
-            position: relative;
-            z-index: 1;
-
-            color: var(--muted);
-
-            font-size: 0.68rem;
-
-            text-transform: uppercase;
-
-            letter-spacing: 0.1em;
+            color: #9eb0c4;
+            font-size: 13px;
+            margin-bottom: 7px;
         }
 
         .rate-value {
-            position: relative;
-            z-index: 1;
-
-            margin-top: 6px;
-
-            color: var(--blue);
-
-            font-size: 2rem;
-
-            line-height: 1;
-
-            font-weight: 850;
-        }
-
-        .rate-help {
-            position: relative;
-            z-index: 1;
-
-            margin-top: 8px;
-
-            color: var(--muted);
-
-            font-size: 0.7rem;
-        }
-
-        /* FORM */
-
-        .form-group {
-            margin-bottom: 17px;
-        }
-
-        .label {
-            display: block;
-
-            margin-bottom: 7px;
-
-            color: #cbd5e1;
-
-            font-size: 0.73rem;
-
+            font-size: 30px;
             font-weight: 700;
         }
 
-        .input,
-        .textarea {
-            width: 100%;
-
-            color: var(--white);
-
-            background:
-                rgba(2,6,23,0.55);
-
-            border: 1px solid
-                rgba(148,163,184,0.15);
-
-            outline: none;
-
+        .rate-badge {
+            padding: 9px 14px;
             border-radius: 12px;
-
-            transition: 0.2s ease;
+            background: rgba(0, 220, 160, .12);
+            border: 1px solid rgba(0, 220, 160, .25);
+            color: #4ff0bd;
+            font-weight: 700;
         }
 
-        .input {
-            height: 46px;
-
-            padding: 0 13px;
-
-            font-size: 0.88rem;
+        .field {
+            margin-bottom: 18px;
         }
 
-        .textarea {
-            min-height: 115px;
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b7c5d6;
+            font-size: 14px;
+        }
 
-            padding: 12px 13px;
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid rgba(255,255,255,.12);
+            outline: none;
+            border-radius: 14px;
+            background: rgba(0,0,0,.20);
+            color: #fff;
+            padding: 14px;
+            font-size: 15px;
+        }
 
+        input:focus,
+        textarea:focus {
+            border-color: rgba(0, 210, 255, .55);
+        }
+
+        textarea {
+            min-height: 120px;
             resize: vertical;
-
-            font-size: 0.82rem;
-
-            line-height: 1.55;
+            line-height: 1.5;
         }
-
-        .input:focus,
-        .textarea:focus {
-            border-color:
-                rgba(56,189,248,0.45);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(56,189,248,0.07);
-        }
-
-        .input-wrap {
-            position: relative;
-        }
-
-        .percent-symbol {
-            position: absolute;
-
-            right: 14px;
-            top: 50%;
-
-            transform: translateY(-50%);
-
-            color: var(--blue);
-
-            font-weight: 800;
-
-            pointer-events: none;
-        }
-
-        /* SAVE */
 
         .save-btn {
             width: 100%;
-
-            min-height: 48px;
-
             border: none;
-
-            border-radius: 13px;
-
-            color: #082f49;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #7dd3fc,
-                    #38bdf8
-                );
-
-            font-size: 0.85rem;
-
-            font-weight: 850;
-
+            border-radius: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #00b8ff, #00d79b);
+            color: #001018;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
-
-            box-shadow:
-                0 8px 25px
-                rgba(56,189,248,0.16);
-
-            transition: 0.18s ease;
-        }
-
-        .save-btn:active {
-            transform: scale(0.98);
         }
 
         .save-btn:disabled {
-            opacity: 0.55;
-
-            cursor: wait;
+            opacity: .55;
+            cursor: not-allowed;
         }
-
-        /* MESSAGE */
 
         .message {
             display: none;
-
-            margin-top: 13px;
-
-            padding: 11px 12px;
-
-            border-radius: 11px;
-
-            font-size: 0.74rem;
-
-            line-height: 1.45;
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         .message.success {
             display: block;
-
-            color: var(--green);
-
-            background:
-                rgba(52,211,153,0.07);
-
-            border: 1px solid
-                rgba(52,211,153,0.18);
+            background: rgba(0, 220, 150, .10);
+            border: 1px solid rgba(0, 220, 150, .25);
+            color: #5af2bd;
         }
 
         .message.error {
             display: block;
-
-            color: var(--red);
-
-            background:
-                rgba(251,113,133,0.07);
-
-            border: 1px solid
-                rgba(251,113,133,0.18);
+            background: rgba(255, 70, 90, .10);
+            border: 1px solid rgba(255, 70, 90, .25);
+            color: #ff8b9a;
         }
 
-        /* LOADING */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat {
+            padding: 15px;
+            border-radius: 16px;
+            background: rgba(255,255,255,.045);
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #91a3b7;
+            margin-bottom: 7px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
 
         .loading {
-            text-align: center;
-
-            padding: 45px 20px;
-
-            color: var(--muted);
-
-            font-size: 0.78rem;
+            opacity: .55;
+            pointer-events: none;
         }
 
-        .spinner {
-            width: 34px;
-            height: 34px;
-
-            margin: 0 auto 13px;
-
-            border-radius: 50%;
-
-            border:
-                3px solid
-                rgba(255,255,255,0.08);
-
-            border-top-color:
-                var(--blue);
-
-            animation:
-                spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* MOBILE */
-
-        @media (max-width: 360px) {
-
+        @media (max-width: 420px) {
             body {
-                padding: 9px;
-            }
-
-            .header {
-                padding: 13px;
+                padding: 14px;
             }
 
             .card {
@@ -483,11 +213,7 @@
             }
 
             .rate-value {
-                font-size: 1.8rem;
-            }
-
-            .brand-title {
-                font-size: 0.86rem;
+                font-size: 25px;
             }
         }
     </style>
@@ -497,266 +223,368 @@
 
 <div class="container">
 
-    <header class="header">
+    <div class="topbar">
+        <button class="back-btn" onclick="goBack()">‹</button>
 
-        <div class="brand">
-
-            <div class="brand-title">
-                AL-HUDA TECH GLOBAL
-            </div>
-
-            <div class="brand-subtitle">
-                Referral Program Control
-            </div>
-
+        <div class="title-area">
+            <h1>Referral Settings</h1>
+            <p>Manage referral commission settings</p>
         </div>
+    </div>
 
-        <a
-            href="/admin/index.html"
-            class="back-btn">
-
-            <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-
-                <path d="M19 12H5"></path>
-                <path d="M12 19l-7-7 7-7"></path>
-
-            </svg>
-
-            Back
-
-        </a>
-
-    </header>
-
-
-    <main class="card">
-
-        <div class="title">
-            Referral Settings
-        </div>
-
-        <div class="description">
-            Control the direct referral commission percentage and the
-            description displayed to users.
-        </div>
-
-
-        <!-- Current Percentage -->
-
-        <div class="rate-card">
-
-            <div class="rate-label">
-                Current Commission
+    <!-- Current Rate -->
+    <div class="card">
+        <div class="rate-box">
+            <div>
+                <div class="rate-label">Current Commission</div>
+                <div class="rate-value" id="currentRate">Loading...</div>
             </div>
 
-            <div
-                class="rate-value"
-                id="current-rate">
-
-                5%
-
-            </div>
-
-            <div class="rate-help">
-                This percentage will be applied to eligible new balance
-                credits of directly referred users.
-            </div>
-
+            <div class="rate-badge">REFERRAL</div>
         </div>
+    </div>
 
+    <!-- Settings -->
+    <div class="card">
 
-        <!-- Percentage -->
-
-        <div class="form-group">
-
-            <label class="label">
-                Referral Commission Percentage
+        <div class="field">
+            <label for="percentage">
+                Commission Percentage
             </label>
 
-            <div class="input-wrap">
-
-                <input
-                    type="number"
-                    id="percentage"
-                    class="input"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    placeholder="5.00"
-                >
-
-                <span class="percent-symbol">
-                    %
-                </span>
-
-            </div>
-
+            <input
+                type="number"
+                id="percentage"
+                min="0"
+                max="100"
+                step="0.01"
+                placeholder="5.00"
+            >
         </div>
 
-
-        <!-- Description -->
-
-        <div class="form-group">
-
-            <label class="label">
+        <div class="field">
+            <label for="description">
                 Referral Description
             </label>
 
             <textarea
                 id="description"
-                class="textarea"
-                maxlength="1000"
-                placeholder="Enter referral program description..."
+                placeholder="Enter referral description..."
             ></textarea>
-
         </div>
-
 
         <button
-            type="button"
-            id="save-btn"
-            class="save-btn">
-
+            class="save-btn"
+            id="saveBtn"
+            onclick="saveSettings()"
+        >
             Save Referral Settings
-
         </button>
 
+        <div id="message" class="message"></div>
 
-        <div
-            id="message"
-            class="message">
+    </div>
+
+    <!-- Statistics -->
+    <div class="card">
+
+        <div class="rate-label" style="margin-bottom:14px;">
+            Referral Statistics
         </div>
 
-    </main>
+        <div class="stats-grid">
+
+            <div class="stat">
+                <div class="stat-label">
+                    Total Referrals
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="totalReferrals"
+                >
+                    0
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">
+                    Total Commission
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="totalCommission"
+                >
+                    0.00
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">
+                    Commission Records
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="commissionCount"
+                >
+                    0
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">
+                    Status
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="statusText"
+                >
+                    Active
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
 
 <script>
+    const tg = window.Telegram?.WebApp;
 
-    /* =========================================
-       TELEGRAM
-    ========================================= */
-
-    const tg =
-        window.Telegram.WebApp;
-
-    tg.ready();
-    tg.expand();
+    if (tg) {
+        tg.ready();
+        tg.expand();
+    }
 
 
-    const tgUser =
-        tg.initDataUnsafe?.user;
+    // --------------------------------------------------
+    // Telegram User
+    // --------------------------------------------------
 
-    const adminId =
-        tgUser?.id || null;
+    function getTelegramId() {
+
+        if (
+            tg &&
+            tg.initDataUnsafe &&
+            tg.initDataUnsafe.user &&
+            tg.initDataUnsafe.user.id
+        ) {
+            return String(tg.initDataUnsafe.user.id);
+        }
+
+        return null;
+    }
 
 
-    /* =========================================
-       ELEMENTS
-    ========================================= */
+    // --------------------------------------------------
+    // Elements
+    // --------------------------------------------------
 
     const percentageInput =
-        document.getElementById('percentage');
+        document.getElementById("percentage");
 
     const descriptionInput =
-        document.getElementById('description');
+        document.getElementById("description");
 
     const currentRate =
-        document.getElementById('current-rate');
+        document.getElementById("currentRate");
 
-    const saveButton =
-        document.getElementById('save-btn');
+    const saveBtn =
+        document.getElementById("saveBtn");
 
-    const messageBox =
-        document.getElementById('message');
+    const message =
+        document.getElementById("message");
+
+    const totalReferrals =
+        document.getElementById("totalReferrals");
+
+    const totalCommission =
+        document.getElementById("totalCommission");
+
+    const commissionCount =
+        document.getElementById("commissionCount");
+
+    const statusText =
+        document.getElementById("statusText");
 
 
-    /* =========================================
-       MESSAGE
-    ========================================= */
+    // --------------------------------------------------
+    // Message
+    // --------------------------------------------------
 
     function showMessage(text, type) {
 
-        messageBox.textContent = text;
+        message.textContent = text;
 
-        messageBox.className =
-            `message ${type}`;
+        message.className =
+            "message " + type;
 
     }
 
 
-    /* =========================================
-       LOAD SETTINGS
-       
-       Backend endpoint will be connected
-       in the next step.
-    ========================================= */
+    // --------------------------------------------------
+    // Load Settings
+    // --------------------------------------------------
 
     async function loadSettings() {
 
-        /*
-         * We intentionally do not invent the
-         * existing API endpoint here.
-         *
-         * The next step will connect this page
-         * to your actual combined API.
-         */
+        const telegramId = getTelegramId();
 
-        percentageInput.value = '5.00';
-
-        descriptionInput.value =
-            'Invite friends and earn commission whenever they receive new balance.';
-
-        currentRate.textContent =
-            '5%';
-    }
-
-
-    /* =========================================
-       SAVE SETTINGS
-    ========================================= */
-
-    async function saveSettings() {
-
-        if (!adminId) {
+        if (!telegramId) {
 
             showMessage(
-                'Please open this page through the Telegram Mini App.',
-                'error'
+                "Telegram user information was not found.",
+                "error"
             );
 
             return;
         }
 
+        try {
 
-        const percentage =
-            parseFloat(
-                percentageInput.value
+            const response = await fetch(
+                `/api/referral?action=admin-get&telegram_id=${encodeURIComponent(telegramId)}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
             );
 
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+
+                throw new Error(
+                    result.message ||
+                    "Failed to load referral settings."
+                );
+            }
+
+            const settings = result.settings;
+
+            const percentage =
+                Number(settings.percentage || 0);
+
+            percentageInput.value =
+                percentage.toFixed(2);
+
+            descriptionInput.value =
+                settings.description || "";
+
+            currentRate.textContent =
+                percentage.toFixed(2) + "%";
+
+            await loadStatistics();
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                error.message ||
+                "Failed to load referral settings.",
+                "error"
+            );
+        }
+    }
+
+
+    // --------------------------------------------------
+    // Load Statistics
+    // --------------------------------------------------
+
+    async function loadStatistics() {
+
+        const telegramId = getTelegramId();
+
+        if (!telegramId) return;
+
+        try {
+
+            const response = await fetch(
+                `/api/referral?action=admin-stats&telegram_id=${encodeURIComponent(telegramId)}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                return;
+            }
+
+            const stats =
+                result.statistics || {};
+
+            totalReferrals.textContent =
+                Number(stats.total_referrals || 0);
+
+            totalCommission.textContent =
+                Number(stats.total_commissions || 0)
+                    .toFixed(2);
+
+            commissionCount.textContent =
+                Number(stats.commission_count || 0);
+
+            statusText.textContent = "Active";
+
+        } catch (error) {
+
+            console.error(
+                "Statistics error:",
+                error
+            );
+        }
+    }
+
+
+    // --------------------------------------------------
+    // Save Settings
+    // --------------------------------------------------
+
+    async function saveSettings() {
+
+        const telegramId = getTelegramId();
+
+        if (!telegramId) {
+
+            showMessage(
+                "Telegram user information was not found.",
+                "error"
+            );
+
+            return;
+        }
+
+        const percentage =
+            Number(percentageInput.value);
 
         const description =
             descriptionInput.value.trim();
 
 
+        // Validation
+
         if (
-            Number.isNaN(percentage) ||
+            !Number.isFinite(percentage) ||
             percentage < 0 ||
             percentage > 100
         ) {
 
             showMessage(
-                'Commission percentage must be between 0 and 100.',
-                'error'
+                "Commission percentage must be between 0 and 100.",
+                "error"
             );
 
             return;
@@ -766,64 +594,148 @@
         if (!description) {
 
             showMessage(
-                'Referral description cannot be empty.',
-                'error'
+                "Referral description is required.",
+                "error"
             );
 
             return;
         }
 
 
-        /*
-         * API connection will be added
-         * in the next backend step.
-         */
+        if (description.length > 2000) {
 
-        showMessage(
-            'The settings form is ready. Backend connection will be enabled in the next step.',
-            'success'
-        );
+            showMessage(
+                "Referral description is too long.",
+                "error"
+            );
 
+            return;
+        }
+
+
+        // Loading state
+
+        saveBtn.disabled = true;
+
+        saveBtn.textContent =
+            "Saving...";
+
+        message.className =
+            "message";
+
+        try {
+
+            const response = await fetch(
+                "/api/referral?action=admin-update",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        telegram_id:
+                            telegramId,
+
+                        percentage:
+                            percentage,
+
+                        description:
+                            description
+
+                    })
+                }
+            );
+
+
+            const result =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result.message ||
+                    "Failed to save referral settings."
+                );
+            }
+
+
+            // Update UI
+
+            const saved =
+                result.settings || {};
+
+            const savedPercentage =
+                Number(
+                    saved.percentage ??
+                    percentage
+                );
+
+            percentageInput.value =
+                savedPercentage.toFixed(2);
+
+            descriptionInput.value =
+                saved.description ??
+                description;
+
+            currentRate.textContent =
+                savedPercentage.toFixed(2) + "%";
+
+
+            showMessage(
+                result.message ||
+                "Referral settings updated successfully.",
+                "success"
+            );
+
+
+            await loadStatistics();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                error.message ||
+                "Failed to save referral settings.",
+                "error"
+            );
+
+        } finally {
+
+            saveBtn.disabled = false;
+
+            saveBtn.textContent =
+                "Save Referral Settings";
+        }
     }
 
 
-    /* =========================================
-       EVENTS
-    ========================================= */
+    // --------------------------------------------------
+    // Back
+    // --------------------------------------------------
 
-    saveButton.addEventListener(
-        'click',
-        saveSettings
-    );
+    function goBack() {
 
-
-    percentageInput.addEventListener(
-        'input',
-        () => {
-
-            const value =
-                parseFloat(
-                    percentageInput.value
-                );
-
-            if (
-                !Number.isNaN(value) &&
-                value >= 0 &&
-                value <= 100
-            ) {
-
-                currentRate.textContent =
-                    `${value}%`;
-
-            }
-
-        }
-    );
+        window.location.href =
+            "/admin/index.html";
+    }
 
 
-    /* =========================================
-       START
-    ========================================= */
+    // --------------------------------------------------
+    // Start
+    // --------------------------------------------------
 
     loadSettings();
 
