@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>AL-HUDA TECH GLOBAL - Withdrawal Management</title>
 
@@ -16,319 +16,314 @@
 }
 
 body{
-    font-family:Arial,Helvetica,sans-serif;
     background:#050914;
     color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
     min-height:100vh;
 }
 
 .container{
     max-width:850px;
-    width:100%;
     margin:auto;
-    padding:14px;
+    padding:30px 18px;
 }
 
-.header{
-    background:rgba(17,28,50,.95);
-    border:1px solid rgba(255,255,255,.07);
-    border-radius:18px;
-    padding:15px;
+.header-card{
+    background:#101a2e;
+    border:1px solid #253652;
+    border-radius:20px;
+    padding:18px;
     display:flex;
     align-items:center;
-    gap:12px;
-    margin-bottom:15px;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
 }
 
 .logo{
-    width:45px;
-    height:45px;
-    border-radius:13px;
-    background:linear-gradient(135deg,#0c9de5,#086fa8);
+    width:56px;
+    height:56px;
+    border-radius:16px;
+    background:linear-gradient(
+        135deg,
+        #0ba6e7,
+        #087fc0
+    );
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:21px;
-    font-weight:800;
+    font-size:25px;
+    font-weight:900;
 }
 
-.title{
-    flex:1;
+.brand h1{
+    font-size:20px;
+    color:#38baff;
 }
 
-.title h1{
-    color:#48bbff;
-    font-size:17px;
+.brand p{
+    color:#8593a8;
+    font-size:13px;
+    margin-top:5px;
 }
 
-.title p{
-    color:#8393a8;
-    font-size:11px;
-    margin-top:4px;
-}
-
-.back-btn,
-.settings-btn{
-    border:0;
-    border-radius:10px;
+.back{
+    background:#29374e;
     color:#fff;
-    padding:10px 12px;
-    cursor:pointer;
+    border:0;
+    padding:11px 18px;
+    border-radius:12px;
     font-weight:700;
+    cursor:pointer;
 }
 
-.back-btn{
-    background:#253248;
+.actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin:20px 0;
 }
 
-.settings-btn{
-    background:#087eb9;
+.action{
+    height:50px;
+    border:0;
+    border-radius:13px;
+    background:#28364d;
+    color:#fff;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
 }
 
-.toolbar{
-    display:flex;
-    gap:8px;
+.action.primary{
+    background:#099bd5;
+}
+
+.message{
+    display:none;
+    padding:14px;
+    border-radius:12px;
     margin-bottom:15px;
+    font-size:14px;
 }
 
-.toolbar button{
-    flex:1;
+.message.error{
+    display:block;
+    background:#481f24;
+    border:1px solid #79343b;
+    color:#ff9da4;
+}
+
+.message.success{
+    display:block;
+    background:#103b2d;
+    border:1px solid #1d6a4e;
+    color:#69e5b0;
 }
 
 .card{
-    background:rgba(17,28,50,.94);
-    border:1px solid rgba(255,255,255,.07);
+    background:#101a2e;
+    border:1px solid #263753;
     border-radius:18px;
-    padding:16px;
-    margin-bottom:13px;
+    padding:18px;
+    margin-bottom:14px;
 }
 
 .card-top{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:10px;
+    gap:12px;
+    margin-bottom:14px;
 }
 
-.user-name{
-    color:#fff;
-    font-size:15px;
-    font-weight:700;
+.method{
+    color:#32baff;
+    font-size:17px;
+    font-weight:800;
 }
 
-.user-id{
-    color:#74869c;
+.pending{
+    background:#493d12;
+    color:#ffd95d;
+    padding:6px 10px;
+    border-radius:8px;
     font-size:11px;
-    margin-top:4px;
-}
-
-.status{
-    padding:5px 9px;
-    border-radius:7px;
-    background:#493811;
-    color:#ffd86d;
-    font-size:10px;
-    text-transform:uppercase;
-}
-
-.info-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    margin-top:13px;
+    font-weight:800;
 }
 
 .info{
-    background:#0a1423;
-    border:1px solid #213249;
-    border-radius:10px;
-    padding:10px;
-}
-
-.info span{
-    display:block;
-    color:#73869d;
-    font-size:10px;
-    margin-bottom:4px;
-}
-
-.info strong{
-    color:#dce7f4;
-    font-size:12px;
-    word-break:break-word;
-}
-
-.amount-box{
-    margin-top:10px;
-    background:#09273b;
-    border:1px solid #15506f;
-    border-radius:11px;
+    background:#0a1322;
+    border:1px solid #243550;
+    border-radius:13px;
     padding:12px;
 }
 
-.amount-row{
+.line{
     display:flex;
     justify-content:space-between;
-    padding:5px 0;
-    color:#93a8bc;
-    font-size:12px;
+    gap:15px;
+    padding:6px 0;
+    color:#8e9caf;
+    font-size:13px;
 }
 
-.amount-row strong{
+.line strong{
     color:#fff;
+    text-align:right;
+    word-break:break-word;
 }
 
-.net strong{
-    color:#4bc4ff;
-    font-size:15px;
+.actions-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:13px;
 }
 
-.actions{
-    display:flex;
-    gap:8px;
-    margin-top:12px;
-}
-
-.actions button{
-    flex:1;
-    height:42px;
+.approve,
+.reject{
+    height:45px;
     border:0;
-    border-radius:10px;
+    border-radius:11px;
     color:#fff;
     font-weight:800;
     cursor:pointer;
 }
 
 .approve{
-    background:#108252;
+    background:#087e58;
 }
 
 .reject{
-    background:#a8333c;
-}
-
-.actions button:disabled{
-    opacity:.5;
+    background:#a92e3c;
 }
 
 .empty{
     text-align:center;
-    padding:35px 10px;
-    color:#718399;
-    font-size:13px;
+    padding:50px 20px;
+    color:#8492a6;
 }
 
 .loading{
     text-align:center;
-    color:#7e90a7;
-    padding:25px;
-}
-
-.message{
-    display:none;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:13px;
-    font-size:13px;
-}
-
-.success{
-    display:block;
-    color:#65e4a1;
-    background:#103b2a;
-    border:1px solid #1f7651;
-}
-
-.error{
-    display:block;
-    color:#ff8d8d;
-    background:#421b1b;
-    border:1px solid #753333;
+    padding:40px;
+    color:#8595aa;
 }
 
 .modal{
     display:none;
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,.75);
-    z-index:999;
-    overflow:auto;
+    z-index:1000;
+    background:rgba(0,0,0,.78);
     padding:18px;
+    overflow:auto;
 }
 
 .modal-box{
+    width:100%;
     max-width:520px;
-    margin:35px auto;
-    background:#101a2c;
-    border:1px solid #283b55;
-    border-radius:18px;
-    padding:18px;
+    margin:30px auto;
+    background:#101a2e;
+    border:1px solid #2a3d5a;
+    border-radius:20px;
+    padding:20px;
 }
 
 .modal-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:18px;
+    margin-bottom:20px;
 }
 
-.modal-title{
-    font-size:17px;
-    font-weight:800;
+.modal-header h2{
+    font-size:19px;
 }
 
 .close{
-    width:35px;
-    height:35px;
+    width:38px;
+    height:38px;
     border:0;
-    border-radius:9px;
-    background:#27364c;
-    color:#fff;
-    font-size:18px;
-}
-
-label{
-    display:block;
-    color:#9eafc2;
-    font-size:12px;
-    margin-bottom:7px;
-}
-
-input{
-    width:100%;
-    height:46px;
     border-radius:10px;
-    border:1px solid #263852;
-    background:#0a1423;
+    background:#29374e;
     color:#fff;
-    padding:0 12px;
-    outline:none;
-    margin-bottom:14px;
+    font-size:20px;
+    cursor:pointer;
 }
 
-input:focus{
-    border-color:#159ddd;
+.form-group{
+    margin-bottom:15px;
 }
 
-.save-btn{
+.form-group label{
+    display:block;
+    margin-bottom:7px;
+    color:#ccd7e4;
+    font-size:13px;
+    font-weight:700;
+}
+
+.form-group input,
+.form-group textarea{
     width:100%;
-    height:47px;
-    border:0;
+    border:1px solid #30415d;
+    background:#0a1322;
+    color:#fff;
     border-radius:11px;
-    background:#098bc9;
+    padding:13px;
+    outline:none;
+    font-size:14px;
+}
+
+.form-group textarea{
+    min-height:85px;
+    resize:vertical;
+}
+
+.save{
+    width:100%;
+    height:48px;
+    border:0;
+    border-radius:12px;
+    background:#099bd4;
     color:#fff;
     font-weight:800;
+    cursor:pointer;
 }
 
-.settings-note{
-    background:#0a1423;
-    border:1px solid #23344b;
-    border-radius:10px;
-    padding:11px;
-    color:#788ba2;
-    font-size:11px;
-    line-height:1.5;
-    margin-bottom:15px;
+@media(max-width:550px){
+
+    .container{
+        padding:18px 12px;
+    }
+
+    .header-card{
+        padding:15px;
+    }
+
+    .brand h1{
+        font-size:17px;
+    }
+
+    .logo{
+        width:48px;
+        height:48px;
+    }
+
+    .actions{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .card{
+        padding:15px;
+    }
 }
 </style>
 </head>
@@ -337,93 +332,139 @@ input:focus{
 
 <div class="container">
 
-    <div class="header">
+    <div class="header-card">
 
-        <div class="logo">A</div>
+        <div class="brand">
 
-        <div class="title">
-            <h1>AL-HUDA TECH GLOBAL</h1>
-            <p>Withdrawal Management</p>
+            <div class="logo">
+                A
+            </div>
+
+            <div>
+                <h1>
+                    AL-HUDA TECH GLOBAL
+                </h1>
+
+                <p>
+                    Withdrawal Management
+                </p>
+            </div>
+
         </div>
 
-        <button class="back-btn" onclick="goBack()">
+        <button
+            class="back"
+            onclick="goBack()">
             Back
         </button>
 
     </div>
 
-    <div class="toolbar">
 
-        <button class="settings-btn" onclick="openSettings()">
+    <div class="actions">
+
+        <button
+            class="action primary"
+            onclick="openSettings()">
             Settings
         </button>
 
-        <button class="back-btn" onclick="loadWithdrawals()">
+        <button
+            class="action"
+            onclick="loadWithdrawals()">
             Refresh
         </button>
 
     </div>
 
-    <div id="message" class="message"></div>
 
-    <div id="withdrawalList">
+    <div
+        id="message"
+        class="message">
+    </div>
+
+
+    <div id="withdrawals">
         <div class="loading">
-            Loading withdrawals...
+            Loading withdrawal requests...
         </div>
     </div>
 
 </div>
 
-<div id="settingsModal" class="modal">
+
+<!-- SETTINGS MODAL -->
+
+<div
+    id="settingsModal"
+    class="modal">
 
     <div class="modal-box">
 
         <div class="modal-header">
 
-            <div class="modal-title">
+            <h2>
                 Withdrawal Settings
-            </div>
+            </h2>
 
-            <button class="close" onclick="closeSettings()">
+            <button
+                class="close"
+                onclick="closeSettings()">
                 ×
             </button>
 
         </div>
 
-        <div class="settings-note">
-            Changes made here will apply to new withdrawal requests.
-            Existing withdrawal records keep their original rate and charge.
+
+        <div class="form-group">
+
+            <label>
+                Minimum Withdrawal (USD)
+            </label>
+
+            <input
+                id="minimum"
+                type="number"
+                min="0.01"
+                step="0.01">
+
         </div>
 
-        <label>Minimum Withdrawal (USD)</label>
 
-        <input
-            type="number"
-            id="minWithdraw"
-            min="0.01"
-            step="0.01"
-        >
+        <div class="form-group">
 
-        <label>USD to BDT Rate</label>
+            <label>
+                USD to BDT Rate
+            </label>
 
-        <input
-            type="number"
-            id="usdRate"
-            min="0.01"
-            step="0.01"
-        >
+            <input
+                id="rate"
+                type="number"
+                min="0.01"
+                step="0.01">
 
-        <label>Withdrawal Charge (%)</label>
+        </div>
 
-        <input
-            type="number"
-            id="chargePercent"
-            min="0"
-            max="100"
-            step="0.01"
-        >
 
-        <button class="save-btn" onclick="saveSettings()">
+        <div class="form-group">
+
+            <label>
+                Withdrawal Charge (%)
+            </label>
+
+            <input
+                id="charge"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01">
+
+        </div>
+
+
+        <button
+            class="save"
+            onclick="saveSettings()">
             Save Settings
         </button>
 
@@ -431,451 +472,808 @@ input:focus{
 
 </div>
 
-<script>
-const tg = window.Telegram && window.Telegram.WebApp
-    ? window.Telegram.WebApp
-    : null;
 
-if (tg){
+<!-- PROCESS MODAL -->
+
+<div
+    id="processModal"
+    class="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2 id="processTitle">
+                Process Withdrawal
+            </h2>
+
+            <button
+                class="close"
+                onclick="closeProcess()">
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Admin Note
+            </label>
+
+            <textarea
+                id="adminNote"
+                placeholder="Optional note">
+            </textarea>
+
+        </div>
+
+
+        <button
+            id="processButton"
+            class="save">
+            Confirm
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const tg =
+    window.Telegram &&
+    window.Telegram.WebApp
+        ? window.Telegram.WebApp
+        : null;
+
+if(tg){
     tg.ready();
     tg.expand();
 }
 
-const telegramId =
-    tg && tg.initDataUnsafe && tg.initDataUnsafe.user
-        ? String(tg.initDataUnsafe.user.id)
-        : "";
 
-let currentSettings = {
-    min_withdraw_usd:1,
-    usd_to_bdt_rate:100,
-    withdraw_charge_percent:5
-};
+const API =
+    "/api/withdraw";
+
+
+let adminId = "";
+
+let selectedWithdrawalId = 0;
+
+let selectedAction = "";
+
+
+function getTelegramId(){
+
+    if(
+        tg &&
+        tg.initDataUnsafe &&
+        tg.initDataUnsafe.user &&
+        tg.initDataUnsafe.user.id
+    ){
+        return String(
+            tg.initDataUnsafe.user.id
+        );
+    }
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    return (
+        params.get("telegram_id") ||
+        ""
+    );
+}
+
 
 function goBack(){
 
-    if (history.length > 1){
-        history.back();
-    }else if(tg){
-        tg.close();
+    if(
+        document.referrer &&
+        new URL(
+            document.referrer
+        ).origin ===
+        window.location.origin
+    ){
+        window.history.back();
+        return;
     }
+
+    window.location.href = "/";
 }
 
-function showMessage(text,type){
+
+function showMessage(
+    text,
+    type
+){
 
     const box =
-        document.getElementById("message");
+        document.getElementById(
+            "message"
+        );
+
+    box.textContent = text;
 
     box.className =
         "message " + type;
-
-    box.textContent = text;
 }
 
-function clearMessage(){
-
-    const box =
-        document.getElementById("message");
-
-    box.className = "message";
-    box.textContent = "";
-}
-
-async function api(url,options={}){
-
-    const response =
-        await fetch(url,{
-            ...options,
-            headers:{
-                "Content-Type":"application/json",
-                ...(options.headers || {})
-            }
-        });
-
-    let data;
-
-    try{
-        data = await response.json();
-    }catch(e){
-        throw new Error("Invalid server response.");
-    }
-
-    if (!response.ok || data.success === false){
-        throw new Error(
-            data.message || "Request failed."
-        );
-    }
-
-    return data;
-}
 
 async function loadWithdrawals(){
 
-    clearMessage();
-
     const box =
-        document.getElementById("withdrawalList");
+        document.getElementById(
+            "withdrawals"
+        );
 
     box.innerHTML =
-        '<div class="loading">Loading withdrawals...</div>';
+        `<div class="loading">
+            Loading withdrawal requests...
+        </div>`;
 
-    try{
 
-        const data =
-            await api(
-                "/api/admin/withdraw?action=list&telegram_id="
-                + encodeURIComponent(telegramId)
+    try {
+
+        if(!adminId){
+
+            throw new Error(
+                "Admin Telegram account was not found."
+            );
+        }
+
+
+        const response =
+            await fetch(
+                `${API}?action=admin-list&telegram_id=${encodeURIComponent(adminId)}`,
+                {
+                    cache:"no-store"
+                }
             );
 
-        const list =
-            Array.isArray(data.withdrawals)
-                ? data.withdrawals
-                : [];
 
-        if (data.settings){
+        const data =
+            await response.json();
 
-            currentSettings = {
-                min_withdraw_usd:
-                    Number(data.settings.min_withdraw_usd) || 1,
 
-                usd_to_bdt_rate:
-                    Number(data.settings.usd_to_bdt_rate) || 100,
+        if(
+            !response.ok ||
+            !data.success
+        ){
 
-                withdraw_charge_percent:
-                    Number(data.settings.withdraw_charge_percent) || 5
-            };
-
-            fillSettings();
+            throw new Error(
+                data.message ||
+                `Server returned HTTP ${response.status}.`
+            );
         }
 
-        if (!list.length){
 
-            box.innerHTML =
-                '<div class="card">' +
-                '<div class="empty">No withdrawal requests found.</div>' +
-                '</div>';
+        renderWithdrawals(
+            data.withdrawals || []
+        );
 
-            return;
-        }
+
+    } catch(error){
 
         box.innerHTML =
-            list.map(renderWithdrawal).join("");
-
-    }catch(error){
-
-        box.innerHTML = "";
-
-        showMessage(error.message,"error");
+            `<div class="message error">
+                ${escapeHtml(
+                    error.message
+                )}
+            </div>`;
     }
 }
 
-function renderWithdrawal(item){
 
-    const status =
-        String(item.status || "pending").toLowerCase();
+function renderWithdrawals(rows){
 
-    const isPending =
-        status === "pending";
+    const box =
+        document.getElementById(
+            "withdrawals"
+        );
 
-    const actionHtml =
-        isPending
-        ? `
-            <div class="actions">
+    if(!rows.length){
 
-                <button
-                    class="approve"
-                    onclick="processWithdrawal(${Number(item.id)},'approve')"
-                >
-                    Approve
-                </button>
+        box.innerHTML =
+            `<div class="empty">
+                No pending withdrawal requests.
+            </div>`;
 
-                <button
-                    class="reject"
-                    onclick="processWithdrawal(${Number(item.id)},'reject')"
-                >
-                    Reject
-                </button>
-
-            </div>
-          `
-        : `
-            <div style="
-                margin-top:12px;
-                text-align:center;
-                color:#71849a;
-                font-size:12px;
-            ">
-                This request has already been ${escapeHtml(status)}.
-            </div>
-          `;
-
-    return `
-        <div class="card">
-
-            <div class="card-top">
-
-                <div>
-                    <div class="user-name">
-                        ${escapeHtml(
-                            item.username ||
-                            item.first_name ||
-                            "User"
-                        )}
-                    </div>
-
-                    <div class="user-id">
-                        Telegram ID:
-                        ${escapeHtml(item.telegram_id || "")}
-                    </div>
-                </div>
-
-                <div class="status">
-                    ${escapeHtml(status)}
-                </div>
-
-            </div>
-
-            <div class="info-grid">
-
-                <div class="info">
-                    <span>Method</span>
-                    <strong>
-                        ${escapeHtml(item.method || "")}
-                    </strong>
-                </div>
-
-                <div class="info">
-                    <span>Account / Wallet</span>
-                    <strong>
-                        ${escapeHtml(item.account_number || "")}
-                    </strong>
-                </div>
-
-                <div class="info">
-                    <span>USD Amount</span>
-                    <strong>
-                        $${Number(item.amount_usd || 0).toFixed(2)}
-                    </strong>
-                </div>
-
-                <div class="info">
-                    <span>USD → BDT Rate</span>
-                    <strong>
-                        ৳${Number(item.usd_to_bdt_rate || 0).toFixed(2)}
-                    </strong>
-                </div>
-
-            </div>
-
-            <div class="amount-box">
-
-                <div class="amount-row">
-                    <span>Gross BDT</span>
-                    <strong>
-                        ৳${Number(item.gross_bdt || 0).toFixed(2)}
-                    </strong>
-                </div>
-
-                <div class="amount-row">
-                    <span>
-                        Charge (${Number(item.charge_percent || 0).toFixed(2)}%)
-                    </span>
-
-                    <strong>
-                        ৳${Number(item.charge_bdt || 0).toFixed(2)}
-                    </strong>
-                </div>
-
-                <div class="amount-row net">
-                    <span>Net Amount</span>
-                    <strong>
-                        ৳${Number(item.net_bdt || 0).toFixed(2)}
-                    </strong>
-                </div>
-
-            </div>
-
-            ${actionHtml}
-
-        </div>
-    `;
-}
-
-async function processWithdrawal(id,action){
-
-    if (!id){
         return;
     }
 
-    const text =
+
+    box.innerHTML =
+        rows.map(row => {
+
+            const crypto =
+                row.method ===
+                    "USDT-BEP20" ||
+                row.method ===
+                    "USDT-TRC20";
+
+
+            return `
+                <div
+                    class="card"
+                    id="withdrawal-${Number(row.id)}">
+
+                    <div class="card-top">
+
+                        <div class="method">
+                            ${escapeHtml(
+                                row.method
+                            )}
+                        </div>
+
+                        <div class="pending">
+                            PENDING
+                        </div>
+
+                    </div>
+
+
+                    <div class="info">
+
+                        <div class="line">
+                            <span>User ID</span>
+                            <strong>
+                                ${escapeHtml(
+                                    row.telegram_id
+                                )}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>
+                                ${crypto
+                                    ? "Wallet Address"
+                                    : "Account Number"}
+                            </span>
+
+                            <strong>
+                                ${escapeHtml(
+                                    row.account_number
+                                )}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>USD Amount</span>
+
+                            <strong>
+                                $${Number(
+                                    row.amount_usd
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>Rate</span>
+
+                            <strong>
+                                1 USD = ৳${Number(
+                                    row.usd_to_bdt_rate
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>Gross BDT</span>
+
+                            <strong>
+                                ৳${Number(
+                                    row.gross_bdt
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>Charge</span>
+
+                            <strong>
+                                ${Number(
+                                    row.charge_percent
+                                ).toFixed(2)}%
+                                -
+                                ৳${Number(
+                                    row.charge_bdt
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>Net BDT</span>
+
+                            <strong>
+                                ৳${Number(
+                                    row.net_bdt
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div class="line">
+                            <span>Created</span>
+
+                            <strong>
+                                ${escapeHtml(
+                                    formatDate(
+                                        row.created_at
+                                    )
+                                )}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="actions-row">
+
+                        <button
+                            class="approve"
+                            onclick="openProcess(
+                                ${Number(row.id)},
+                                'approve'
+                            )">
+                            Approve
+                        </button>
+
+                        <button
+                            class="reject"
+                            onclick="openProcess(
+                                ${Number(row.id)},
+                                'reject'
+                            )">
+                            Reject
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
+}
+
+
+function openProcess(
+    id,
+    action
+){
+
+    selectedWithdrawalId =
+        Number(id);
+
+    selectedAction =
+        action;
+
+
+    document.getElementById(
+        "processTitle"
+    ).textContent =
         action === "approve"
-            ? "Approve this withdrawal request?"
-            : "Reject this withdrawal request?";
+            ? "Approve Withdrawal"
+            : "Reject Withdrawal";
 
-    if (!confirm(text)){
+
+    document.getElementById(
+        "processButton"
+    ).textContent =
+        action === "approve"
+            ? "Confirm Approval"
+            : "Confirm Rejection";
+
+
+    document.getElementById(
+        "adminNote"
+    ).value = "";
+
+
+    document.getElementById(
+        "processModal"
+    ).style.display =
+        "block";
+}
+
+
+function closeProcess(){
+
+    document.getElementById(
+        "processModal"
+    ).style.display =
+        "none";
+
+    selectedWithdrawalId = 0;
+    selectedAction = "";
+}
+
+
+document.getElementById(
+    "processButton"
+).addEventListener(
+    "click",
+    processWithdrawal
+);
+
+
+async function processWithdrawal(){
+
+    if(
+        !selectedWithdrawalId ||
+        !selectedAction
+    ){
         return;
     }
 
-    try{
 
-        await api("/api/admin/withdraw",{
-            method:"POST",
+    const button =
+        document.getElementById(
+            "processButton"
+        );
 
-            body:JSON.stringify({
-                action:"process",
-                telegram_id:telegramId,
-                withdrawal_id:id,
-                decision:action
-            })
-        });
+    const note =
+        document.getElementById(
+            "adminNote"
+        ).value.trim();
+
+
+    button.disabled = true;
+    button.textContent =
+        "Processing...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                API,
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        action:
+                            "admin-process",
+
+                        telegram_id:
+                            adminId,
+
+                        withdrawal_id:
+                            selectedWithdrawalId,
+
+                        process_action:
+                            selectedAction,
+
+                        admin_note:
+                            note
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            !response.ok ||
+            !data.success
+        ){
+
+            throw new Error(
+                data.message ||
+                `Server returned HTTP ${response.status}.`
+            );
+        }
+
+
+        closeProcess();
+
 
         showMessage(
-            action === "approve"
-                ? "Withdrawal approved successfully."
-                : "Withdrawal rejected successfully.",
+            data.message ||
+            "Withdrawal processed successfully.",
             "success"
         );
 
+
+        /*
+        Reload the pending list.
+        Because the processed request is no longer
+        pending, its buttons disappear automatically.
+        */
+
         await loadWithdrawals();
 
-    }catch(error){
 
-        showMessage(error.message,"error");
+    } catch(error){
+
+        showMessage(
+            error.message ||
+            "Unable to process withdrawal.",
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            selectedAction === "approve"
+                ? "Confirm Approval"
+                : "Confirm Rejection";
     }
 }
 
-function fillSettings(){
-
-    document.getElementById("minWithdraw").value =
-        Number(
-            currentSettings.min_withdraw_usd
-        ).toFixed(2);
-
-    document.getElementById("usdRate").value =
-        Number(
-            currentSettings.usd_to_bdt_rate
-        ).toFixed(2);
-
-    document.getElementById("chargePercent").value =
-        Number(
-            currentSettings.withdraw_charge_percent
-        ).toFixed(2);
-}
 
 async function openSettings(){
 
-    try{
+    try {
 
-        const data =
-            await api(
-                "/api/admin/withdraw?action=settings&telegram_id="
-                + encodeURIComponent(telegramId)
+        const response =
+            await fetch(
+                `${API}?action=admin-settings-get&telegram_id=${encodeURIComponent(adminId)}`,
+                {
+                    cache:"no-store"
+                }
             );
 
-        if (data.settings){
 
-            currentSettings = data.settings;
-            fillSettings();
+        const data =
+            await response.json();
+
+
+        if(
+            !response.ok ||
+            !data.success
+        ){
+
+            throw new Error(
+                data.message ||
+                "Unable to load settings."
+            );
         }
 
-        document.getElementById("settingsModal")
-            .style.display = "block";
 
-    }catch(error){
+        document.getElementById(
+            "minimum"
+        ).value =
+            Number(
+                data.settings.min_withdraw_usd
+            ).toFixed(2);
 
-        showMessage(error.message,"error");
+
+        document.getElementById(
+            "rate"
+        ).value =
+            Number(
+                data.settings.usd_to_bdt_rate
+            ).toFixed(2);
+
+
+        document.getElementById(
+            "charge"
+        ).value =
+            Number(
+                data.settings.withdraw_charge_percent
+            ).toFixed(2);
+
+
+        document.getElementById(
+            "settingsModal"
+        ).style.display =
+            "block";
+
+
+    } catch(error){
+
+        showMessage(
+            error.message ||
+            "Unable to load settings.",
+            "error"
+        );
     }
 }
 
+
 function closeSettings(){
 
-    document.getElementById("settingsModal")
-        .style.display = "none";
+    document.getElementById(
+        "settingsModal"
+    ).style.display =
+        "none";
 }
+
 
 async function saveSettings(){
 
-    const min =
+    const minimum =
         Number(
-            document.getElementById("minWithdraw").value
+            document.getElementById(
+                "minimum"
+            ).value
         );
 
     const rate =
         Number(
-            document.getElementById("usdRate").value
+            document.getElementById(
+                "rate"
+            ).value
         );
 
     const charge =
         Number(
-            document.getElementById("chargePercent").value
+            document.getElementById(
+                "charge"
+            ).value
         );
 
-    if (!Number.isFinite(min) || min <= 0){
+
+    if(
+        !Number.isFinite(minimum) ||
+        minimum <= 0
+    ){
+
         showMessage(
-            "Minimum withdrawal must be greater than 0.",
+            "Invalid minimum withdrawal.",
             "error"
         );
+
         return;
     }
 
-    if (!Number.isFinite(rate) || rate <= 0){
+
+    if(
+        !Number.isFinite(rate) ||
+        rate <= 0
+    ){
+
         showMessage(
-            "USD to BDT rate must be greater than 0.",
+            "Invalid USD to BDT rate.",
             "error"
         );
+
         return;
     }
 
-    if (
+
+    if(
         !Number.isFinite(charge) ||
         charge < 0 ||
         charge > 100
     ){
+
         showMessage(
             "Charge must be between 0 and 100.",
             "error"
         );
+
         return;
     }
 
-    try{
 
-        await api("/api/admin/withdraw",{
-            method:"POST",
+    const button =
+        document.querySelector(
+            ".save"
+        );
 
-            body:JSON.stringify({
-                action:"settings",
-                telegram_id:telegramId,
-                min_withdraw_usd:min,
-                usd_to_bdt_rate:rate,
-                withdraw_charge_percent:charge
-            })
-        });
+    button.disabled = true;
+    button.textContent =
+        "Saving...";
 
-        currentSettings = {
-            min_withdraw_usd:min,
-            usd_to_bdt_rate:rate,
-            withdraw_charge_percent:charge
-        };
+
+    try {
+
+        const response =
+            await fetch(
+                API,
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        action:
+                            "admin-settings-update",
+
+                        telegram_id:
+                            adminId,
+
+                        min_withdraw_usd:
+                            minimum,
+
+                        usd_to_bdt_rate:
+                            rate,
+
+                        withdraw_charge_percent:
+                            charge
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            !response.ok ||
+            !data.success
+        ){
+
+            throw new Error(
+                data.message ||
+                `Server returned HTTP ${response.status}.`
+            );
+        }
+
 
         closeSettings();
+
 
         showMessage(
             "Withdrawal settings updated successfully.",
             "success"
         );
 
+
         await loadWithdrawals();
 
-    }catch(error){
 
-        showMessage(error.message,"error");
+    } catch(error){
+
+        showMessage(
+            error.message ||
+            "Unable to save settings.",
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent =
+            "Save Settings";
     }
 }
 
+
+function formatDate(value){
+
+    if(!value){
+        return "-";
+    }
+
+    const date =
+        new Date(value);
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+        return String(value);
+    }
+
+    return date.toLocaleString();
+}
+
+
 function escapeHtml(value){
 
-    return String(value)
+    return String(value ?? "")
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
@@ -883,16 +1281,37 @@ function escapeHtml(value){
         .replaceAll("'","&#039;");
 }
 
-document.getElementById("settingsModal")
-    .addEventListener("click",function(e){
 
-        if (e.target === this){
+window.addEventListener(
+    "click",
+    function(event){
+
+        const settings =
+            document.getElementById(
+                "settingsModal"
+            );
+
+        const process =
+            document.getElementById(
+                "processModal"
+            );
+
+        if(event.target === settings){
             closeSettings();
         }
 
-    });
+        if(event.target === process){
+            closeProcess();
+        }
+    }
+);
+
+
+adminId =
+    getTelegramId();
 
 loadWithdrawals();
+
 </script>
 
 </body>
