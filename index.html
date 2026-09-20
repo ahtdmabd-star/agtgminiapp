@@ -10,14 +10,17 @@
 <body>
     <div class="container">
         <h2>Account Verification</h2>
+        
+        <!-- Loading Section -->
         <div id="loading-section">
             <div class="loader"></div>
-            <p>Checking status, please wait...</p>
+            <p>Checking your account and membership status...</p>
         </div>
 
+        <!-- Verification Section (If not joined) -->
         <div id="verify-section" class="hidden">
             <p style="color: #f87171;">⚠️ You have not joined our official channel and group yet!</p>
-            <p>Please join below to access the mini app:</p>
+            <p>To use this mini app, please join our official channel and group below:</p>
             <a href="https://t.me/AHTG_OFFICIAL" target="_blank" class="btn">📢 Official Channel</a>
             <a href="https://t.me/ahtgofic" target="_blank" class="btn">💬 Official Group</a>
             <button class="btn btn-success" onclick="checkMembershipAndLogin()">✅ I have joined, verify now</button>
@@ -25,7 +28,8 @@
     </div>
 
     <script>
-        const BACKEND_URL = 'https://ahtdma-star.vercel.app';
+        // আপনার ভেরসেলের লাইভ ব্যাকএন্ড লিংক এখানে সেট করা হলো
+        const BACKEND_URL = 'https://ahtdmabd-star-github-io.vercel.app';
 
         window.onload = function() {
             const tg = window.Telegram.WebApp;
@@ -63,7 +67,10 @@
             const tg = window.Telegram.WebApp;
             const telegramId = tg.initDataUnsafe?.user?.id;
 
-            if (!telegramId) return;
+            if (!telegramId) {
+                alert("Telegram user ID not found!");
+                return;
+            }
 
             const btn = document.querySelector('.btn-success');
             btn.innerText = "Verifying...";
@@ -81,7 +88,8 @@
                     btn.disabled = false;
                 }
             } catch (err) {
-                alert('Server connection error. Please try again.');
+                console.error('Connection error:', err);
+                alert('Server connection error. Please check your internet or backend deployment.');
                 btn.innerText = "✅ I have joined, verify now";
                 btn.disabled = false;
             }
