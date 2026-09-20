@@ -105,24 +105,40 @@
                 }
 
                 let html = '';
+                let pendingCount = 0;
+
                 data.deposits.forEach(dep => {
+                    // Only pending deposits can have action buttons.
+                    const status = String(dep.status || 'pending').toLowerCase();
+
+                    if (status !== 'pending') {
+                        return;
+                    }
+
+                    pendingCount++;
+
                     html += `
-                        <div class="deposit-card">
+                        <div class="deposit-card" id="deposit-card-${dep.id}">
                             <div class="deposit-row"><span class="label">User Telegram ID:</span><span class="val">${dep.telegram_id}</span></div>
                             <div class="deposit-row"><span class="label">Method:</span><span class="val" style="color: var(--accent-color);">${dep.method}</span></div>
                             <div class="deposit-row"><span class="label">Send Amount:</span><span class="val">${dep.send_amount}</span></div>
                             <div class="deposit-row"><span class="label">Will Get (USD):</span><span class="val" style="color: #34d399;">$${dep.get_amount}</span></div>
                             <div class="deposit-row"><span class="label">TrxID / Hash:</span><span class="trx-id">${dep.transaction_id}</span></div>
                             <div class="deposit-row"><span class="label">Time:</span><span class="val" style="font-size: 0.75rem; color: var(--text-muted);">${dep.created_at}</span></div>
-                            
-                            <div class="action-btns">
+
+                            <div class="action-btns" id="action-btns-${dep.id}">
                                 <button class="btn-approve" onclick="processDeposit(${dep.id}, 'approve')">Approve</button>
                                 <button class="btn-reject" onclick="processDeposit(${dep.id}, 'reject')">Reject</button>
                             </div>
                         </div>
                     `;
                 });
-                container.innerHTML = html;
+
+                if (pendingCount === 0) {
+                    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No pending deposit requests.</div>`;
+                } else {
+                    container.innerHTML = html;
+                }
             } catch (err) {
                 document.getElementById('deposits-container').innerHTML = `<div style="text-align: center; color: #ef4444;">Failed to load deposits.</div>`;
             }
@@ -138,9 +154,30 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ telegram_id: adminId, deposit_id: depositId, action: action })
                 });
+
                 const result = await res.json();
-                alert(result.message);
-                loadDeposits();
+
+                if (!res.ok || !result.success) {
+                    alert(result.message || "Action failed.");
+                    return;
+                }
+
+                alert(result.message || "Action completed successfully.");
+
+                // Remove the whole deposit card immediately after a successful action.
+                const card = document.getElementById(`deposit-card-${depositId}`);
+                if (card) {
+                    card.remove();
+                }
+
+                // If there are no pending cards left, show the empty message.
+                const container = document.getElementById('deposits-container');
+                if (!container.querySelector('.deposit-card')) {
+                    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No pending deposit requests.</div>`;
+                }
+
+                // Sync again with the database.
+                setTimeout(loadDeposits, 300);
             } catch (err) {
                 alert("Action failed.");
             }
