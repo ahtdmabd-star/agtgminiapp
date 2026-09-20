@@ -12,12 +12,12 @@
         <h2>Account Verification</h2>
         <div id="loading-section">
             <div class="loader"></div>
-            <p>Checking your account and membership status...</p>
+            <p>Checking status, please wait...</p>
         </div>
 
         <div id="verify-section" class="hidden">
             <p style="color: #f87171;">⚠️ You have not joined our official channel and group yet!</p>
-            <p>To use this mini app, please join our official channel and group below:</p>
+            <p>Please join below to access the mini app:</p>
             <a href="https://t.me/AHTG_OFFICIAL" target="_blank" class="btn">📢 Official Channel</a>
             <a href="https://t.me/ahtgofic" target="_blank" class="btn">💬 Official Group</a>
             <button class="btn btn-success" onclick="checkMembershipAndLogin()">✅ I have joined, verify now</button>
@@ -26,9 +26,8 @@
 
     <script>
         const BACKEND_URL = 'https://ahtdma-star.vercel.app';
-        let userTelegramId = null;
 
-        window.onload = async function() {
+        window.onload = function() {
             const tg = window.Telegram.WebApp;
             tg.expand();
 
@@ -39,8 +38,7 @@
                 return;
             }
 
-            userTelegramId = user.id;
-            verifyUserSession(userTelegramId);
+            verifyUserSession(user.id);
         };
 
         async function verifyUserSession(telegramId) {
@@ -62,16 +60,20 @@
         }
 
         async function checkMembershipAndLogin() {
+            const tg = window.Telegram.WebApp;
+            const telegramId = tg.initDataUnsafe?.user?.id;
+
+            if (!telegramId) return;
+
             const btn = document.querySelector('.btn-success');
             btn.innerText = "Verifying...";
             btn.disabled = true;
 
             try {
-                let response = await fetch(`${BACKEND_URL}/api/verify-membership?telegram_id=${userTelegramId}`);
+                let response = await fetch(`${BACKEND_URL}/api/verify-membership?telegram_id=${telegramId}`);
                 let data = await response.json();
 
                 if (data.success && data.isJoined) {
-                    alert('Verification successful!');
                     redirectToPanel(data.role || 'user');
                 } else {
                     alert('⚠️ You have not joined the channel or group yet! Please join and verify again.');
@@ -79,7 +81,7 @@
                     btn.disabled = false;
                 }
             } catch (err) {
-                alert('Server error occurred. Please try again later.');
+                alert('Server connection error. Please try again.');
                 btn.innerText = "✅ I have joined, verify now";
                 btn.disabled = false;
             }
