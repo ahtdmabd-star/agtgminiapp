@@ -715,7 +715,13 @@ async function loadInfo(){
 
     try {
 
-        fetch(`${API}?route=withdraw&action=info&telegram_id=${encodeURIComponent(telegramId)}`, { cache:"no-store" });
+        const response =
+            await fetch(
+                `${API}?route=withdraw&action=info&telegram_id=${encodeURIComponent(telegramId)}`,
+                {
+                    cache:"no-store"
+                }
+            );
 
         const data =
             await response.json();
@@ -979,7 +985,9 @@ async function submitWithdrawal(){
     try {
 
         const response =
-            await fetch(`${API}?route=withdraw`, {
+            await fetch(
+                `${API}?route=withdraw`,
+                {
                     method:"POST",
 
                     headers:{
@@ -1082,7 +1090,12 @@ async function openHistory(){
     try {
 
         const response =
-            await fetch(`${API}?route=withdraw&action=history&telegram_id=${encodeURIComponent(telegramId)}`, { cache:"no-store" });
+            await fetch(
+                `${API}?route=withdraw&action=history&telegram_id=${encodeURIComponent(telegramId)}`,
+                {
+                    cache:"no-store"
+                }
+            );
 
         const data =
             await response.json();
