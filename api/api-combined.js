@@ -215,6 +215,38 @@ async function withdrawGetSettings() {
     };
 }
 
+
+/* =====================================================================
+   FUTURE API EXTENSION AREA
+   ---------------------------------------------------------------------
+   Future API code should be added ONLY inside FUTURE_APIS below.
+
+   Frontend URL pattern:
+       /api/api-combined?route=YOUR_API_NAME
+
+   Example:
+       "hello": async ({ req, res, db, body, query, json }) => {
+           return json(res, 200, { success: true, message: "Hello" });
+       }
+
+   IMPORTANT:
+   - Do not edit the main dispatcher below.
+   - Do not create another API file for future additions.
+   - Each API name must be unique.
+   - Keep authentication/authorization checks inside the API handler.
+   ===================================================================== */
+
+const FUTURE_APIS = {
+    /*
+    "YOUR_API_NAME": async ({ req, res, db, body, query, json }) => {
+        // Paste your future API logic here.
+        return json(res, 200, {
+            success: true
+        });
+    },
+    */
+};
+
 async function withdrawCheckAdmin(telegramId) {
     if (!telegramId) {
         return null;
@@ -246,12 +278,36 @@ module.exports = async (req, res) => {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     const pathname = String(req.url || '').split('?')[0].replace(/\/+$/, '') || '/';
-    const route = pathname.replace(/^\/api\//, '').replace(/^\//, '');
+
+    // Supports BOTH:
+    // 1) Legacy URL: /api/check-verification
+    // 2) Single API URL: /api/api-combined?route=check-verification
+    const urlQuery = String(req.url || '').split('?')[1] || '';
+    const routeFromQuery = new URLSearchParams(urlQuery).get('route');
+
+    const route = routeFromQuery || pathname
+        .replace(/^\/api\//, '')
+        .replace(/^\//, '');
+
     let body = {};
 
     try {
         body = await getBody(req);
         const query = req.query || {};
+
+        // Future/custom APIs are resolved here automatically.
+        // Existing built-in APIs below remain unchanged.
+        const futureApi = FUTURE_APIS[route];
+        if (typeof futureApi === 'function') {
+            return await futureApi({
+                req,
+                res,
+                db,
+                body,
+                query,
+                json
+            });
+        }
 
         /* ============================ add-balance ============================ */
         if (route === 'add-balance') {
@@ -472,8 +528,7 @@ module.exports = async (req, res) => {
             body.action ||
             query.action ||
             "";
-
-        /*
+                           /*
         =====================================================
         USER INFO
         =====================================================
@@ -810,8 +865,6 @@ module.exports = async (req, res) => {
                 connection.release();
             }
         }
-
-
         /*
         =====================================================
         ADMIN LIST
@@ -1215,4 +1268,5 @@ module.exports = async (req, res) => {
         return json(res, 500, { success: false, message: error.message || 'Internal server error.' });
     }
 };
-              
+
+        
