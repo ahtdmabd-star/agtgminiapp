@@ -25,6 +25,8 @@
     </div>
 
     <script>
+        let userTelegramId = null;
+
         window.onload = async function() {
             const tg = window.Telegram.WebApp;
             tg.expand();
@@ -36,35 +38,61 @@
                 return;
             }
 
-            const telegramId = user.id;
-            verifyUserSession(telegramId);
+            userTelegramId = user.id;
+            verifyUserSession(userTelegramId);
         };
 
         async function verifyUserSession(telegramId) {
             try {
-                // এখানে আপনার ডাটাবেজ চেক করার লজিক বা API কল হবে
-                let response = await fetch(`https://your-api-or-database-url.com/check?telegram_id=${telegramId}`);
+                // ডাটাবেজ বা ব্যাকএন্ড থেকে ইউজারের স্ট্যাটাস চেক করার রিকোয়েস্ট
+                // এখানে আপনার বটের ব্যাকএন্ড বা ডাটাবেজ এপিআই লিংক বসবে
+                let response = await fetch(`https://your-bot-domain.com/api/check-user?telegram_id=${telegramId}`);
                 let data = await response.json();
 
                 if (data.exists && data.isJoined) {
-                    if (data.role === 'admin') {
-                        window.location.href = 'admin/index.html'; // অ্যাডমিন ফোল্ডারের ভেতর রিডাইরেক্ট
-                    } else {
-                        window.location.href = 'dashboard.html'; // ইউজার ড্যাশবোর্ড
-                    }
+                    redirectToPanel(data.role);
                 } else {
                     document.getElementById('loading-section').classList.add('hidden');
                     document.getElementById('verify-section').classList.remove('hidden');
                 }
             } catch (err) {
+                // যদি সরাসরি এপিআই কানেক্ট করা না থাকে, তবে বাইপাস রোধ করার জন্য ভেরিফাই সেকশন দেখাবে
                 document.getElementById('loading-section').classList.add('hidden');
                 document.getElementById('verify-section').classList.remove('hidden');
             }
         }
 
-        function checkMembershipAndLogin() {
-            alert('ভেরিফিকেশন সফল হয়েছে!');
-            location.reload();
+        async function checkMembershipAndLogin() {
+            const btn = document.querySelector('.btn-success');
+            btn.innerText = "যাচাই করা হচ্ছে...";
+            btn.disabled = true;
+
+            try {
+                // সার্ভারে রিকোয়েস্ট পাঠিয়ে রিয়েল-টাইম চেক করা যে ইউজার জয়েন করেছে কিনা
+                let response = await fetch(`https://your-bot-domain.com/api/verify-membership?telegram_id=${userTelegramId}`);
+                let data = await response.json();
+
+                if (data.success && data.isJoined) {
+                    alert('ভেরিফিকেশন সফল হয়েছে!');
+                    redirectToPanel(data.role);
+                } else {
+                    alert('⚠️ আপনি এখনো চ্যানেল বা গ্রুপে জয়েন করেননি! দয়া করে জয়েন করে আবার ভেরিফাই করুন।');
+                    btn.innerText = "✅ আমি জয়েন করেছি, ভেরিফাই করুন";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('সার্ভারে সমস্যা হচ্ছে। দয়া করে কিছুক্ষণ পর আবার চেষ্টা করুন।');
+                btn.innerText = "✅ আমি জয়েন করেছি, ভেরিফাই করুন";
+                btn.disabled = false;
+            }
+        }
+
+        function redirectToPanel(role) {
+            if (role === 'admin') {
+                window.location.href = 'admin/index.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
         }
     </script>
 </body>
