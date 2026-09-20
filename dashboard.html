@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - AL-HUDA TECH GLOBAL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>👤 ইউজার ড্যাশবোর্ড</h2>
+            <p><b>টেলিগ্রাম আইডি:</b> <span id="user-telegram-id">Loading...</span></p>
+            <p><b>ব্যালেন্স:</b> $<span id="user-balance">0.00</span> USD</p>
+            <p><b>মোট রেফারেল:</b> <span id="user-referrals">0</span> জন</p>
+        </div>
+
+        <div class="card">
+            <h3>🔗 আপনার রেফারেল লিংক</h3>
+            <input type="text" id="ref-link" readonly class="input-box" value="">
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-success" onclick="alert('ডিপোজিট সিস্টেম চালু আছে!')">ডিপোজিট</button>
+            <button class="btn btn-danger" onclick="alert('উইথড্র সিস্টেম চালু আছে!')">উইথড্র</button>
+        </div>
+
+        <button class="btn" style="margin-top: 15px; background: #9333ea;" onclick="alert('আপনি ইতিমধ্যে ড্যাশবোর্ডে আছেন!')">গো টু ড্যাশবোর্ড</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const tg = window.Telegram.WebApp;
+            const user = tg.initDataUnsafe?.user;
+            if(user) {
+                document.getElementById('user-telegram-id').innerText = user.id;
+                document.getElementById('ref-link').value = `https://t.me/ahtg_bd_bot?start=${user.id}`;
+            }
+        }
+    </script>
+</body>
+</html>
