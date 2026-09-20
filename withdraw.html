@@ -1086,6 +1086,15 @@ async function openHistory(){
             Loading withdrawal history...
         </div>`;
 
+    if(!telegramId){
+        document.getElementById(
+            "historyContent"
+        ).innerHTML =
+            `<div class="message error">
+                Telegram account information was not found.
+            </div>`;
+        return;
+    }
 
     try {
 
