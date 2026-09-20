@@ -1017,7 +1017,7 @@
 
             <!-- Dashboard Button -->
             <a
-                href="https://agtgminiapp.vercel.app/"
+                href="https://agtgminiapp.vercel.app/dashbord.html"
                 class="dashboard-btn">
 
                 <svg class="icon"
@@ -1263,10 +1263,9 @@
 
             try {
 
-                const response =
-                    await fetch(
-                        `/api/check-verification?telegram_id=${encodeURIComponent(tgUser.id)}`
-                    );
+                const response = await fetch(
+    `/api/api-combined?route=check-verification&telegram_id=${encodeURIComponent(tgUser.id)}`
+);
 
 
                 if (!response.ok) {
