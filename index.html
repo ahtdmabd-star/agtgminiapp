@@ -1,37 +1,25 @@
-<!DOCTYPE html>
+্<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AL-HUDA TECH GLOBAL - Verification</title>
+    <title>AL-HUDA TECH GLOBAL - Panel</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h2>Account Verification</h2>
-        
-        <!-- Loading Section -->
+        <h2>AL-HUDA TECH GLOBAL</h2>
         <div id="loading-section">
             <div class="loader"></div>
-            <p>Checking your account and membership status...</p>
-        </div>
-
-        <!-- Verification Section (If not joined) -->
-        <div id="verify-section" class="hidden">
-            <p style="color: #f87171;">⚠️ You have not joined our official channel and group yet!</p>
-            <p>To use this mini app, please join our official channel and group below:</p>
-            <a href="https://t.me/AHTG_OFFICIAL" target="_blank" class="btn">📢 Official Channel</a>
-            <a href="https://t.me/ahtgofic" target="_blank" class="btn">💬 Official Group</a>
-            <button class="btn btn-success" onclick="checkMembershipAndLogin()">✅ I have joined, verify now</button>
+            <p>Logging into your account...</p>
         </div>
     </div>
 
     <script>
-        // আপনার ভেরসেলের লাইভ ব্যাকএন্ড লিংক এখানে সেট করা হলো
         const BACKEND_URL = 'https://ahtdmabd-star-github-io.vercel.app';
 
-        window.onload = function() {
+        window.onload = async function() {
             const tg = window.Telegram.WebApp;
             tg.expand();
 
@@ -42,66 +30,24 @@
                 return;
             }
 
-            verifyUserSession(user.id);
-        };
-
-        async function verifyUserSession(telegramId) {
             try {
-                let response = await fetch(`${BACKEND_URL}/api/check-user?telegram_id=${telegramId}`);
+                let response = await fetch(`${BACKEND_URL}/api/check-user?telegram_id=${user.id}`);
                 let data = await response.json();
 
-                if (data.success && data.exists && data.isJoined) {
-                    redirectToPanel(data.role);
+                if (data.success) {
+                    if (data.role === 'admin') {
+                        window.location.href = 'admin/index.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
                 } else {
-                    document.getElementById('loading-section').classList.add('hidden');
-                    document.getElementById('verify-section').classList.remove('hidden');
+                    window.location.href = 'dashboard.html';
                 }
             } catch (err) {
-                console.error('Verification error:', err);
-                document.getElementById('loading-section').classList.add('hidden');
-                document.getElementById('verify-section').classList.remove('hidden');
-            }
-        }
-
-        async function checkMembershipAndLogin() {
-            const tg = window.Telegram.WebApp;
-            const telegramId = tg.initDataUnsafe?.user?.id;
-
-            if (!telegramId) {
-                alert("Telegram user ID not found!");
-                return;
-            }
-
-            const btn = document.querySelector('.btn-success');
-            btn.innerText = "Verifying...";
-            btn.disabled = true;
-
-            try {
-                let response = await fetch(`${BACKEND_URL}/api/verify-membership?telegram_id=${telegramId}`);
-                let data = await response.json();
-
-                if (data.success && data.isJoined) {
-                    redirectToPanel(data.role || 'user');
-                } else {
-                    alert('⚠️ You have not joined the channel or group yet! Please join and verify again.');
-                    btn.innerText = "✅ I have joined, verify now";
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                console.error('Connection error:', err);
-                alert('Server connection error. Please check your internet or backend deployment.');
-                btn.innerText = "✅ I have joined, verify now";
-                btn.disabled = false;
-            }
-        }
-
-        function redirectToPanel(role) {
-            if (role === 'admin') {
-                window.location.href = 'admin/index.html';
-            } else {
+                // কোনো কারণে এপিআই স্লো হলে বা এরর দিলে সরাসরি ড্যাশবোর্ডে প্রবেশ করিয়ে দেবে
                 window.location.href = 'dashboard.html';
             }
-        }
+        };
     </script>
 </body>
 </html>
