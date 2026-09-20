@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>AL-HUDA TECH GLOBAL - Withdraw Funds</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top, #1e1b4b, #0f172a);
+            --glass-bg: rgba(30, 41, 59, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --accent-color: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.75);
+            --success: #34d399;
+            --danger: #ef4444;
+            --warning: #fbbf24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        /*
+        =====================================================
+        FIXED HEADER
+        =====================================================
+        Loaded from /includes/header.html
+        */
+
+        #site-header {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto 16px auto;
+        }
+
+        /*
+        =====================================================
+        MAIN WITHDRAWAL AREA
+        =====================================================
+        */
+
+        .app-container {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            padding-bottom: 20px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        /*
+        =====================================================
+        PAGE TITLE
+        =====================================================
+        */
+
+        .page-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            margin-bottom: 18px;
+        }
+
+        /*
+        =====================================================
+        BACK BUTTON
+        =====================================================
+        */
+
+        .top-action {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .back-btn {
+            background: rgba(56, 189, 248, 0.10);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: var(--accent-color);
+            padding: 7px 13px;
+            border-radius: 9px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .back-btn:active {
+            transform: scale(0.97);
+        }
+
+        /*
+        =====================================================
+        BALANCE CARD
+        =====================================================
+        */
+
+        .balance-card {
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(56, 189, 248, 0.13),
+                    rgba(15, 23, 42, 0.82)
+                );
+
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 18px;
+        }
+
+        .balance-label {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .balance-value {
+            color: var(--accent-color);
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        /*
+        =====================================================
+        FORM
+        =====================================================
+        */
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .form-select,
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.40);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-select:focus,
+        .form-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .form-select option {
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        /*
+        =====================================================
+        METHOD INFORMATION
+        =====================================================
+        */
+
+        .method-info {
+            background: rgba(56, 189, 248, 0.07);
+            border: 1px dashed rgba(56, 189, 248, 0.45);
+            padding: 12px;
+            border-radius: 11px;
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .method-info-title {
+            color: var(--accent-color);
+            font-size: 0.73rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .method-info-text {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            line-height: 1.5;
+        }
+
+        /*
+        =====================================================
+        CALCULATION
+        =====================================================
+        */
+
+        .calculation-box {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--glass-border);
+            border-radius: 13px;
+            padding: 13px;
+            margin: 16px 0;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            font-size: 0.78rem;
+        }
+
+        .calc-row span {
+            color: var(--text-muted);
+        }
+
+        .calc-row strong {
+            color: var(--text-main);
+            text-align: right;
+        }
+
+        .calc-divider {
+            border-top: 1px solid rgba(255,255,255,.08);
+            margin-top: 4px;
+            padding-top: 10px;
+        }
+
+        .net-row strong {
+            color: var(--success);
+            font-size: 1rem;
+        }
+
+        /*
+        =====================================================
+        SUBMIT BUTTON
+        =====================================================
+        */
+
+        .btn-submit {
+            background: linear-gradient(
+                135deg,
+                #38bdf8 0%,
+                #0284c7 100%
+            );
+
+            color: #0f172a;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        /*
+        =====================================================
+        HISTORY BUTTON
+        =====================================================
+        */
+
+        .btn-history {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--glass-border);
+            color: var(--accent-color);
+            padding: 12px;
+            border-radius: 11px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        /*
+        =====================================================
+        MESSAGE
+        =====================================================
+        */
+
+        .message {
+            display: none;
+            padding: 11px;
+            border-radius: 10px;
+            margin-bottom: 13px;
+            font-size: 0.78rem;
+            line-height: 1.4;
+        }
+
+        .message.success {
+            display: block;
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.10);
+            border: 1px solid rgba(16, 185, 129, 0.30);
+        }
+
+        .message.error {
+            display: block;
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.10);
+            border: 1px solid rgba(239, 68, 68, 0.30);
+        }
+
+        /*
+        =====================================================
+        HISTORY MODAL
+        =====================================================
+        */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 18px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 440px;
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            color: var(--accent-color);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /*
+        =====================================================
+        HISTORY ITEM
+        =====================================================
+        */
+
+        .history-item {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 13px;
+            padding: 13px;
+            margin-bottom: 10px;
+        }
+
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 9px;
+        }
+
+        .history-method {
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 7px;
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            color: #fcd34d;
+            background: rgba(245,158,11,.12);
+            border: 1px solid rgba(245,158,11,.20);
+        }
+
+        .status-approved {
+            color: #6ee7b7;
+            background: rgba(16,185,129,.12);
+            border: 1px solid rgba(16,185,129,.20);
+        }
+
+        .status-rejected {
+            color: #fca5a5;
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.20);
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 6px;
+            font-size: 0.72rem;
+        }
+
+        .history-row span {
+            color: var(--text-muted);
+        }
+
+        .history-row strong {
+            color: var(--text-main);
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 28px 10px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px;
+            font-size: 0.8rem;
+        }
+
+        /*
+        =====================================================
+        FOOTER AREA
+        =====================================================
+        */
+
+        #site-footer {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        /*
+        =====================================================
+        SMALL SCREEN
+        =====================================================
+        */
+
+        @media (max-width: 360px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .glass-card {
+                padding: 16px;
+            }
+
+            .balance-value {
+                font-size: 1.45rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =====================================================
+         FIXED SITE HEADER
+         ===================================================== -->
+
+    <div id="site-header"></div>
+
+
+    <!-- =====================================================
+         WITHDRAW PAGE
+         ===================================================== -->
+
+    <div class="app-container">
+
+        <div class="top-action">
+            <button type="button" class="back-btn" onclick="goBack()">
+                ← Back
+            </button>
+        </div>
+
+
+        <div class="glass-card">
+
+            <div class="page-title">
+                WITHDRAW FUNDS
+            </div>
+
+            <div class="page-subtitle">
+                Request a withdrawal from your available balance
+            </div>
+
+
+            <!-- BALANCE -->
+
+            <div class="balance-card">
+
+                <div class="balance-label">
+                    Available Balance
+                </div>
+
+                <div class="balance-value">
+                    $<span id="balance">0.00</span>
+                </div>
+
+            </div>
+
+
+            <!-- MESSAGE -->
+
+            <div id="message" class="message"></div>
+
+
+            <!-- WITHDRAW FORM -->
+
+            <form id="withdraw-form">
+
+                <!-- METHOD -->
+
+                <div class="form-group">
+
+                    <label class="form-label">
+                        Select Withdrawal Method
+                    </label>
+
+                    <select
+                        id="method"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="">
+                            -- Choose Method --
+                        </option>
+
+                        <option value="bKash">
+                            bKash
+                        </option>
+
+                        <option value="Nagad">
+                            Nagad
+                        </option>
+
+                        <option value="Rocket">
+                            Rocket
+                        </option>
+
+                        <option value="Upay">
+                            Upay
+                        </option>
+
+                        <option value="USDT-BEP20">
+                            USDT-BEP20
+                        </option>
+
+                        <option value="USDT-TRC20">
+                            USDT-TRC20
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- METHOD INFO -->
+
+                <div
+                    id="method-info"
+                    class="method-info"
+                >
+
+                    <div
+                        id="method-info-title"
+                        class="method-info-title"
+                    ></div>
+
+                    <div
+                        id="method-info-text"
+                        class="method-info-text"
+                    ></div>
+
+                </div>
+
+
+                <!-- ACCOUNT / WALLET -->
+
+                <div class="form-group">
+
+                    <label
+                        id="account-label"
+                        class="form-label"
+                    >
+                        Account Number / Wallet Address
+                    </label>
+
+                    <input
+                        type="text"
+                        id="account"
+                        class="form-input"
+                        placeholder="Enter account number or wallet address"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- USD AMOUNT -->
+
+                <div class="form-group">
+
+                    <label class="form-label">
+                        Withdrawal Amount (USD)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="amount"
+                        class="form-input"
+                        placeholder="Enter USD amount"
+                        min="0.01"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- CALCULATION -->
+
+                <div class="calculation-box">
+
+                    <div class="calc-row">
+
+                        <span>
+                            Withdrawal Amount
+                        </span>
+
+                        <strong id="calc-usd">
+                            $0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="calc-row">
+
+                        <span>
+                            USD → BDT Rate
+                        </span>
+
+                        <strong id="calc-rate">
+                            ৳100.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="calc-row">
+
+                        <span>
+                            Gross Amount
+                        </span>
+
+                        <strong id="calc-gross">
+                            ৳0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="calc-row">
+
+                        <span>
+                            Withdrawal Charge
+                        </span>
+
+                        <strong id="calc-charge">
+                            0% / ৳0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="calc-row calc-divider net-row">
+
+                        <span>
+                            You Receive
+                        </span>
+
+                        <strong id="calc-net">
+                            ৳0.00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    id="submit-btn"
+                    class="btn-submit"
+                >
+                    Submit Withdrawal Request
+                </button>
+
+            </form>
+
+
+            <!-- HISTORY -->
+
+            <button
+                type="button"
+                class="btn-history"
+                onclick="openHistory()"
+            >
+                View Withdrawal History
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FIXED SITE FOOTER
+         ===================================================== -->
+
+    <div id="site-footer"></div>
+
+
+    <!-- =====================================================
+         WITHDRAWAL HISTORY MODAL
+         ===================================================== -->
+
+    <div
+        id="history-modal"
+        class="modal-overlay"
+    >
+
+        <div class="modal-card">
+
+            <div class="modal-header">
+
+                <div class="modal-title">
+                    Withdrawal History
+                </div>
+
+                <button
+                    type="button"
+                    class="close-btn"
+                    onclick="closeHistory()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div id="history-content">
+
+                <div class="loading">
+                    Loading history...
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script>
+
+        /*
+        =====================================================
+        LOAD YOUR EXISTING FIXED HEADER & FOOTER
+        =====================================================
+        */
+
+        Promise.all([
+            fetch('/includes/header.html'),
+            fetch('/includes/footer.html')
+        ])
+        .then(async ([headerResponse, footerResponse]) => {
+
+            if (!headerResponse.ok) {
+                throw new Error('Header could not be loaded.');
+            }
+
+            if (!footerResponse.ok) {
+                throw new Error('Footer could not be loaded.');
+            }
+
+            const headerHTML = await headerResponse.text();
+            const footerHTML = await footerResponse.text();
+
+            document.getElementById('site-header').innerHTML =
+                headerHTML;
+
+            document.getElementById('site-footer').innerHTML =
+                footerHTML;
+
+        })
+        .catch(error => {
+
+            console.error(
+                'Header/Footer loading error:',
+                error
+            );
+
+        });
+
+
+        /*
+        =====================================================
+        TELEGRAM WEB APP
+        =====================================================
+        */
+
+        const tg =
+            window.Telegram &&
+            window.Telegram.WebApp
+                ? window.Telegram.WebApp
+                : null;
+
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+
+        /*
+        =====================================================
+        TELEGRAM USER
+        =====================================================
+        */
+
+        const tgUser =
+            tg &&
+            tg.initDataUnsafe &&
+            tg.initDataUnsafe.user
+                ? tg.initDataUnsafe.user
+                : null;
+
+        const telegramId =
+            tgUser
+                ? String(tgUser.id)
+                : "";
+
+
+        /*
+        =====================================================
+        DEFAULT SETTINGS
+        =====================================================
+        */
+
+        let settings = {
+
+            min_withdraw_usd: 1,
+
+            usd_to_bdt_rate: 100,
+
+            withdraw_charge_percent: 5
+
+        };
+
+
+        let userBalance = 0;
+
+
+        /*
+        =====================================================
+        DOM ELEMENTS
+        =====================================================
+        */
+
+        const methodSelect =
+            document.getElementById('method');
+
+        const accountInput =
+            document.getElementById('account');
+
+        const accountLabel =
+            document.getElementById('account-label');
+
+        const amountInput =
+            document.getElementById('amount');
+
+        const methodInfo =
+            document.getElementById('method-info');
+
+        const methodInfoTitle =
+            document.getElementById('method-info-title');
+
+        const methodInfoText =
+            document.getElementById('method-info-text');
+
+        const balanceElement =
+            document.getElementById('balance');
+
+        const submitButton =
+            document.getElementById('submit-btn');
+
+
+        /*
+        =====================================================
+        BACK BUTTON
+        =====================================================
+        */
+
+        function goBack() {
+
+            if (window.history.length > 1) {
+
+                window.history.back();
+
+            } else if (tg) {
+
+                tg.close();
+
+            }
+
+        }
+
+
+        /*
+        =====================================================
+        MESSAGE
+        =====================================================
+        */
+
+        function showMessage(text, type) {
+
+            const message =
+                document.getElementById('message');
+
+            message.className =
+                'message ' + type;
+
+            message.textContent =
+                text;
+
+        }
+
+
+        function clearMessage() {
+
+            const message =
+                document.getElementById('message');
+
+            message.className =
+                'message';
+
+            message.textContent =
+                '';
+
+        }
+
+
+        /*
+        =====================================================
+        API HELPER
+        =====================================================
+        */
+
+        async function apiRequest(
+            url,
+            options = {}
+        ) {
+
+            const response =
+                await fetch(url, {
+
+                    ...options,
+
+                    headers: {
+
+                        'Content-Type':
+                            'application/json',
+
+                        ...(options.headers || {})
+
+                    }
+
+                });
+
+
+            let data;
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (error) {
+
+                throw new Error(
+                    'Invalid server response.'
+                );
+
+            }
+
+
+            if (
+                !response.ok ||
+                data.success === false
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    'Request failed.'
+                );
+
+            }
+
+
+            return data;
+
+        }
+
+
+        /*
+        =====================================================
+        LOAD USER BALANCE + SETTINGS
+        =====================================================
+        */
+
+        async function loadUserData() {
+
+            if (!telegramId) {
+
+                showMessage(
+                    'Open this page through Telegram.',
+                    'error'
+                );
+
+                return;
+
+            }
+
+
+            try {
+
+                const data =
+                    await apiRequest(
+                        '/api/withdraw?action=info&telegram_id=' +
+                        encodeURIComponent(telegramId)
+                    );
+
+
+                if (
+                    data.balance !== undefined
+                ) {
+
+                    userBalance =
+                        Number(data.balance) || 0;
+
+                    balanceElement.textContent =
+                        userBalance.toFixed(2);
+
+                }
+
+
+                if (data.settings) {
+
+                    settings = {
+
+                        min_withdraw_usd:
+                            Number(
+                                data.settings
+                                    .min_withdraw_usd
+                            ) || 1,
+
+                        usd_to_bdt_rate:
+                            Number(
+                                data.settings
+                                    .usd_to_bdt_rate
+                            ) || 100,
+
+                        withdraw_charge_percent:
+                            Number(
+                                data.settings
+                                    .withdraw_charge_percent
+                            ) || 5
+
+                    };
+
+                }
+
+
+                calculateWithdrawal();
+
+            } catch (error) {
+
+                showMessage(
+                    error.message,
+                    'error'
+                );
+
+            }
+
+        }
+
+
+        /*
+        =====================================================
+        METHOD CHANGE
+        =====================================================
+        */
+
+        methodSelect.addEventListener(
+            'change',
+            function () {
+
+                const method =
+                    this.value;
+
+
+                if (!method) {
+
+                    methodInfo.style.display =
+                        'none';
+
+                    accountInput.value =
+                        '';
+
+                    return;
+
+                }
+
+
+                methodInfo.style.display =
+                    'block';
+
+
+                if (
+                    method === 'bKash' ||
+                    method === 'Nagad' ||
+                    method === 'Rocket' ||
+                    method === 'Upay'
+                ) {
+
+                    accountLabel.textContent =
+                        'Account Number';
+
+                    accountInput.placeholder =
+                        'Enter your ' +
+                        method +
+                        ' account number';
+
+                    methodInfoTitle.textContent =
+                        method +
+                        ' Withdrawal';
+
+                    methodInfoText.textContent =
+                        'Enter the correct ' +
+                        method +
+                        ' account number where you want to receive your funds.';
+
+                }
+
+
+                else if (
+                    method === 'USDT-BEP20'
+                ) {
+
+                    accountLabel.textContent =
+                        'USDT-BEP20 Wallet Address';
+
+                    accountInput.placeholder =
+                        'Enter BEP20 wallet address';
+
+                    methodInfoTitle.textContent =
+                        'USDT-BEP20 Withdrawal';
+
+                    methodInfoText.textContent =
+                        'Only use a BEP20-compatible USDT wallet address.';
+
+                }
+
+
+                else if (
+                    method === 'USDT-TRC20'
+                ) {
+
+                    accountLabel.textContent =
+                        'USDT-TRC20 Wallet Address';
+
+                    accountInput.placeholder =
+                        'Enter TRC20 wallet address';
+
+                    methodInfoTitle.textContent =
+                        'USDT-TRC20 Withdrawal';
+
+                    methodInfoText.textContent =
+                        'Only use a TRC20-compatible USDT wallet address.';
+
+                }
+
+            }
+        );
+
+
+        /*
+        =====================================================
+        CALCULATE WITHDRAWAL
+        =====================================================
+        */
+
+        function calculateWithdrawal() {
+
+            const usd =
+                Number(amountInput.value) || 0;
+
+            const rate =
+                Number(
+                    settings.usd_to_bdt_rate
+                ) || 100;
+
+            const chargePercent =
+                Number(
+                    settings.withdraw_charge_percent
+                ) || 5;
+
+
+            const gross =
+                usd * rate;
+
+            const charge =
+                gross *
+                chargePercent /
+                100;
+
+            const net =
+                gross -
+                charge;
+
+
+            document.getElementById(
+                'calc-usd'
+            ).textContent =
+                '$' +
+                usd.toFixed(2);
+
+
+            document.getElementById(
+                'calc-rate'
+            ).textContent =
+                '৳' +
+                rate.toFixed(2);
+
+
+            document.getElementById(
+                'calc-gross'
+            ).textContent =
+                '৳' +
+                gross.toFixed(2);
+
+
+            document.getElementById(
+                'calc-charge'
+            ).textContent =
+                chargePercent.toFixed(2) +
+                '% / ৳' +
+                charge.toFixed(2);
+
+
+            document.getElementById(
+                'calc-net'
+            ).textContent =
+                '৳' +
+                net.toFixed(2);
+
+        }
+
+
+        amountInput.addEventListener(
+            'input',
+            calculateWithdrawal
+        );
+
+
+        /*
+        =====================================================
+        SUBMIT WITHDRAWAL
+        =====================================================
+        */
+
+        document
+            .getElementById('withdraw-form')
+            .addEventListener(
+                'submit',
+                async function (event) {
+
+                    event.preventDefault();
+
+                    clearMessage();
+
+
+                    if (!telegramId) {
+
+                        showMessage(
+                            'Telegram user could not be detected.',
+                            'error'
+                        );
+
+                        return;
+
+                    }
+
+
+                    const method =
+                        methodSelect.value.trim();
+
+                    const account =
+                        accountInput.value.trim();
+
+                    const amount =
+                        Number(
+                            amountInput.value
+                        );
+
+
+                    if (!method) {
+
+                        showMessage(
+                            'Please select a withdrawal method.',
+                            'error'
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (!account) {
+
+                        showMessage(
+                            'Please enter your account number or wallet address.',
+                            'error'
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !Number.isFinite(amount) ||
+                        amount <= 0
+                    ) {
+
+                        showMessage(
+                            'Please enter a valid USD amount.',
+                            'error'
+                        );
+
+                        return;
+
+                    }
+
+
+                    const minimum =
+                        Number(
+                            settings.min_withdraw_usd
+                        ) || 1;
+
+
+                    if (amount < minimum) {
+
+                        showMessage(
+                            'Minimum withdrawal amount is $' +
+                            minimum.toFixed(2) +
+                            '.',
+                            'error'
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (amount > userBalance) {
+
+                        showMessage(
+                            'Insufficient balance.',
+                            'error'
+                        );
+
+                        return;
+
+                    }
+
+
+                    submitButton.disabled =
+                        true;
+
+                    submitButton.textContent =
+                        'Submitting...';
+
+
+                    try {
+
+                        const result =
+                            await apiRequest(
+                                '/api/withdraw',
+                                {
+
+                                    method: 'POST',
+
+                                    body:
+                                        JSON.stringify({
+
+                                            action:
+                                                'submit',
+
+                                            telegram_id:
+                                                telegramId,
+
+                                            method:
+                                                method,
+
+                                            account_number:
+                                                account,
+
+                                            amount_usd:
+                                                amount
+
+                                        })
+
+                                }
+                            );
+
+
+                        showMessage(
+                            result.message ||
+                            'Withdrawal request submitted successfully.',
+                            'success'
+                        );
+
+
+                        amountInput.value =
+                            '';
+
+                        accountInput.value =
+                            '';
+
+                        methodSelect.value =
+                            '';
+
+                        methodInfo.style.display =
+                            'none';
+
+
+                        calculateWithdrawal();
+
+
+                        await loadUserData();
+
+
+                    } catch (error) {
+
+                        showMessage(
+                            error.message,
+                            'error'
+                        );
+
+                    } finally {
+
+                        submitButton.disabled =
+                            false;
+
+                        submitButton.textContent =
+                            'Submit Withdrawal Request';
+
+                    }
+
+                }
+            );
+
+
+        /*
+        =====================================================
+        OPEN HISTORY
+        =====================================================
+        */
+
+        function openHistory() {
+
+            document.getElementById(
+                'history-modal'
+            ).style.display =
+                'flex';
+
+
+            loadHistory();
+
+        }
+
+
+        /*
+        =====================================================
+        CLOSE HISTORY
+        =====================================================
+        */
+
+        function closeHistory() {
+
+            document.getElementById(
+                'history-modal'
+            ).style.display =
+                'none';
+
+        }
+
+
+        /*
+        =====================================================
+        LOAD WITHDRAWAL HISTORY
+        =====================================================
+        */
+
+        async function loadHistory() {
+
+            const container =
+                document.getElementById(
+                    'history-content'
+                );
+
+
+            container.innerHTML =
+                '<div class="loading">Loading history...</div>';
+
+
+            if (!telegramId) {
+
+                container.innerHTML =
+                    '<div class="empty-state">Telegram user not detected.</div>';
+
+                return;
+
+            }
+
+
+            try {
+
+                const data =
+                    await apiRequest(
+                        '/api/withdraw?action=history&telegram_id=' +
+                        encodeURIComponent(telegramId)
+                    );
+
+
+                const withdrawals =
+                    Array.isArray(
+                        data.withdrawals
+                    )
+                        ? data.withdrawals
+                        : [];
+
+
+                if (
+                    withdrawals.length === 0
+                ) {
+
+                    container.innerHTML =
+                        '<div class="empty-state">' +
+                        'No withdrawal history found.' +
+                        '</div>';
+
+                    return;
+
+                }
+
+
+                container.innerHTML =
+                    withdrawals
+                        .map(
+                            renderHistoryItem
+                        )
+                        .join('');
+
+
+            } catch (error) {
+
+                container.innerHTML =
+                    '<div class="empty-state">' +
+                    escapeHtml(
+                        error.message
+                    ) +
+                    '</div>';
+
+            }
+
+        }
+
+
+        /*
+        =====================================================
+        RENDER HISTORY
+        =====================================================
+        */
+
+        function renderHistoryItem(item) {
+
+            const status =
+                String(
+                    item.status ||
+                    'pending'
+                ).toLowerCase();
+
+
+            let statusClass =
+                'status-pending';
+
+
+            if (
+                status === 'approved'
+            ) {
+
+                statusClass =
+                    'status-approved';
+
+            }
+
+
+            if (
+                status === 'rejected'
+            ) {
+
+                statusClass =
+                    'status-rejected';
+
+            }
+
+
+            let date = '';
+
+            if (item.created_at) {
+
+                try {
+
+                    date =
+                        new Date(
+                            item.created_at
+                        ).toLocaleString();
+
+                } catch (error) {
+
+                    date =
+                        item.created_at;
+
+                }
+
+            }
+
+
+            return `
+
+                <div class="history-item">
+
+                    <div class="history-top">
+
+                        <div class="history-method">
+
+                            ${escapeHtml(
+                                item.method ||
+                                ''
+                            )}
+
+                        </div>
+
+                        <div class="status ${statusClass}">
+
+                            ${escapeHtml(
+                                status
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="history-row">
+
+                        <span>
+                            Withdrawal Amount
+                        </span>
+
+                        <strong>
+                            $${Number(
+                                item.amount_usd ||
+                                0
+                            ).toFixed(2)}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="history-row">
+
+                        <span>
+                            Gross BDT
+                        </span>
+
+                        <strong>
+                            ৳${Number(
+                                item.gross_bdt ||
+                                0
+                            ).toFixed(2)}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="history-row">
+
+                        <span>
+                            Charge
+                        </span>
+
+                        <strong>
+                            ৳${Number(
+                                item.charge_bdt ||
+                                0
+                            ).toFixed(2)}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="history-row">
+
+                        <span>
+                            Net Amount
+                        </span>
+
+                        <strong>
+                            ৳${Number(
+                                item.net_bdt ||
+                                0
+                            ).toFixed(2)}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="history-row">
+
+                        <span>
+                            Date
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(date)}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        /*
+        =====================================================
+        ESCAPE HTML
+        =====================================================
+        */
+
+        function escapeHtml(value) {
+
+            return String(value)
+
+                .replaceAll(
+                    '&',
+                    '&amp;'
+                )
+
+                .replaceAll(
+                    '<',
+                    '&lt;'
+                )
+
+                .replaceAll(
+                    '>',
+                    '&gt;'
+                )
+
+                .replaceAll(
+                    '"',
+                    '&quot;'
+                )
+
+                .replaceAll(
+                    "'",
+                    '&#039;'
+                );
+
+        }
+
+
+        /*
+        =====================================================
+        CLOSE MODAL WHEN OUTSIDE IS CLICKED
+        =====================================================
+        */
+
+        document
+            .getElementById('history-modal')
+            .addEventListener(
+                'click',
+                function (event) {
+
+                    if (
+                        event.target === this
+                    ) {
+
+                        closeHistory();
+
+                    }
+
+                }
+            );
+
+
+        /*
+        =====================================================
+        INITIAL LOAD
+        =====================================================
+        */
+
+        loadUserData();
+
+    </script>
+
+</body>
+</html>
