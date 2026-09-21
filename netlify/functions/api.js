@@ -12,12 +12,12 @@ exports.handler = async (event, context) => {
     let connection;
 
     try {
-        // ডাটাবেজ কানেকশন তৈরি
+        // সরাসরি কোডের ভেতরে ডাটাবেজ ক্রডেনশিয়াল সেট করা হলো
         connection = await mysql.createConnection({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME
+            host: 'mysql-14cc93c7-alhudatechglobal-601b.i.aivencloud.com',         // এখানে আপনার ডাটাবেজ হোস্ট দিন (যেমন: localhost বা রিমোট হোস্ট)
+            user: 'avnadmin',         // এখানে আপনার ডাটাবেজের ইউজারনেম দিন
+            password: 'AVNS_hhfXItvXPam49_lMnOU', // এখানে আপনার ডাটাবেজের পাসওয়ার্ড দিন
+            database: 'defaultdb'      // এখানে আপনার ডাটাবেজের নাম দিন
         });
 
         // বডি বা কুয়েরি প্যারামিটার থেকে ডাটা রিড করা
@@ -59,7 +59,7 @@ exports.handler = async (event, context) => {
                 };
             }
 
-            // সেটিংস টেবিল থেকে রেফারেল সেটিংস ফেচ করা (যদি টেবিল বা রো না থাকে তবে ডিফল্ট মান পাঠানো হবে)
+            // সেটিংস টেবিল থেকে রেফারেল সেটিংস ফেচ করা
             let settings = { referral_percentage: 5.00, referral_notice: '' };
             try {
                 const [settingsRows] = await connection.execute('SELECT referral_percentage, referral_notice FROM settings WHERE id = 1');
@@ -95,7 +95,7 @@ exports.handler = async (event, context) => {
                 };
             }
 
-            // সেটিংস টেবিল আপডেট (যদি টেবিল না থাকে বা আপডেট করতে সমস্যা হয়)
+            // সেটিংস টেবিল আপডেট
             await connection.execute(
                 'UPDATE settings SET referral_percentage = ?, referral_notice = ? WHERE id = 1',
                 [referral_percentage, referral_notice]
@@ -122,3 +122,4 @@ exports.handler = async (event, context) => {
         };
     }
 };
+        
