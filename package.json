@@ -1,0 +1,9 @@
+{
+  "name": "agtgminiapp",
+  "version": "1.0.0",
+  "description": "AL-HUDA TECH GLOBAL Mini App",
+  "main": "index.html",
+  "dependencies": {
+    "mysql2": "^3.9.2"
+  }
+}
