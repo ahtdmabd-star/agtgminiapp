@@ -198,8 +198,12 @@
             }
 
             try {
-                // মেইন ডিরেক্টরি থেকে বিদ্যমান get-user এপিআই ব্যবহার করে অ্যাডমিন ডেটা ফেচ করা হচ্ছে
-                const response = await fetch(`/.netlify/functions/get-user?tg_id=${tgId}`);
+                // কমন এপিআই ফাইলের মাধ্যমে অ্যাডমিন ও সেটিংস ডেটা ফেচ করা হচ্ছে
+                const response = await fetch(`/.netlify/functions/api`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_admin_data', tg_id: tgId })
+                });
                 const data = await response.json();
 
                 if (!response.ok || !data.success || data.user.role !== 'admin') {
@@ -214,10 +218,11 @@
                 }
 
                 const admin = data.user;
+                const settings = data.settings || { referral_percentage: 5.00, referral_notice: '' };
                 const maskedReferredBy = maskTelegramId(admin.referred_by);
                 const referralLink = `https://t.me/ahtgearnbdbot?start=${admin.referral_code}`;
 
-                // রেন্ডারিং ড্যাশবোর্ড
+                // ড্যাশবোর্ড রেন্ডার করা
                 container.innerHTML = `
                     <div class="brand-header">AL-HUDA TECH GLOBAL (ADMIN)</div>
 
@@ -255,13 +260,13 @@
                         Referral System Control
                     </button>
 
-                    <!-- Go to Settings Button (Correctly linked inside the admin folder) -->
+                    <!-- Go to Settings Button (Linked inside the admin folder) -->
                     <a href="admin/settings.html?tg_id=${tgId}" class="btn-full">
-                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c-.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
                         Go to Settings
                     </a>
 
-                    <!-- Switch to User View Button (Points to root index.html) -->
+                    <!-- Switch to User View Button -->
                     <a href="index.html?tg_id=${tgId}" class="btn-full btn-secondary">
                         <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
                         Switch to User Dashboard
@@ -269,6 +274,10 @@
 
                     <div class="app-footer">&copy; 2026 AL-HUDA TECH GLOBAL. Secure Admin Portal.</div>
                 `;
+
+                // মডালে বর্তমান সেটিংসের মান বসিয়ে দেওয়া
+                document.getElementById('modalRefPercentage').value = settings.referral_percentage || 5.00;
+                document.getElementById('modalRefNotice').value = settings.referral_notice || '';
 
             } catch (error) {
                 console.error('Admin verification error:', error);
@@ -285,10 +294,16 @@
             const notice = document.getElementById('modalRefNotice').value;
 
             try {
-                const res = await fetch('/.netlify/functions/update-referral-settings', {
+                // কমন এপিআই ফাইলের মাধ্যমে আপডেট রিকোয়েস্ট পাঠানো হচ্ছে
+                const res = await fetch('/.netlify/functions/api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tg_id: tgId, referral_percentage: percentage, referral_notice: notice })
+                    body: JSON.stringify({ 
+                        action: 'update_referral_settings', 
+                        tg_id: tgId, 
+                        referral_percentage: percentage, 
+                        referral_notice: notice 
+                    })
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -313,4 +328,5 @@
         verifyAndLoadAdmin();
     </script>
 </body>
-</html>
+    </html>
+    
