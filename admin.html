@@ -127,12 +127,6 @@
 
         .btn-accent { background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 6px 15px rgba(2, 132, 199, 0.35); }
 
-        /* User Referral Table Styles */
-        .table-container { width: 100%; overflow-x: auto; margin-top: 5px; max-height: 220px; overflow-y: auto; }
-        .user-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-        .user-table th { background: #1f2937; color: #94a3b8; padding: 8px 10px; font-weight: 600; }
-        .user-table td { padding: 8px 10px; border-bottom: 1px solid #1f2937; color: #e2e8f0; }
-
         /* Popup Modal Styles */
         .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #1e293b; width: 100%; max-width: 420px; padding: 20px; border-radius: 18px; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 14px; }
@@ -204,28 +198,26 @@
             }
 
             try {
-                // Fetch current admin user info and all users list
-                const response = await fetch(`/.netlify/functions/get-admin-dashboard?tg_id=${tgId}`);
+                // মেইন ডিরেক্টরি থেকে বিদ্যমান get-user এপিআই ব্যবহার করে অ্যাডমিন ডেটা ফেচ করা হচ্ছে
+                const response = await fetch(`/.netlify/functions/get-user?tg_id=${tgId}`);
                 const data = await response.json();
 
-                if (!response.ok || !data.success || data.admin.role !== 'admin') {
+                if (!response.ok || !data.success || data.user.role !== 'admin') {
                     container.innerHTML = `
                         <div class="error-msg" style="background: #111827; padding: 25px; border-radius: 16px; border: 1px solid #1f2937;">
                             <h3 style="color: #f43f5e; margin-bottom: 10px;">Restricted Area</h3>
                             <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 15px;">You do not possess administrator privileges to access this secure command center.</p>
-                            <a href="../index.html?tg_id=${tgId}" class="btn-full" style="text-decoration:none;">Return to User Dashboard</a>
+                            <a href="index.html?tg_id=${tgId}" class="btn-full" style="text-decoration:none;">Return to User Dashboard</a>
                         </div>
                     `;
                     return;
                 }
 
-                const admin = data.admin;
-                const allUsers = data.users || [];
-                const settings = data.settings || { referral_percentage: 5, referral_notice: '' };
+                const admin = data.user;
                 const maskedReferredBy = maskTelegramId(admin.referred_by);
                 const referralLink = `https://t.me/ahtgearnbdbot?start=${admin.referral_code}`;
 
-                // Render Dashboard Interface
+                // রেন্ডারিং ড্যাশবোর্ড
                 container.innerHTML = `
                     <div class="brand-header">AL-HUDA TECH GLOBAL (ADMIN)</div>
 
@@ -257,55 +249,26 @@
                         </div>
                     </div>
 
-                    <!-- Referral Management Button -->
+                    <!-- Referral Management Button (Triggers Popup Modal) -->
                     <button class="btn-full btn-accent" onclick="toggleRefModal(true)">
                         <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
                         Referral System Control
                     </button>
 
-                    <!-- All Users Referral Overview Section -->
-                    <div class="info-card">
-                        <div style="font-size: 13px; font-weight: 600; color: #f1f5f9;">All Users Referral Overview</div>
-                        <div class="table-container">
-                            <table class="user-table">
-                               <thead>
-                                   <tr>
-                                       <th>Name</th>
-                                       <th>TG ID</th>
-                                       <th>Referrals</th>
-                                   </tr>
-                               </thead>
-                               <tbody>
-                                   ${allUsers.length > 0 ? allUsers.map(u => `
-                                       <tr>
-                                           <td>${u.first_name || 'User'}</td>
-                                           <td>${u.telegram_id}</td>
-                                           <td><b style="color: #38bdf8;">${u.referrals || 0}</b></td>
-                                       </tr>
-                                   `).join('') : `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">No users found</td></tr>`}
-                               </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Go to Settings Button (Linked inside admin directory) -->
-                    <a href="settings.html?tg_id=${tgId}" class="btn-full">
-                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <!-- Go to Settings Button (Correctly linked inside the admin folder) -->
+                    <a href="admin/settings.html?tg_id=${tgId}" class="btn-full">
+                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c-.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
                         Go to Settings
                     </a>
 
-                    <!-- Switch to User View Button -->
-                    <a href="../index.html?tg_id=${tgId}" class="btn-full btn-secondary">
+                    <!-- Switch to User View Button (Points to root index.html) -->
+                    <a href="index.html?tg_id=${tgId}" class="btn-full btn-secondary">
                         <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
                         Switch to User Dashboard
                     </a>
 
                     <div class="app-footer">&copy; 2026 AL-HUDA TECH GLOBAL. Secure Admin Portal.</div>
                 `;
-
-                // Store current settings values into modal fields
-                document.getElementById('modalRefPercentage').value = settings.referral_percentage || 5.00;
-                document.getElementById('modalRefNotice').value = settings.referral_notice || '';
 
             } catch (error) {
                 console.error('Admin verification error:', error);
