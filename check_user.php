@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once 'db.php';
 
 $telegram_id = $_GET['telegram_id'] ?? null;
-$bot_token = '8651381547:AAEqN3SWGvC9bmK7OGb4Nnesf4tCGVyUjzI'; 
+$bot_token = '8874149716:AAHvJhLXZQVMBYc0stXzvA3GpREEGtD9NhM'; 
 $channel = '@AHTG_OFFICIAL'; 
 $group = '@ahtgofic'; 
 
