@@ -6,32 +6,65 @@
     <title>AL-HUDA TECH GLOBAL - Dashboard</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Netlify Badge Remover */
+        #netlify-badge, a[href*="netlify.com/trust"] {
+            display: none !important;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 450px; background: #1e293b; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border: 1px solid #334155; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h2 { color: #38bdf8; font-size: 22px; margin-bottom: 5px; }
-        .header p { color: #94a3b8; font-size: 14px; }
-        .card { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #1e293b; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+        body { background-color: #0b0f19; color: #f8fafc; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* Header & Footer Layout */
+        .app-header { background: #111827; padding: 15px 20px; text-align: center; border-bottom: 1px solid #1f2937; font-size: 16px; font-weight: 600; color: #38bdf8; letter-spacing: 0.5px; }
+        .app-footer { background: #111827; padding: 12px 20px; text-align: center; border-top: 1px solid #1f2937; font-size: 12px; color: #64748b; margin-top: auto; }
+        
+        .main-container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Balance Card with Active Status */
+        .balance-box { background: linear-gradient(135deg, #0284c7, #0369a1); padding: 20px; border-radius: 16px; position: relative; box-shadow: 0 10px 20px rgba(2, 132, 199, 0.2); }
+        .status-badge { position: absolute; top: 15px; right: 15px; background: rgba(16, 185, 129, 0.2); border: 1px solid #34d399; color: #34d399; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .status-dot { width: 7px; height: 7px; background: #34d399; border-radius: 50%; box-shadow: 0 0 8px #34d399; }
+        
+        .balance-title { font-size: 13px; color: #e0f2fe; text-transform: uppercase; letter-spacing: 0.5px; }
+        .balance-amount { font-size: 30px; font-weight: 700; color: #ffffff; margin: 8px 0 15px 0; }
+        
+        /* Action Buttons inside Balance Card */
+        .balance-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card-btn { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; backdrop-filter: blur(5px); }
+        .card-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+        /* Information Card */
+        .card { background: #111827; padding: 16px; border-radius: 14px; border: 1px solid #1f2937; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
         .info-row:last-child { margin-bottom: 0; }
         .label { color: #94a3b8; }
         .value { color: #f1f5f9; font-weight: 600; }
-        .balance-box { text-align: center; background: linear-gradient(135deg, #0284c7, #0369a1); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .balance-box h3 { font-size: 28px; margin-top: 5px; }
-        .ref-box { background: #0f172a; padding: 10px; border-radius: 8px; font-size: 12px; color: #38bdf8; word-break: break-all; margin-top: 5px; border: 1px dashed #334155; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .btn { background: #334155; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; transition: 0.2s; }
-        .btn:hover { background: #475569; }
-        .btn-full { width: 100%; background: #2563eb; display: block; text-align: center; }
-        .btn-full:hover { background: #1d4ed8; }
-        .loading, .error-msg { text-align: center; padding: 30px; color: #94a3b8; line-height: 1.6; }
+
+        /* Referral Box */
+        .ref-title { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+        .ref-box-container { display: flex; gap: 8px; }
+        .ref-input { flex: 1; background: #0b0f19; border: 1px solid #334155; padding: 10px; border-radius: 8px; font-size: 12px; color: #38bdf8; outline: none; }
+        .copy-btn { background: #0284c7; color: white; border: none; padding: 0 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .copy-btn:hover { background: #0369a1; }
+
+        /* Full Width Main Button */
+        .btn-full { width: 100%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: 0.2s; }
+        .btn-full:hover { opacity: 0.9; }
+
+        .loading, .error-msg { text-align: center; padding: 40px; color: #94a3b8; line-height: 1.6; font-size: 14px; }
+        svg { width: 16px; height: 16px; fill: currentColor; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="app">
-        <div class="loading">Loading your dashboard...</div>
+    <div class="app-header">AL-HUDA TECH GLOBAL</div>
+
+    <div class="main-container" id="app">
+        <div class="loading">Loading secure dashboard...</div>
+    </div>
+
+    <div class="app-footer">
+        &copy; 2026 AL-HUDA TECH GLOBAL. All rights reserved.
     </div>
 
     <script>
@@ -45,14 +78,22 @@
             tgId = tg.initDataUnsafe.user.id;
         }
 
+        // Telegram ID Masking Function (প্রথম ২ ও শেষ ২ ডিজিট রেখে মাঝখানে *** করা)
+        function maskTelegramId(id) {
+            if (!id) return 'N/A';
+            const strId = String(id);
+            if (strId.length <= 4) return strId;
+            return strId.substring(0, 2) + '***' + strId.substring(strId.length - 2);
+        }
+
         async function fetchUserData() {
             const appContainer = document.getElementById('app');
 
             if (!tgId) {
                 appContainer.innerHTML = `
                     <div class="error-msg">
-                        <h3>⚠️ Access Denied</h3>
-                        <p>Please open this Mini App directly from the Telegram Bot using the official link.</p>
+                        <h3>Access Denied</h3>
+                        <p>Please open this Mini App directly from the official Telegram Bot.</p>
                     </div>
                 `;
                 return;
@@ -62,11 +103,12 @@
                 const response = await fetch(`/.netlify/functions/get-user?tg_id=${tgId}`);
                 const data = await response.json();
 
+                // চ্যানেল সাবস্ক্রাইব বা ভেরিফিকেশন চেক ফেইল করলে রিডাইরেক্ট বা মেসেজ দেখানো
                 if (!response.ok || !data.success) {
                     appContainer.innerHTML = `
                         <div class="error-msg">
-                            <h3>⚠️ Verification Required</h3>
-                            <p>${data.message || 'Please verify your account via the bot first.'}</p>
+                            <h3>Verification Required</h3>
+                            <p>${data.message || 'Please join our channel and group, then verify your account via the bot again.'}</p>
                         </div>
                     `;
                     return;
@@ -74,23 +116,38 @@
 
                 const user = data.user;
 
-                // যদি ইউজার এডমিন হয়, তবে তাকে এডমিন প্যানেলে পাঠিয়ে দেওয়া হবে
+                // যদি রোল এডমিন হয়, তবে এডমিন প্যানেলে রিডাইরেক্ট করবে
                 if (user.role === 'admin') {
-                    window.location.href = `admin.html?tg_id=${tgId}`;
+                    window.location.href = `admin/index.html?tg_id=${tgId}`;
                     return;
                 }
 
+                // রেফারার আইডি মাস্কিং ফরম্যাট তৈরি
+                const maskedReferredBy = maskTelegramId(user.referred_by);
+                const referralLink = `https://t.me/ahtgearnbdbot?start=${user.referral_code}`;
+
                 appContainer.innerHTML = `
-                    <div class="header">
-                        <h2>AL-HUDA TECH GLOBAL</h2>
-                        <p>Welcome, ${user.first_name || 'User'}!</p>
-                    </div>
-
+                    <!-- Balance Card -->
                     <div class="balance-box">
-                        <span class="label">Total Balance</span>
-                        <h3>$${parseFloat(user.balance).toFixed(2)} USD</h3>
+                        <div class="status-badge">
+                            <span class="status-dot"></span> Active
+                        </div>
+                        <div class="balance-title">Total Balance</div>
+                        <div class="balance-amount">$${parseFloat(user.balance || 0).toFixed(2)} <span style="font-size: 16px; font-weight: 400;">USDT</span></div>
+                        
+                        <div class="balance-actions">
+                            <a href="user/deposit.html?tg_id=${tgId}" class="card-btn">
+                                <svg viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                                Deposit
+                            </a>
+                            <a href="user/withdraw.html?tg_id=${tgId}" class="card-btn">
+                                <svg viewBox="0 0 24 24"><path d="M2 9h20V5H2v4zm0 3v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7H2zm5 4h6v2H7v-2z"/></svg>
+                                Withdraw
+                            </a>
+                        </div>
                     </div>
 
+                    <!-- Information Card -->
                     <div class="card">
                         <div class="info-row">
                             <span class="label">Telegram ID:</span>
@@ -98,40 +155,51 @@
                         </div>
                         <div class="info-row">
                             <span class="label">Referred By:</span>
-                            <span class="value">${user.referred_by || 'None (Direct)'}</span>
+                            <span class="value">${maskedReferredBy}</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Total Referrals:</span>
                             <span class="value">${user.referrals || 0} Users</span>
                         </div>
                         <div class="info-row">
-                            <span class="label">Account Role:</span>
-                            <span class="value" style="text-transform: uppercase; color: #38bdf8;">${user.role}</span>
+                            <span class="label">Account Status:</span>
+                            <span class="value" style="color: #34d399; text-transform: uppercase;">Verified</span>
                         </div>
                     </div>
 
+                    <!-- Referral System Card -->
                     <div class="card">
-                        <span class="label">Your Referral Link:</span>
-                        <div class="ref-box">https://t.me/ahtgearnbdbot?start=${user.referral_code}</div>
+                        <div class="ref-title">Share your referral link & earn commission!</div>
+                        <div class="ref-box-container">
+                            <input type="text" class="ref-input" id="refLinkInput" value="${referralLink}" readonly>
+                            <button class="copy-btn" onclick="copyRefLink()">Copy</button>
+                        </div>
                     </div>
 
-                    <div class="btn-grid">
-                        <a href="deposit.html" class="btn">💳 Deposit</a>
-                        <a href="withdraw.html" class="btn">🏦 Withdraw</a>
-                    </div>
-
-                    <a href="tasks.html" class="btn btn-full">🚀 Go to Tasks / Earn More</a>
+                    <!-- Go to Tasks Button -->
+                    <a href="user/tasks.html?tg_id=${tgId}" class="btn-full">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        Go to Tasks / Earn More
+                    </a>
                 `;
 
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 appContainer.innerHTML = `
                     <div class="error-msg">
-                        <h3>❌ Connection Error</h3>
-                        <p>Failed to load user data. Please try again later.</p>
+                        <h3>Connection Error</h3>
+                        <p>Failed to load dashboard data. Please try again later.</p>
                     </div>
                 `;
             }
+        }
+
+        function copyRefLink() {
+            const input = document.getElementById('refLinkInput');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            alert('Referral link copied to clipboard!');
         }
 
         fetchUserData();
