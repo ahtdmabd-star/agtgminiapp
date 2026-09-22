@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Withdraw | AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#07111f;--panel:#0d1b2d;--panel2:#10243b;--line:#1c3551;
+  --text:#eef5ff;--muted:#8fa6bf;--primary:#2f80ed;--primary2:#2468c5;
+  --success:#28c76f;--danger:#ff5c6c;--warning:#ffb020;--shadow:0 14px 40px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:linear-gradient(180deg,#06101d 0%,#091827 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:auto;padding:14px 14px 34px}
+.topbar{height:58px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20;background:rgba(7,17,31,.92);backdrop-filter:blur(14px)}
+.icon-btn{width:42px;height:42px;border:1px solid var(--line);background:#0b1a2c;color:#dcecff;border-radius:12px;display:grid;place-items:center}
+.icon-btn svg{width:20px;height:20px}
+.title-wrap{min-width:0}.title{font-size:17px;font-weight:800}.subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+.spacer{flex:1}
+.card{background:linear-gradient(145deg,rgba(16,36,59,.98),rgba(10,26,44,.98));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-top:13px}
+.balance-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.balance{padding:14px;border-radius:14px;background:#0a192b;border:1px solid #18334f}
+.balance small{display:block;color:var(--muted);font-size:11px}.balance strong{display:block;font-size:21px;margin-top:5px}
+.section-title{font-size:14px;font-weight:800;margin:0 0 12px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tab{padding:12px;border:1px solid var(--line);border-radius:12px;background:#0a192b;color:#a9bdd2;font-weight:700}
+.tab.active{background:rgba(47,128,237,.16);border-color:#2f80ed;color:#fff}
+.method-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.method{padding:12px;border-radius:13px;background:#0a192b;border:1px solid var(--line);color:#dcecff;text-align:left}
+.method b{display:block;font-size:13px}.method span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.method.active{border-color:#2f80ed;background:rgba(47,128,237,.13)}
+.label{font-size:11px;color:#a8bdd2;margin:14px 0 7px;display:block}
+.input,.select{width:100%;background:#081625;border:1px solid var(--line);color:#fff;border-radius:12px;padding:13px;outline:none}
+.input:focus{border-color:#2f80ed}
+.preview{display:grid;gap:7px;background:#081625;border:1px solid #17304a;border-radius:13px;padding:12px;margin-top:12px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:12px}.row span:first-child{color:var(--muted)}.row strong{font-weight:750}
+.primary{width:100%;border:0;border-radius:13px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:14px;font-weight:800;margin-top:14px}
+.primary:disabled{opacity:.55;cursor:not-allowed}
+.rules{color:#a9bdd2;font-size:12px;line-height:1.65;padding-left:20px;margin:0}.rules li{padding:3px 0}
+.history-item{padding:13px 0;border-bottom:1px solid #19304a}.history-item:last-child{border-bottom:0}
+.hrow{display:flex;justify-content:space-between;gap:10px}.method-name{font-weight:800;font-size:13px}.date{font-size:10px;color:var(--muted);margin-top:3px}
+.amount{font-weight:800;text-align:right}.net{font-size:11px;color:#a9bdd2;margin-top:3px}
+.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:capitalize;margin-top:8px}
+.pending{background:rgba(255,176,32,.13);color:#ffc65b}.approved{background:rgba(40,199,111,.13);color:#54dd91}.rejected{background:rgba(255,92,108,.13);color:#ff7b88}
+.empty{text-align:center;color:var(--muted);padding:24px 10px;font-size:12px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.64);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal.show{display:flex}.modal-box{width:min(430px,100%);background:#0c1d31;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 20px 70px rgba(0,0,0,.45);text-align:center}
+.spinner{width:38px;height:38px;border:3px solid #27415d;border-top-color:#2f80ed;border-radius:50%;animation:spin .8s linear infinite;margin:3px auto 13px}@keyframes spin{to{transform:rotate(360deg)}}
+.check{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(40,199,111,.14);color:var(--success);margin:0 auto 12px}.check svg{width:26px}
+.notice{font-size:12px;color:#a9bdd2;line-height:1.5}.error{color:#ff7b88}.hidden{display:none!important}
+@media(max-width:430px){.balance strong{font-size:18px}.method-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <button class="icon-btn" id="backBtn" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/><path d="M9 12h11"/></svg>
+    </button>
+    <div class="title-wrap"><div class="title">Withdraw</div><div class="subtitle">AL-HUDA TECH GLOBAL</div></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="homeBtn" aria-label="Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg>
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="balance-grid">
+      <div class="balance"><small>Main Balance</small><strong id="mainBalance">$0.0000</strong></div>
+      <div class="balance"><small>Exchange Balance</small><strong id="exchangeBalance">৳0.00</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Withdraw or Exchange</div>
+    <div class="tabs">
+      <button class="tab active" data-mode="withdraw">Withdraw</button>
+      <button class="tab" data-mode="exchange">USD to BDT</button>
+    </div>
+  </div>
+
+  <div id="withdrawPanel" class="card">
+    <div class="section-title">Select Withdraw Method</div>
+    <div class="method-grid" id="methods"></div>
+
+    <label class="label" for="account">Wallet address / Mobile number</label>
+    <input class="input" id="account" autocomplete="off" placeholder="Enter wallet address or mobile number">
+
+    <label class="label" for="amount">Amount</label>
+    <input class="input" id="amount" inputmode="decimal" type="number" min="0" step="0.0001" placeholder="Enter amount">
+
+    <div class="preview">
+      <div class="row"><span>Source</span><strong id="sourceText">Main Balance</strong></div>
+      <div class="row"><span>Requested</span><strong id="requestedText">$0.0000</strong></div>
+      <div class="row"><span>Charge</span><strong id="chargeText">$0.0000</strong></div>
+      <div class="row"><span>You receive</span><strong id="receiveText">$0.0000</strong></div>
+    </div>
+
+    <button class="primary" id="submitWithdraw">Submit Withdraw Request</button>
+  </div>
+
+  <div id="exchangePanel" class="card hidden">
+    <div class="section-title">Exchange USD to BDT</div>
+    <div class="notice" id="exchangeInfo">Loading exchange settings...</div>
+    <label class="label" for="exchangeAmount">USD Amount</label>
+    <input class="input" id="exchangeAmount" inputmode="decimal" type="number" min="0" step="0.0001" placeholder="Enter USD amount">
+
+    <div class="preview">
+      <div class="row"><span>USD amount</span><strong id="exUsd">$0.0000</strong></div>
+      <div class="row"><span>Exchange fee</span><strong id="exFee">$0.0000</strong></div>
+      <div class="row"><span>Net USD</span><strong id="exNetUsd">$0.0000</strong></div>
+      <div class="row"><span>Rate</span><strong id="exRate">৳0.00 / $1</strong></div>
+      <div class="row"><span>Credited to Exchange Balance</span><strong id="exBdt">৳0.00</strong></div>
+    </div>
+
+    <button class="primary" id="submitExchange">Exchange Now</button>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Withdrawal Rules</div>
+    <ol class="rules" id="rules"><li>Loading...</li></ol>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Withdrawal & Exchange History</div>
+    <div id="history"><div class="empty">Loading history...</div></div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modalLoading"><div class="spinner"></div><b id="modalTitle">Submitting...</b><div class="notice">Please wait.</div></div>
+    <div id="modalSuccess" class="hidden"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 7"/></svg></div><b>Request submitted successfully</b><div class="notice" id="successText"></div></div>
+    <div id="modalError" class="hidden"><div class="check" style="background:rgba(255,92,108,.12);color:#ff5c6c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 7v6"/><path d="M12 17h.01"/></svg></div><b>Request failed</b><div class="notice error" id="errorText"></div></div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg){ tg.ready(); tg.expand(); try{tg.BackButton.show();}catch(e){} }
+
+const params = new URLSearchParams(location.search);
+const tgId = params.get('tg_id') || tg?.initDataUnsafe?.user?.id;
+const API = '/api/withdraw';
+
+let data = {settings:null,methods:[],history:[],main_balance:0,exchange_balance:0};
+let selectedMethod = null;
+
+function money(v, d=4){ return Number(v||0).toFixed(d); }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
+function goBack(){
+  if(document.referrer && history.length>1){ history.back(); }
+  else location.href = 'index.html' + (tgId ? '?tg_id='+encodeURIComponent(tgId) : '');
+}
+function goHome(){ location.href = 'index.html' + (tgId ? '?tg_id='+encodeURIComponent(tgId) : ''); }
+document.getElementById('backBtn').onclick=goBack;
+document.getElementById('homeBtn').onclick=goHome;
+try{tg?.BackButton?.onClick(goBack)}catch(e){}
+
+function showModal(type,title,msg){
+  const m=document.getElementById('modal'); m.classList.add('show');
+  document.getElementById('modalLoading').classList.toggle('hidden',type!=='loading');
+  document.getElementById('modalSuccess').classList.toggle('hidden',type!=='success');
+  document.getElementById('modalError').classList.toggle('hidden',type!=='error');
+  if(title)document.getElementById('modalTitle').textContent=title;
+  if(msg){document.getElementById('successText').textContent=msg;document.getElementById('errorText').textContent=msg;}
+}
+function hideModal(){document.getElementById('modal').classList.remove('show')}
+
+async function api(action, extra={}){
+  const method = action.startsWith('get_') ? 'GET' : 'POST';
+  let url = API;
+  let opts = {headers:{'Content-Type':'application/json'}};
+  if(method==='GET'){
+    const q=new URLSearchParams({action,tg_id:tgId,...extra}); url += '?' + q.toString();
+  }else{
+    opts.method='POST'; opts.body=JSON.stringify({action,tg_id:tgId,...extra});
+  }
+  const r=await fetch(url,opts); const j=await r.json();
+  if(!r.ok || j.success===false) throw new Error(j.message||'Request failed');
+  return j;
+}
+
+function renderBalances(){
+  document.getElementById('mainBalance').textContent='$'+money(data.main_balance);
+  document.getElementById('exchangeBalance').textContent='৳'+money(data.exchange_balance,2);
+}
+function renderMethods(){
+  const box=document.getElementById('methods');
+  box.innerHTML='';
+  data.methods.filter(m=>Number(m.enabled)===1).forEach(m=>{
+    const b=document.createElement('button'); b.className='method'+(selectedMethod?.method_code===m.method_code?' active':'');
+    b.innerHTML='<b>'+esc(m.method_name)+'</b><span>'+(['bep20','trx'].includes(m.method_code)?'USDT':'BDT')+'</span>';
+    b.onclick=()=>{selectedMethod=m; renderMethods(); updateWithdrawPreview();};
+    box.appendChild(b);
+  });
+  if(!selectedMethod && data.methods.length) selectedMethod=data.methods.find(m=>Number(m.enabled)===1)||null;
+}
+function updateWithdrawPreview(){
+  const amt=Number(document.getElementById('amount').value||0);
+  const usd=['bep20','trx'].includes(selectedMethod?.method_code);
+  const pct=usd?Number(data.settings?.usdt_withdraw_charge_percent||0):Number(data.settings?.bdt_withdraw_charge_percent||0);
+  const charge=amt*pct/100;
+  document.getElementById('sourceText').textContent=usd?'Main Balance':'Exchange Balance';
+  document.getElementById('requestedText').textContent=(usd?'$':'৳')+money(amt,usd?4:2);
+  document.getElementById('chargeText').textContent=(usd?'$':'৳')+money(charge,usd?4:2)+' ('+pct.toFixed(2)+'%)';
+  document.getElementById('receiveText').textContent=(usd?'$':'৳')+money(Math.max(0,amt-charge),usd?4:2);
+}
+function renderRules(){
+  const text=data.settings?.withdraw_rules||'No withdrawal rules configured.';
+  const parts=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  document.getElementById('rules').innerHTML=parts.map(x=>'<li>'+esc(x.replace(/^\d+[\.\)]\s*/,''))+'</li>').join('')||'<li>No withdrawal rules configured.</li>';
+}
+function renderExchangeInfo(){
+  const s=data.settings||{}; const rate=Number(s.exchange_rate_bdt||0);
+  const feeType=s.exchange_fee_type==='fixed'?'fixed':'percent'; const feeVal=Number(s.exchange_fee_value||0);
+  document.getElementById('exchangeInfo').textContent=`Current rate: ৳${rate.toFixed(2)} per $1. Exchange fee: ${feeType==='percent'?feeVal.toFixed(2)+'%':'$'+feeVal.toFixed(4)}.`;
+}
+function updateExchangePreview(){
+  const usd=Number(document.getElementById('exchangeAmount').value||0), s=data.settings||{};
+  const rate=Number(s.exchange_rate_bdt||0), type=s.exchange_fee_type||'percent', val=Number(s.exchange_fee_value||0);
+  let fee=type==='percent'?usd*val/100:val; fee=Math.min(Math.max(0,fee),Math.max(0,usd));
+  const net=Math.max(0,usd-fee), bdt=net*rate;
+  document.getElementById('exUsd').textContent='$'+money(usd);
+  document.getElementById('exFee').textContent='$'+money(fee);
+  document.getElementById('exNetUsd').textContent='$'+money(net);
+  document.getElementById('exRate').textContent='৳'+rate.toFixed(2)+' / $1';
+  document.getElementById('exBdt').textContent='৳'+money(bdt,2);
+}
+function renderHistory(){
+  const box=document.getElementById('history');
+  if(!data.history?.length){box.innerHTML='<div class="empty">No withdrawal or exchange history yet.</div>';return}
+  box.innerHTML=data.history.map(x=>{
+    const isExchange=x.type==='exchange';
+    if(isExchange) return `<div class="history-item"><div class="hrow"><div><div class="method-name">USD to BDT Exchange</div><div class="date">${esc(x.created_at)}</div></div><div class="amount">$${money(x.usd_amount)}</div></div><div class="net">Credited: ৳${money(x.credited_bdt,2)} | Fee: $${money(x.fee_usd)}</div></div>`;
+    const usd=['bep20','trx'].includes(x.method_code); const cur=usd?'$':'৳';
+    return `<div class="history-item"><div class="hrow"><div><div class="method-name">${esc(x.method_name)}</div><div class="date">${esc(x.created_at)}</div></div><div class="amount">${cur}${money(x.requested_amount,usd?4:2)}</div></div><div class="net">Charge: ${cur}${money(x.charge_amount,usd?4:2)} | Receive: ${cur}${money(x.net_amount,usd?4:2)}</div><span class="badge ${esc(x.status)}">${esc(x.status)}</span></div>`;
+  }).join('');
+}
+async function load(){
+  if(!tgId){showModal('error','Unable to load','Telegram user ID was not found.');return}
+  try{
+    const j=await api('get_withdraw_data');
+    data=j; renderBalances(); renderMethods(); renderRules(); renderExchangeInfo(); renderHistory(); updateWithdrawPreview(); updateExchangePreview();
+  }catch(e){showModal('error','Unable to load',e.message)}
+}
+document.getElementById('amount').addEventListener('input',updateWithdrawPreview);
+document.getElementById('exchangeAmount').addEventListener('input',updateExchangePreview);
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  const mode=b.dataset.mode;
+  document.getElementById('withdrawPanel').classList.toggle('hidden',mode!=='withdraw');
+  document.getElementById('exchangePanel').classList.toggle('hidden',mode!=='exchange');
+});
+
+document.getElementById('submitWithdraw').onclick=async()=>{
+  if(!selectedMethod)return showModal('error','Select a method','Please select a withdrawal method.');
+  const account=document.getElementById('account').value.trim(), amount=Number(document.getElementById('amount').value||0);
+  if(!account)return showModal('error','Missing information','Enter your wallet address or mobile number.');
+  if(amount<=0)return showModal('error','Invalid amount','Enter a valid withdrawal amount.');
+  const source=['bep20','trx'].includes(selectedMethod.method_code)?'main':'exchange';
+  showModal('loading','Submitting withdrawal...','');
+  try{
+    const j=await api('submit_withdraw',{method_code:selectedMethod.method_code,amount,account_number:account,source_balance:source});
+    showModal('success','',`Request #${j.withdraw_id} is pending admin review.`);
+    document.getElementById('amount').value='';document.getElementById('account').value='';
+    setTimeout(async()=>{hideModal();await load()},1300);
+  }catch(e){showModal('error','Withdrawal failed',e.message);setTimeout(hideModal,1800)}
+};
+
+document.getElementById('submitExchange').onclick=async()=>{
+  const amount=Number(document.getElementById('exchangeAmount').value||0);
+  if(amount<=0)return showModal('error','Invalid amount','Enter a valid USD amount.');
+  showModal('loading','Processing exchange...','');
+  try{
+    const j=await api('exchange_usd',{usd_amount:amount});
+    showModal('success','Exchange completed',`$${money(j.usd_amount)} was exchanged and ৳${money(j.credited_bdt,2)} was added to your Exchange Balance.`);
+    document.getElementById('exchangeAmount').value='';
+    setTimeout(async()=>{hideModal();await load()},1500);
+  }catch(e){showModal('error','Exchange failed',e.message);setTimeout(hideModal,1800)}
+};
+load();
+</script>
+</body>
+</html>
