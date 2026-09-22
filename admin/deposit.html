@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Deposit Management - AL-HUDA TASK</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #071321;
+            --card-bg: #102136;
+            --accent-color: #00d2ff;
+            --text-color: #ffffff;
+            --text-muted: #8a9ba8;
+            --border-color: #1e3a5f;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .deposit-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .deposit-info p { margin: 4px 0; font-size: 14px; color: var(--text-muted); }
+        .deposit-info span { color: var(--text-color); font-weight: 600; }
+        .action-btns { display: flex; gap: 10px; margin-top: 10px; }
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-approve { background-color: var(--success-color); }
+        .btn-reject { background-color: var(--danger-color); }
+        .loading, .no-data { text-align: center; padding: 30px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Pending Deposits & Referral Automation</h2>
+    <div id="admin-deposit-container">
+        <div class="loading">লোড হচ্ছে...</div>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let tgId = urlParams.get('tg_id') || (tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : '');
+
+    async function fetchPendingDeposits() {
+        const container = document.getElementById('admin-deposit-container');
+        try {
+            const response = await fetch(`/api/action?action=get_pending_deposits&tg_id=${encodeURIComponent(tgId)}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (!data.success || !data.deposits || data.deposits.length === 0) {
+                container.innerHTML = `<div class="no-data">কোনো পেন্ডিং ডিপোজিট রিকোয়েস্ট নেই।</div>`;
+                return;
+            }
+
+            let html = '';
+            data.deposits.forEach(item => {
+                html += `
+                    <div class="deposit-card">
+                        <div class="deposit-info">
+                            <p>User Telegram ID: <span>${item.tg_id}</span></p>
+                            <p>Gateway: <span>${item.gateway}</span></p>
+                            <p>Amount: <span>${item.amount} BDT</span></p>
+                            <p>Sender No: <span>${item.sender_number}</span></p>
+                            <p>TrxID: <span>${item.trx_id}</span></p>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-approve" onclick="processDeposit('${item.id}', 'approve')">Approve & Add Commission</button>
+                            <button class="btn-reject" onclick="processDeposit('${item.id}', 'reject')">Reject</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } catch (err) {
+            console.error('Error:', err);
+            container.innerHTML = `<div class="no-data">ডাটা লোড করতে সমস্যা হয়েছে।</div>`;
+        }
+    }
+
+    async function processDeposit(depositId, actionType) {
+        if (!confirm(`আপনি কি সত্যিই এই ডিপোজিটটি ${actionType === 'approve' ? 'এপ্রুভ' : 'রিজেক্ট'} করতে চান?`)) return;
+
+        try {
+            const response = await fetch('/api/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'admin_process_deposit',
+                    tg_id: tgId,
+                    deposit_id: depositId,
+                    process_type: actionType
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`ডিপোজিট সফলভাবে ${actionType === 'approve' ? 'এপ্রুভ হয়েছে এবং রেফারেল কমিশন যোগ হয়েছে' : 'রিজেক্ট হয়েছে'}!`);
+                fetchPendingDeposits();
+            } else {
+                alert('ব্যর্থ হয়েছে: ' + (result.message || 'অজানা ত্রুটি'));
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            alert('সার্ভার যোগাযোগে সমস্যা হয়েছে।');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchPendingDeposits);
+</script>
+</body>
+</html>
