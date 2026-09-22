@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Deposit | AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#071321;--panel:#0c1d2f;--panel2:#10263b;--line:#19364f;--text:#eef6ff;--muted:#8ea7bd;--accent:#2d8cff;--good:#22c58b;--warn:#f5b83d;--bad:#ef5b67}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#071321,#081827 55%,#06111d);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
+.wrap{max-width:680px;margin:auto;padding:16px 14px 34px}.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}.back{width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:#fff}.brand{font-size:18px;font-weight:800}.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.card{background:rgba(12,29,47,.96);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 12px 30px rgba(0,0,0,.16)}h2{font-size:16px;margin:0 0 12px}.notice{font-size:13px;color:#c8d8e8;line-height:1.65;background:#0a1726;border:1px solid var(--line);border-radius:14px;padding:12px}
+.rules{margin:0;padding-left:21px}.rules li{margin:7px 0}.methods{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.method{border:1px solid var(--line);background:#0a1726;color:#dceaf7;border-radius:14px;padding:13px;text-align:left}.method.active{border-color:var(--accent);background:#0d2540}.method b{display:block}.method small{color:var(--muted)}label{display:block;font-size:12px;color:var(--muted);margin:13px 0 7px}input,textarea{width:100%;border:1px solid var(--line);background:#081522;color:#fff;border-radius:12px;padding:13px;outline:none}input:focus,textarea:focus{border-color:var(--accent)}textarea{min-height:80px;resize:vertical}.account{display:flex;gap:8px;align-items:center;margin-top:10px}.account input{flex:1}.copy{border:1px solid var(--line);background:#112b43;color:#fff;border-radius:11px;padding:12px 14px}.calc{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.metric{background:#091827;border:1px solid var(--line);border-radius:13px;padding:11px}.metric span{display:block;color:var(--muted);font-size:11px}.metric b{display:block;margin-top:4px}.primary{width:100%;border:0;background:var(--accent);color:#fff;border-radius:13px;padding:14px;font-weight:800;margin-top:14px}.primary:disabled{opacity:.55}.history{display:flex;flex-direction:column;gap:9px}.item{border:1px solid var(--line);border-radius:13px;padding:12px;background:#091827}.row{display:flex;justify-content:space-between;gap:10px}.small{font-size:11px;color:var(--muted);margin-top:5px}.status{font-size:11px;padding:4px 8px;border-radius:20px;border:1px solid}.pending{color:var(--warn)}.approved{color:var(--good)}.rejected{color:var(--bad)}.empty{text-align:center;color:var(--muted);padding:18px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.show{display:flex}.modalbox{width:100%;max-width:360px;background:#0c1d2f;border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}.spinner{width:32px;height:32px;border:3px solid #28435b;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.check{font-size:30px;color:var(--good)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<button class="back" id="back" aria-label="Back">‹</button>
+<div><div class="brand">AL-HUDA TECH GLOBAL</div><div class="sub">Secure Deposit</div></div>
+</header>
+
+<section class="card">
+<h2>Deposit Rules</h2>
+<div class="notice"><ol class="rules" id="rules"><li>Loading...</li></ol></div>
+</section>
+
+<section class="card">
+<h2>Select Payment Method</h2>
+<div class="methods" id="methods"></div>
+<div id="selectedBox" style="display:none">
+<label>Payment Account / Address</label>
+<div class="account"><input id="account" readonly><button class="copy" id="copy">Copy</button></div>
+</div>
+<label>Deposit Amount</label>
+<input id="amount" type="number" min="0" step="0.01" placeholder="Enter amount">
+<div class="calc">
+<div class="metric"><span>Gross USD</span><b id="gross">$0.00</b></div>
+<div class="metric"><span>Charge</span><b id="charge">$0.00</b></div>
+<div class="metric"><span>Net Credit</span><b id="net">$0.00</b></div>
+<div class="metric"><span>Minimum</span><b id="minimum">--</b></div>
+</div>
+<label>Transaction ID / Hash</label>
+<input id="txid" maxlength="255" placeholder="Enter transaction ID or hash">
+<label>Note (Optional)</label>
+<textarea id="note" maxlength="1000" placeholder="Optional note"></textarea>
+<button class="primary" id="submit">Submit Deposit</button>
+</section>
+
+<section class="card">
+<h2>Deposit History</h2>
+<div class="history" id="history"><div class="empty">Loading...</div></div>
+</section>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox"><div id="modalIcon" class="spinner"></div><b id="modalTitle">Submitting</b><div id="modalText" class="small">Please wait.</div></div></div>
+
+<script>
+const tg=window.Telegram?.WebApp; tg?.expand();
+const params=new URLSearchParams(location.search);
+const tgId=params.get("tg_id") || tg?.initDataUnsafe?.user?.id || "";
+const $=id=>document.getElementById(id);
+let data=null, selected=null;
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function usd(v){return "$"+Number(v||0).toFixed(2)}
+function openModal(title,text,success=false){$("modal").classList.add("show");$("modalTitle").textContent=title;$("modalText").textContent=text;$("modalIcon").className=success?"check":"spinner";$("modalIcon").textContent=success?"✓":""}
+function closeModal(){ $("modal").classList.remove("show") }
+function goBack(){if(history.length>1) history.back(); else location.href="dashboard.html?tg_id="+encodeURIComponent(tgId)}
+tg?.BackButton?.show(); tg?.BackButton?.onClick(goBack); $("back").onclick=goBack;
+
+async function api(action,extra={}){
+ const r=await fetch("/api/deposit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,tg_id:tgId,...extra}),cache:"no-store"});
+ const j=await r.json().catch(()=>({success:false,message:"Invalid server response"}));
+ if(!r.ok||!j.success) throw new Error(j.message||"Request failed");
+ return j;
+}
+function render(){
+ const s=data.settings;
+ $("rules").innerHTML=(s.deposit_rules||"").split(/\r?\n/).filter(Boolean).map(x=>`<li>${esc(x.replace(/^\d+\.\s*/,""))}</li>`).join("")||"<li>Follow the deposit instructions carefully.</li>";
+ $("minimum").textContent=usd(Number(s.minimum_deposit_bdt||0)/Number(s.usd_rate||1));
+ $("methods").innerHTML=data.methods.map((m,i)=>`<button class="method ${i===0?"active":""}" data-code="${esc(m.method_code)}"><b>${esc(m.method_name)}</b><small>${esc(m.currency)}</small></button>`).join("");
+ data.methods.forEach(m=>document.querySelector(`[data-code="${CSS.escape(m.method_code)}"]`).onclick=()=>select(m.method_code));
+ select(data.methods[0]?.method_code);
+ renderHistory();
+}
+function select(code){
+ selected=data.methods.find(m=>m.method_code===code); if(!selected)return;
+ document.querySelectorAll(".method").forEach(x=>x.classList.toggle("active",x.dataset.code===code));
+ $("selectedBox").style.display="block"; $("account").value=selected.payment_account||"";
+ calc();
+}
+function calc(){
+ const amount=Number($("amount").value||0), s=data.settings;
+ let gross=selected?.currency==="BDT"?amount/Number(s.usd_rate||1):amount;
+ let charge=gross*Number(s.deposit_charge_percent||0)/100;
+ $("gross").textContent=usd(gross); $("charge").textContent=usd(charge); $("net").textContent=usd(gross-charge);
+}
+$("amount").oninput=calc;
+$("copy").onclick=async()=>{try{await navigator.clipboard.writeText($("account").value);$("copy").textContent="Copied";setTimeout(()=>$("copy").textContent="Copy",1200)}catch{}};
+$("submit").onclick=async()=>{
+ if(!selected)return alert("Select a payment method.");
+ const amount=Number($("amount").value||0), min=selected.currency==="BDT"?Number(data.settings.minimum_deposit_bdt):0;
+ if(amount<=0)return alert("Enter a valid amount.");
+ if(selected.currency==="BDT"&&amount<min)return alert("Minimum deposit is "+min.toFixed(2)+" BDT.");
+ if(!String($("txid").value).trim())return alert("Transaction ID / Hash is required.");
+ $("submit").disabled=true;openModal("Submitting","Your deposit is being submitted.");
+ try{
+  await api("submit_deposit",{method_code:selected.method_code,payment_amount:amount,transaction_id:$("txid").value.trim(),transaction_note:$("note").value.trim()});
+  openModal("Deposit Submitted","Your deposit is pending admin verification.",true);
+  setTimeout(async()=>{closeModal();$("amount").value="";$("txid").value="";$("note").value="";await load()},1000);
+ }catch(e){closeModal();alert(e.message)}finally{$("submit").disabled=false}
+};
+function renderHistory(){
+ const h=$("history"), rows=data.history||[];
+ if(!rows.length){h.innerHTML='<div class="empty">No deposit history yet.</div>';return}
+ h.innerHTML=rows.map(x=>`<div class="item"><div class="row"><b>${esc(x.method_name)}</b><span class="status ${esc(x.status)}">${esc(x.status)}</span></div><div class="row" style="margin-top:7px"><span>${usd(x.net_usd)}</span><span>${esc(x.currency)} ${esc(x.payment_amount)}</span></div><div class="small">TX: ${esc(x.transaction_id)}</div><div class="small">${esc(x.created_at||"")}</div>${x.admin_note?`<div class="small">Admin: ${esc(x.admin_note)}</div>`:""}</div>`).join("");
+}
+async function load(){
+ try{data=await api("get_deposit_data");render()}catch(e){alert(e.message)}
+}
+load();
+</script>
+</body>
+</html>
