@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>User Management - AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root{
+    --bg:#07111f;
+    --bg2:#0a1728;
+    --card:#0d1c30;
+    --card2:#10233b;
+    --primary:#2f81ff;
+    --primary2:#1764d1;
+    --cyan:#49d6ff;
+    --success:#35d39a;
+    --warning:#f5b942;
+    --danger:#ff5f6d;
+    --purple:#9b7cff;
+    --text:#f5f8fc;
+    --muted:#9bacbf;
+    --dim:#6f8095;
+    --border:rgba(148,163,184,.14);
+    --radius:18px;
+    --shadow:0 18px 45px rgba(0,0,0,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--bg)}
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 15% 0%,rgba(47,129,255,.13),transparent 28%),
+        radial-gradient(circle at 100% 25%,rgba(73,214,255,.06),transparent 25%),
+        var(--bg);
+    color:var(--text);
+    font-family:Inter,"Segoe UI",Tahoma,Arial,sans-serif;
+    padding:14px 12px 28px;
+}
+button,input{font:inherit}
+button{border:0}
+.container{width:100%;max-width:560px;margin:0 auto}
+
+.topbar{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:14px;
+    padding:11px 12px;
+    background:rgba(13,28,48,.88);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    position:sticky;top:8px;z-index:20;
+    backdrop-filter:blur(14px);
+}
+.nav-btn{
+    width:40px;height:40px;flex:0 0 40px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:12px;
+    color:#fff;
+    background:#122a48;
+    border:1px solid rgba(73,214,255,.12);
+    cursor:pointer;
+    transition:.2s;
+}
+.nav-btn:hover{background:#17375c}
+.nav-btn:active{transform:scale(.96)}
+.nav-btn svg{width:20px;height:20px}
+.topbar-title{min-width:0;flex:1}
+.topbar-title strong{display:block;font-size:15px;font-weight:800}
+.topbar-title span{display:block;color:var(--dim);font-size:10px;margin-top:2px}
+.home-btn{background:linear-gradient(135deg,var(--primary),var(--primary2))}
+
+.page-head{
+    padding:18px;
+    background:linear-gradient(145deg,rgba(16,35,59,.96),rgba(9,23,40,.96));
+    border:1px solid var(--border);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    margin-bottom:12px;
+}
+.head-row{display:flex;align-items:center;gap:12px}
+.head-icon{
+    width:48px;height:48px;flex:0 0 48px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:15px;
+    background:linear-gradient(145deg,#123661,#0c2340);
+    border:1px solid rgba(47,129,255,.24);
+    color:#70aaff;
+}
+.head-icon svg{width:24px;height:24px}
+.page-head h1{font-size:19px;line-height:1.2}
+.page-head p{color:var(--muted);font-size:11px;margin-top:4px}
+
+.summary{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    margin-bottom:12px;
+}
+.summary-card{
+    background:rgba(13,28,48,.92);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:13px;
+}
+.summary-label{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px}
+.summary-value{font-size:20px;font-weight:800;margin-top:5px;color:#fff}
+.summary-value.accent{color:var(--cyan)}
+
+.search-wrap{
+    position:relative;margin-bottom:12px;
+}
+.search-icon{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    color:var(--dim);pointer-events:none;
+}
+.search-icon svg{width:18px;height:18px}
+.search-box{
+    width:100%;height:48px;
+    padding:0 14px 0 43px;
+    background:#081625;
+    border:1px solid var(--border);
+    border-radius:14px;
+    outline:none;color:#fff;font-size:13px;
+    transition:.2s;
+}
+.search-box::placeholder{color:#65778c}
+.search-box:focus{border-color:rgba(47,129,255,.65);box-shadow:0 0 0 3px rgba(47,129,255,.10)}
+
+.list-head{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:4px 2px 9px;
+}
+.list-head strong{font-size:13px}
+.list-head span{font-size:10px;color:var(--dim)}
+
+.user-card{
+    position:relative;
+    background:linear-gradient(145deg,rgba(14,31,52,.98),rgba(9,24,41,.98));
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:15px;
+    margin-bottom:10px;
+    box-shadow:0 10px 25px rgba(0,0,0,.18);
+    overflow:hidden;
+}
+.user-card::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:linear-gradient(180deg,var(--primary),var(--cyan));
+}
+.user-main{
+    display:flex;align-items:center;gap:11px;
+}
+.avatar{
+    width:43px;height:43px;flex:0 0 43px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:14px;
+    background:#102e4f;
+    border:1px solid rgba(47,129,255,.2);
+    color:#71aaff;
+    font-weight:800;font-size:15px;
+}
+.user-primary{min-width:0;flex:1}
+.user-name{
+    font-size:14px;font-weight:750;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.user-username{
+    color:var(--dim);font-size:10px;margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.user-balance{text-align:right;flex:0 0 auto}
+.user-balance small{display:block;color:var(--dim);font-size:9px}
+.user-balance strong{display:block;color:var(--cyan);font-size:16px;margin-top:2px}
+
+.user-meta{
+    display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+    margin:11px 0 12px;padding-top:10px;
+    border-top:1px solid rgba(148,163,184,.08);
+}
+.meta-id{font-size:10px;color:var(--muted)}
+.badge{
+    display:inline-flex;align-items:center;
+    padding:4px 7px;border-radius:7px;
+    font-size:9px;font-weight:750;
+    border:1px solid transparent;
+}
+.badge-admin{background:rgba(155,124,255,.12);color:#b9a5ff;border-color:rgba(155,124,255,.2)}
+.badge-user{background:rgba(148,163,184,.08);color:#b8c4d2;border-color:rgba(148,163,184,.12)}
+.badge-active{background:rgba(53,211,154,.10);color:#65e2b3;border-color:rgba(53,211,154,.18)}
+.badge-banned{background:rgba(255,95,109,.10);color:#ff8791;border-color:rgba(255,95,109,.2)}
+
+.user-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+}
+.u-btn{
+    min-height:38px;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    color:#fff;font-size:10px;font-weight:750;
+    cursor:pointer;
+    transition:.2s;
+    border:1px solid transparent;
+}
+.u-btn svg{width:15px;height:15px}
+.u-btn:active{transform:scale(.98)}
+.btn-add{background:rgba(47,129,255,.15);color:#72abff;border-color:rgba(47,129,255,.18)}
+.btn-sub{background:rgba(245,185,66,.10);color:#f6c95d;border-color:rgba(245,185,66,.18)}
+.btn-ban{background:rgba(255,95,109,.10);color:#ff858e;border-color:rgba(255,95,109,.18)}
+.btn-active{background:rgba(53,211,154,.10);color:#5fe0ae;border-color:rgba(53,211,154,.18)}
+.btn-role{background:rgba(155,124,255,.10);color:#b39fff;border-color:rgba(155,124,255,.18)}
+.btn-delete{
+    grid-column:1 / -1;
+    background:rgba(255,95,109,.06);
+    color:#ff7e88;
+    border-color:rgba(255,95,109,.12);
+}
+
+.bottom-nav{
+    display:grid;grid-template-columns:1fr 1fr;gap:9px;
+    margin-top:15px;
+}
+.bottom-btn{
+    height:45px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    text-decoration:none;color:#fff;font-size:11px;font-weight:750;
+    border:1px solid var(--border);background:#10233b;
+}
+.bottom-btn svg{width:17px;height:17px}
+.bottom-btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border-color:transparent}
+
+.loading,.error-msg,.empty{
+    background:rgba(13,28,48,.9);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:34px 18px;
+    text-align:center;color:var(--muted);font-size:12px;
+}
+.error-msg h3{color:#ff8791;font-size:15px;margin-bottom:6px}
+.error-msg p{line-height:1.6}
+
+.modal{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,5,12,.76);
+    justify-content:center;align-items:center;
+    z-index:1000;padding:18px;
+    backdrop-filter:blur(5px);
+}
+.modal-content{
+    width:100%;max-width:370px;
+    background:linear-gradient(145deg,#10233b,#0a1728);
+    border:1px solid var(--border);
+    border-radius:20px;padding:20px;
+    box-shadow:0 25px 70px rgba(0,0,0,.45);
+}
+.modal-top{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.modal-icon{
+    width:42px;height:42px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;
+    background:#12325a;color:#70aaff;
+}
+.modal-icon svg{width:21px;height:21px}
+.modal-content h3{font-size:15px}
+.modal-content p{font-size:10px;color:var(--dim);margin-top:3px}
+.modal-input{
+    width:100%;height:46px;
+    background:#071321;border:1px solid var(--border);
+    border-radius:12px;padding:0 13px;
+    color:#fff;outline:none;font-size:14px;
+    margin-bottom:13px;
+}
+.modal-input:focus{border-color:rgba(47,129,255,.6)}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.modal-btn{
+    height:42px;border-radius:11px;
+    font-size:11px;font-weight:750;cursor:pointer;
+}
+.btn-confirm{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
+.btn-cancel{background:#17283d;color:#bdc8d5;border:1px solid var(--border)}
+
+@media(max-width:380px){
+    body{padding:10px 9px 22px}
+    .topbar{padding:9px}
+    .page-head{padding:15px}
+    .user-card{padding:13px}
+    .u-btn{font-size:9px}
+}
+</style>
+</head>
+
+<body>
+<div class="container" id="users-app">
+    <div class="loading">Loading Users Data...</div>
+</div>
+
+<div class="modal" id="balModal">
+    <div class="modal-content">
+        <div class="modal-top">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="5" width="18" height="14" rx="3"/>
+                    <path d="M3 9h18M8 15h.01"/>
+                </svg>
+            </div>
+            <div>
+                <h3 id="balModalTitle">Edit User Balance</h3>
+                <p>Enter the amount in USD</p>
+            </div>
+        </div>
+        <input type="number" id="balInput" class="modal-input" placeholder="Enter USD amount" step="0.01" min="0.01">
+        <div class="modal-btns">
+            <button class="modal-btn btn-cancel" onclick="closeBalModal()">Cancel</button>
+            <button class="modal-btn btn-confirm" onclick="submitBalance()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const urlParams = new URLSearchParams(window.location.search);
+let tgId = urlParams.get('tg_id');
+
+if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    tgId = tg.initDataUnsafe.user.id;
+}
+
+let allUsersList = [];
+let selectedUserTgId = '';
+let balanceActionType = '';
+
+function goBack() {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = `dashboard.html?tg_id=${encodeURIComponent(tgId || '')}`;
+    }
+}
+
+function goHome() {
+    window.location.href = `dashboard.html?tg_id=${encodeURIComponent(tgId || '')}`;
+}
+
+function setTelegramBackButton() {
+    if (!tg || !tg.BackButton) return;
+    tg.BackButton.show();
+    tg.BackButton.onClick(goBack);
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+}
+
+function formatUSD(value) {
+    const amount = Number(value || 0);
+    return '$' + amount.toFixed(2);
+}
+
+function getInitial(name) {
+    const clean = String(name || 'U').trim();
+    return escapeHtml(clean.charAt(0).toUpperCase());
+}
+
+async function fetchUsers() {
+    const container = document.getElementById('users-app');
+
+    try {
+        const res = await fetch(`/api/action?action=get_all_users&tg_id=${encodeURIComponent(tgId || '')}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+            container.innerHTML = `
+                <div class="error-msg">
+                    <h3>Access Denied</h3>
+                    <p>${escapeHtml(data.message || 'Unauthorized')}</p>
+                </div>
+                <div class="bottom-nav">
+                    <button class="bottom-btn" onclick="goBack()">Back</button>
+                    <button class="bottom-btn primary" onclick="goHome()">Home</button>
+                </div>
+            `;
+            return;
+        }
+
+        allUsersList = Array.isArray(data.users) ? data.users : [];
+        renderUsers(allUsersList);
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `
+            <div class="error-msg">
+                <h3>Connection Error</h3>
+                <p>Failed to load users data. Please try again.</p>
+            </div>
+            <div class="bottom-nav">
+                <button class="bottom-btn" onclick="goBack()">Back</button>
+                <button class="bottom-btn primary" onclick="goHome()">Home</button>
+            </div>
+        `;
+    }
+}
+
+function userCard(u) {
+    const name = escapeHtml(u.first_name || 'No Name');
+    const username = u.username ? '@' + escapeHtml(u.username) : 'No Username';
+    const id = escapeHtml(u.telegram_id);
+    const balance = formatUSD(u.balance);
+
+    const isBanned = u.status === 'banned';
+    const isAdmin = u.role === 'admin';
+
+    const statusBadge = isBanned
+        ? '<span class="badge badge-banned">Banned</span>'
+        : '<span class="badge badge-active">Active</span>';
+
+    const roleBadge = isAdmin
+        ? '<span class="badge badge-admin">Admin</span>'
+        : '<span class="badge badge-user">User</span>';
+
+    const statusButton = isBanned
+        ? `
+            <button class="u-btn btn-active"
+                onclick="updateUserAction('${id}', 'toggle_status', 'active')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12l4 4L19 6"/>
+                </svg>
+                Activate User
+            </button>
+        `
+        : `
+            <button class="u-btn btn-ban"
+                onclick="updateUserAction('${id}', 'toggle_status', 'banned')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 4a8 8 0 1 0 8 8"/>
+                    <path d="M4.9 4.9l14.2 14.2"/>
+                </svg>
+                Ban User
+            </button>
+        `;
+
+    const roleButton = isAdmin
+        ? `
+            <button class="u-btn btn-role"
+                onclick="updateUserAction('${id}', 'toggle_role', 'user')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M19 8v6M22 11h-6"/>
+                </svg>
+                Make User
+            </button>
+        `
+        : `
+            <button class="u-btn btn-role"
+                onclick="updateUserAction('${id}', 'toggle_role', 'admin')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 2l3 6 6 .9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 8.9 9 8z"/>
+                </svg>
+                Make Admin
+            </button>
+        `;
+
+    return `
+        <div class="user-card">
+            <div class="user-main">
+                <div class="avatar">${getInitial(u.first_name || u.username || 'U')}</div>
+
+                <div class="user-primary">
+                    <div class="user-name">${name}</div>
+                    <div class="user-username">${username}</div>
+                </div>
+
+                <div class="user-balance">
+                    <small>Balance</small>
+                    <strong>${balance}</strong>
+                </div>
+            </div>
+
+            <div class="user-meta">
+                <span class="meta-id">ID: ${id}</span>
+                ${roleBadge}
+                ${statusBadge}
+            </div>
+
+            <div class="user-actions">
+                <button class="u-btn btn-add"
+                    onclick="openBalModal('${id}', 'balance_add')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Add Balance
+                </button>
+
+                <button class="u-btn btn-sub"
+                    onclick="openBalModal('${id}', 'balance_sub')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"/>
+                    </svg>
+                    Subtract
+                </button>
+
+                ${statusButton}
+                ${roleButton}
+
+                <button class="u-btn btn-delete"
+                    onclick="deleteUser('${id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M4 7h16M10 11v6M14 11v6M9 7l1-2h4l1 2"/>
+                        <path d="M6 7l1 14h10l1-14"/>
+                    </svg>
+                    Delete User
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderUsers(users) {
+    const container = document.getElementById('users-app');
+
+    let html = `
+        <div class="topbar">
+            <button class="nav-btn" onclick="goBack()" aria-label="Back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            <div class="topbar-title">
+                <strong>AL-HUDA TECH GLOBAL</strong>
+                <span>User Management</span>
+            </div>
+
+            <button class="nav-btn home-btn" onclick="goHome()" aria-label="Home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M3 11.5L12 4l9 7.5"/>
+                    <path d="M5.5 10.5V20h13v-9.5"/>
+                    <path d="M9.5 20v-5h5v5"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="page-head">
+            <div class="head-row">
+                <div class="head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>User Management</h1>
+                    <p>Manage accounts, balances, roles and account status</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <div class="summary-label">Registered Users</div>
+                <div class="summary-value">${users.length}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Account Control</div>
+                <div class="summary-value accent">Active</div>
+            </div>
+        </div>
+
+        <div class="search-wrap">
+            <div class="search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path d="m20 20-4-4"/>
+                </svg>
+            </div>
+            <input
+                type="text"
+                id="userSearch"
+                class="search-box"
+                placeholder="Search name, username or Telegram ID..."
+                oninput="searchUsers(this.value)"
+            >
+        </div>
+
+        <div class="list-head">
+            <strong>User Accounts</strong>
+            <span id="visibleCount">${users.length} shown</span>
+        </div>
+
+        <div id="usersListContainer">
+    `;
+
+    if (!users.length) {
+        html += `<div class="empty">No users found.</div>`;
+    } else {
+        html += users.map(userCard).join('');
+    }
+
+    html += `
+        </div>
+
+        <div class="bottom-nav">
+            <button class="bottom-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </button>
+            <button class="bottom-btn primary" onclick="goHome()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M3 11.5L12 4l9 7.5"/>
+                    <path d="M5.5 10.5V20h13v-9.5"/>
+                    <path d="M9.5 20v-5h5v5"/>
+                </svg>
+                Home
+            </button>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+function searchUsers(query) {
+    const q = String(query || '').trim().toLowerCase();
+
+    const filtered = allUsersList.filter(u =>
+        (u.first_name && String(u.first_name).toLowerCase().includes(q)) ||
+        (u.username && String(u.username).toLowerCase().includes(q)) ||
+        String(u.telegram_id || '').includes(q)
+    );
+
+    const listContainer = document.getElementById('usersListContainer');
+    const visibleCount = document.getElementById('visibleCount');
+
+    if (!listContainer) return;
+
+    if (visibleCount) {
+        visibleCount.textContent = `${filtered.length} shown`;
+    }
+
+    listContainer.innerHTML = filtered.length
+        ? filtered.map(userCard).join('')
+        : `<div class="empty">No matching users found.</div>`;
+}
+
+function openBalModal(targetId, type) {
+    selectedUserTgId = targetId;
+    balanceActionType = type;
+
+    document.getElementById('balModalTitle').innerText =
+        type === 'balance_add'
+        ? 'Add Balance to User'
+        : 'Subtract Balance from User';
+
+    document.getElementById('balInput').value = '';
+    document.getElementById('balModal').style.display = 'flex';
+
+    setTimeout(() => document.getElementById('balInput').focus(), 80);
+}
+
+function closeBalModal() {
+    document.getElementById('balModal').style.display = 'none';
+}
+
+document.getElementById('balModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBalModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBalModal();
+});
+
+async function submitBalance() {
+    const amount = document.getElementById('balInput').value;
+
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        alert('Please enter a valid USD amount.');
+        return;
+    }
+
+    await sendActionRequest({
+        target_tg_id: selectedUserTgId,
+        sub_action: balanceActionType,
+        value: parseFloat(amount)
+    });
+
+    closeBalModal();
+}
+
+async function updateUserAction(targetId, subAction, val) {
+    await sendActionRequest({
+        target_tg_id: targetId,
+        sub_action: subAction,
+        value: val
+    });
+}
+
+async function deleteUser(targetId) {
+    if (!confirm('Are you sure you want to permanently delete this user?')) return;
+
+    await sendActionRequest({
+        target_tg_id: targetId,
+        sub_action: 'delete_user',
+        value: ''
+    });
+}
+
+async function sendActionRequest(payload) {
+    try {
+        const res = await fetch('/api/action', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                action: 'manage_user_action',
+                tg_id: tgId,
+                ...payload
+            })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+            await fetchUsers();
+        } else {
+            alert('Failed: ' + (result.message || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Server error occurred.');
+    }
+}
+
+setTelegramBackButton();
+fetchUsers();
+</script>
+</body>
+</html>
