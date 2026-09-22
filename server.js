@@ -551,7 +551,135 @@ app.all('/api/action', async (req, res) => {
             };
                                                           }
         
+// Telegram WebApp ইনিশিয়ালাইজেশন এবং tg_id সংগ্রহ
+const tg = window.Telegram.WebApp;
+tg.expand();
 
+if (tg.setHeaderColor) tg.setHeaderColor('#071321');
+if (tg.setBackgroundColor) tg.setBackgroundColor('#071321');
+
+const urlParams = new URLSearchParams(window.location.search);
+let tgId = urlParams.get('tg_id');
+
+if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    tgId = tg.initDataUnsafe.user.id;
+}
+
+// হোম বা ড্যাশবোর্ড লিংকের জন্য
+const homeUrl = `dashboard.html?tg_id=${encodeURIComponent(tgId || '')}`;
+
+function goBack() {
+    if (window.history.length > 1 && document.referrer) {
+        window.history.back();
+        return;
+    }
+    window.location.href = homeUrl;
+}
+
+if (tg.BackButton) {
+    tg.BackButton.show();
+    tg.BackButton.onClick(goBack);
+}
+
+// সেফটি ও ফরম্যাটিং ফাংশন
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatUSD(value) {
+    return '$' + parseFloat(value || 0).toFixed(2);
+}
+
+// ডাটা ফেচ বা এপিআই কানেকশন ফাংশন (GET Request)
+async function fetchPageData() {
+    const container = document.getElementById('app-container');
+    container.innerHTML = '<div class="loading">Loading Data...</div>';
+
+    try {
+        const response = await fetch(`/api/action?action=get_data&tg_id=${encodeURIComponent(tgId || '')}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            cache: 'no-store'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            container.innerHTML = `
+                <div class="error-msg">
+                    <h3>Access Denied</h3>
+                    <p>${escapeHtml(data.message || 'Unauthorized access.')}</p>
+                </div>
+            `;
+            return;
+        }
+
+        // সফলভাবে ডাটা কানেক্ট হওয়ার পর UI রেন্ডার করার কোড এখানে হবে
+        renderUI(data);
+
+    } catch (err) {
+        console.error('API Error:', err);
+        container.innerHTML = `
+            <div class="error-msg">
+                <h3>Connection Error</h3>
+                <p>Failed to connect with database. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+// ডাটা সাবমিট বা আপডেট করার ফাংশন (POST Request - Database Update)
+async function submitDataAction(payloadData) {
+    try {
+        const response = await fetch('/api/action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'update_data',
+                tg_id: tgId,
+                ...payloadData
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Operation successful!');
+            fetchPageData(); // ডাটা রিফ্রেশ করার জন্য
+        } else {
+            alert('Failed: ' + (result.message || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Submit Error:', err);
+        alert('Server error occurred during connection.');
+    }
+}
+
+function renderUI(data) {
+    // আপনার পেজের মূল ডিজাইন এখানে ডাইনামিক ডাটা দিয়ে শো করাবেন
+    const container = document.getElementById('app-container');
+    container.innerHTML = `
+        <div class="success-box">
+            <h3>Connected Successfully!</h3>
+            <p>User Telegram ID: ${escapeHtml(tgId)}</p>
+        </div>
+    `;
+}
+
+// পেজ লোড হওয়ার সাথে সাথে কানেকশন কল হবে
+document.addEventListener('DOMContentLoaded', function () {
+    fetchPageData();
+});
+                                                        
 
         // ========================================================
         // SEND RESPONSE
