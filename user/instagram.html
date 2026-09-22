@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Instagram Sell | AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#071426;--panel:#0d1d34;--panel2:#102641;--line:#1c3858;--text:#eef6ff;--muted:#91a7bf;--accent:#3d9cff;--good:#22c55e;--bad:#ef4444;--warn:#f59e0b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+.wrap{max-width:720px;margin:auto;padding:14px 14px 34px}.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--accent);display:grid;place-items:center;font-weight:800}
+h1{font-size:20px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 8px 25px #0002}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px}
+.label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.value{font-size:20px;font-weight:800;margin-top:5px}
+button{border:0;border-radius:11px;padding:12px 14px;background:var(--accent);color:white;font-weight:700;cursor:pointer;width:100%;font-size:14px}
+button.secondary{background:#183451;border:1px solid var(--line)}button.danger{background:#7f1d1d}button:disabled{opacity:.55;cursor:not-allowed}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:12px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+input,textarea,select{width:100%;border:1px solid var(--line);background:#08182b;color:var(--text);border-radius:10px;padding:12px;outline:none;font-size:14px}
+textarea{min-height:90px;resize:vertical}.copyrow{display:flex;gap:8px}.copyrow input{flex:1}.copy{width:auto;min-width:74px;padding:10px}
+.rules{white-space:pre-wrap;color:#cbd9e8;font-size:13px;line-height:1.6}.notice{padding:11px;border-radius:10px;background:#102641;color:#cfe2f8;font-size:13px}
+.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;text-transform:uppercase}
+.pending{background:#3a2b08;color:#fbbf24}.checking{background:#12355a;color:#60a5fa}.approved{background:#0c3a24;color:#4ade80}.rejected{background:#421b1b;color:#f87171}
+.history{display:grid;gap:9px}.item{background:#0a1a2e;border:1px solid var(--line);border-radius:12px;padding:12px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.small{font-size:12px;color:var(--muted);line-height:1.5}.empty{text-align:center;color:var(--muted);padding:20px}
+#toast{position:fixed;left:14px;right:14px;bottom:18px;z-index:20;padding:12px;border-radius:12px;background:#102641;border:1px solid var(--line);display:none;text-align:center;font-size:13px}
+.hidden{display:none!important}
+@media(max-width:430px){.grid,.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">AH</div>
+    <div><h1>Instagram Sell</h1><div class="sub">AL-HUDA TECH GLOBAL</div></div>
+  </div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="stat"><div class="label">Rate</div><div id="rate" class="value">$0.00</div></div>
+      <div class="stat"><div class="label">Available</div><div id="available" class="value">0</div></div>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button id="tutorialBtn" class="secondary">Tutorial</button>
+      <button id="getBtn">Get Instagram Account</button>
+    </div>
+  </div>
+
+  <div id="rulesCard" class="card hidden"><div class="label">Instructions</div><div id="rules" class="rules"></div></div>
+
+  <div id="taskCard" class="card hidden">
+    <div class="row"><strong>Assigned Account</strong><span class="status checking">Assigned</span></div>
+    <div class="field"><label>Username</label><div class="copyrow"><input id="username" readonly><button class="copy secondary" data-copy="username">Copy</button></div></div>
+    <div class="field"><label>Full Name</label><div class="copyrow"><input id="fullname" readonly><button class="copy secondary" data-copy="fullname">Copy</button></div></div>
+    <div class="field"><label>Bio</label><div class="copyrow"><textarea id="bio" readonly></textarea><button class="copy secondary" data-copy="bio">Copy</button></div></div>
+    <div class="field"><label>Password</label><div class="copyrow"><input id="password" type="password" readonly><button class="copy secondary" id="showPass">Show</button><button class="copy secondary" data-copy="password">Copy</button></div></div>
+    <div class="field">
+      <label>Authenticator Setup Key</label>
+      <input id="auth" type="text" autocomplete="off" placeholder="Enter the authenticator setup key">
+    </div>
+    <button id="submitBtn">Submit Account</button>
+  </div>
+
+  <div class="card">
+    <div class="row"><strong>Submission History</strong><button id="refreshBtn" class="secondary" style="width:auto">Refresh</button></div>
+    <div id="history" class="history" style="margin-top:12px"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();if(tg.BackButton){tg.BackButton.show();tg.BackButton.onClick(()=>history.back())}}
+const params=new URLSearchParams(location.search);
+const tgId=String(params.get('tg_id')||tg?.initDataUnsafe?.user?.id||'');
+let currentTask=null, settings=null, submitting=false;
+
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.style.display='none',2600)}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+async function api(action,data={}){const r=await fetch('/api/instagram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,tg_id:tgId,...data})});let j={};try{j=await r.json()}catch(e){}if(!r.ok||!j.success)throw new Error(j.message||'Request failed');return j}
+function setBusy(btn,busy,text){btn.disabled=busy;btn.dataset.original??=btn.textContent;btn.textContent=busy?text:btn.dataset.original}
+
+async function loadSettings(){
+  const j=await api('get_settings');
+  settings=j.settings||{};
+  document.getElementById('rate').textContent='$'+Number(settings.rate_usd||0).toFixed(2);
+  document.getElementById('available').textContent=Number(settings.available_count||0);
+  const rc=document.getElementById('rulesCard'), rules=document.getElementById('rules');
+  if(settings.instructions){rc.classList.remove('hidden');rules.textContent=settings.instructions}else rc.classList.add('hidden');
+  document.getElementById('tutorialBtn').disabled=!settings.tutorial_url;
+}
+async function getTask(){
+  if(!tgId)return toast('Telegram user information is missing.');
+  const b=document.getElementById('getBtn');setBusy(b,true,'Loading...');
+  try{
+    const j=await api('get_task');
+    if(!j.available){toast(j.message||'No account is available.');return}
+    currentTask=j.task;
+    username.value=j.task.username||'';fullname.value=j.task.full_name||'';bio.value=j.task.bio||'';password.value=j.task.password||'';auth.value='';
+    document.getElementById('taskCard').classList.remove('hidden');document.getElementById('taskCard').scrollIntoView({behavior:'smooth'});
+    await loadSettings();
+  }catch(e){toast(e.message)}finally{setBusy(b,false,'')}
+}
+async function submitTask(){
+  if(submitting||!currentTask)return;
+  if(!auth.value.trim())return toast('Enter the authenticator setup key.');
+  submitting=true;const b=document.getElementById('submitBtn');b.disabled=true;b.textContent='Submitting...';
+  try{
+    await api('submit_task',{pool_id:currentTask.id,instagram_username:username.value,full_name:fullname.value,bio:bio.value,authenticator_setup:auth.value.trim()});
+    toast('Account submitted successfully.');
+    currentTask=null;document.getElementById('taskCard').classList.add('hidden');
+    await Promise.all([loadSettings(),loadHistory()]);
+  }catch(e){toast(e.message)}
+  finally{submitting=false;b.disabled=false;b.textContent='Submit Account'}
+}
+async function loadHistory(){
+  try{
+    const j=await api('get_history');const box=document.getElementById('history');const rows=j.history||[];
+    if(!rows.length){box.innerHTML='<div class="empty">No submissions yet.</div>';return}
+    box.innerHTML=rows.map(x=>`<div class="item"><div class="row"><strong>${esc(x.username)}</strong><span class="status ${esc(x.status)}">${esc(x.status)}</span></div><div class="small" style="margin-top:6px">Rate: $${Number(x.rate_usd||0).toFixed(2)} · Credited: $${Number(x.credited_usd||0).toFixed(2)}<br>${esc(x.admin_note||'')}</div></div>`).join('');
+  }catch(e){document.getElementById('history').innerHTML='<div class="empty">Unable to load history.</div>'}
+}
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{const v=document.getElementById(b.dataset.copy).value;try{await navigator.clipboard.writeText(v);toast('Copied.')}catch(e){toast('Copy failed.')}}));
+document.getElementById('showPass').onclick=()=>{const p=document.getElementById('password');p.type=p.type==='password'?'text':'password';document.getElementById('showPass').textContent=p.type==='password'?'Show':'Hide'};
+document.getElementById('getBtn').onclick=getTask;
+document.getElementById('submitBtn').onclick=submitTask;
+document.getElementById('refreshBtn').onclick=()=>{loadSettings();loadHistory()};
+document.getElementById('tutorialBtn').onclick=()=>{if(settings?.tutorial_url)location.href=settings.tutorial_url};
+(async()=>{if(!tgId){toast('Open this page from Telegram.');return}try{await loadSettings();await loadHistory()}catch(e){toast(e.message)}})();
+</script>
+</body>
+</html>
