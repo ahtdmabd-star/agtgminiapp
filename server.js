@@ -2423,6 +2423,1950 @@ app.all('/api/withdraw', async (req, res) => {
         }
     }
 });
+// ============================================================
+// INSTAGRAM SELL API - SECTION 1
+// Helpers + Security + Common Functions
+// ============================================================
+
+const crypto = require('crypto');
+
+// IMPORTANT:
+// Set INSTAGRAM_CREDENTIAL_KEY in your hosting environment.
+// Do not use a public/shared key in production.
+const INSTAGRAM_CREDENTIAL_KEY =
+    process.env.INSTAGRAM_CREDENTIAL_KEY ||
+    'CHANGE_THIS_AHTG_INSTAGRAM_CREDENTIAL_KEY_2026';
+
+const INSTAGRAM_ENCRYPTION_KEY = crypto
+    .createHash('sha256')
+    .update(INSTAGRAM_CREDENTIAL_KEY)
+    .digest();
+
+function encryptInstagramSecret(value) {
+    if (value === null || value === undefined || value === '') {
+        return null;
+    }
+
+    const iv = crypto.randomBytes(12);
+
+    const cipher = crypto.createCipheriv(
+        'aes-256-gcm',
+        INSTAGRAM_ENCRYPTION_KEY,
+        iv
+    );
+
+    const encrypted = Buffer.concat([
+        cipher.update(String(value), 'utf8'),
+        cipher.final()
+    ]);
+
+    const authTag = cipher.getAuthTag();
+
+    return [
+        iv.toString('base64'),
+        authTag.toString('base64'),
+        encrypted.toString('base64')
+    ].join('.');
+}
+
+function decryptInstagramSecret(value) {
+    if (!value) {
+        return '';
+    }
+
+    try {
+        const parts = String(value).split('.');
+
+        if (parts.length !== 3) {
+            return '';
+        }
+
+        const iv = Buffer.from(parts[0], 'base64');
+        const authTag = Buffer.from(parts[1], 'base64');
+        const encrypted = Buffer.from(parts[2], 'base64');
+
+        const decipher = crypto.createDecipheriv(
+            'aes-256-gcm',
+            INSTAGRAM_ENCRYPTION_KEY,
+            iv
+        );
+
+        decipher.setAuthTag(authTag);
+
+        return Buffer.concat([
+            decipher.update(encrypted),
+            decipher.final()
+        ]).toString('utf8');
+
+    } catch (error) {
+        console.error('Instagram credential decrypt error:', error);
+        return '';
+    }
+}
+
+function instagramCleanString(value, maxLength = 500) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    return String(value)
+        .trim()
+        .slice(0, maxLength);
+}
+
+function instagramNumber(value, fallback = 0) {
+    const n = Number(value);
+
+    if (!Number.isFinite(n)) {
+        return fallback;
+    }
+
+    return n;
+}
+
+async function instagramRequireUser(connection, tgId) {
+
+    if (!tgId) {
+        const error = new Error('Telegram ID is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const [rows] = await connection.execute(
+        `
+        SELECT
+            id,
+            telegram_id,
+            username,
+            first_name,
+            balance,
+            role,
+            status,
+            telegram_verified,
+            referral_code,
+            referred_by
+        FROM users
+        WHERE telegram_id = ?
+        LIMIT 1
+        `,
+        [tgId]
+    );
+
+    if (rows.length === 0) {
+        const error = new Error('User account not found.');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const user = rows[0];
+
+    if (
+        user.status &&
+        String(user.status).toLowerCase() !== 'active'
+    ) {
+        const error = new Error('Your account is not active.');
+        error.statusCode = 403;
+        throw error;
+    }
+
+    return user;
+}
+
+async function instagramRequireAdmin(connection, tgId) {
+
+    const user = await instagramRequireUser(connection, tgId);
+
+    if (String(user.role).toLowerCase() !== 'admin') {
+        const error = new Error('Admin access required.');
+        error.statusCode = 403;
+        throw error;
+    }
+
+    return user;
+}
+
+async function instagramGetSettings(connection) {
+
+    const [rows] = await connection.execute(
+        `
+        SELECT *
+        FROM instagram_settings
+        WHERE id = 1
+        LIMIT 1
+        `
+    );
+
+    if (rows.length === 0) {
+        return {
+            id: 1,
+            rate_usd: 0.00,
+            tutorial_url: '',
+            instructions: '',
+            task_limit: 0,
+            assignment_timeout_minutes: 60,
+            enabled: 1
+        };
+    }
+
+    return rows[0];
+}
+
+async function instagramGetReferralPercent(connection) {
+
+    const [rows] = await connection.execute(
+        `
+        SELECT referral_percentage
+        FROM settings
+        WHERE id = 1
+        LIMIT 1
+        `
+    );
+
+    if (rows.length === 0) {
+        return 0;
+    }
+
+    const percentage = Number(
+        rows[0].referral_percentage || 0
+    );
+
+    if (!Number.isFinite(percentage) || percentage < 0) {
+        return 0;
+    }
+
+    return percentage;
+    }
+// ============================================================
+// INSTAGRAM SELL API - SECTION 2
+// Main Route + Settings
+// ============================================================
+
+app.all('/api/instagram', async (req, res) => {
+
+    if (req.method !== 'GET' && req.method !== 'POST') {
+        return res.status(405).json({
+            success: false,
+            message: 'Method Not Allowed'
+        });
+    }
+
+    const body = req.method === 'POST'
+        ? req.body
+        : req.query;
+
+    const action = body.action;
+    const tgId = body.tg_id;
+
+    let connection;
+
+    try {
+
+        connection = await mysql.createConnection(dbConfig);
+
+        // ====================================================
+        // GET SETTINGS
+        // ====================================================
+
+        if (action === 'get_settings') {
+
+            const user = await instagramRequireUser(
+                connection,
+                tgId
+            );
+
+            const settings = await instagramGetSettings(
+                connection
+            );
+
+            const [countRows] = await connection.execute(
+                `
+                SELECT COUNT(*) AS available_count
+                FROM instagram_account_pool
+                WHERE status = 'available'
+                AND assigned_tg_id IS NULL
+                `
+            );
+
+            const availableCount =
+                Number(countRows[0]?.available_count || 0);
+
+            return res.json({
+                success: true,
+
+                settings: {
+                    rate_usd: Number(
+                        settings.rate_usd || 0
+                    ),
+
+                    tutorial_url:
+                        settings.tutorial_url || '',
+
+                    instructions:
+                        settings.instructions || '',
+
+                    task_limit:
+                        Number(settings.task_limit || 0),
+
+                    available_count:
+                        availableCount,
+
+                    enabled:
+                        Number(settings.enabled || 0) === 1
+                }
+            });
+        }
+
+        // ====================================================
+        // ADMIN UPDATE SETTINGS
+        // ====================================================
+
+        if (action === 'admin_update_settings') {
+
+            const admin = await instagramRequireAdmin(
+                connection,
+                tgId
+            );
+
+            const rateUsd = instagramNumber(
+                body.rate_usd,
+                0
+            );
+
+            const taskLimit = Math.max(
+                0,
+                Math.floor(
+                    instagramNumber(
+                        body.task_limit,
+                        0
+                    )
+                )
+            );
+
+            const assignmentTimeout = Math.max(
+                1,
+                Math.floor(
+                    instagramNumber(
+                        body.assignment_timeout_minutes,
+                        60
+                    )
+                )
+            );
+
+            const tutorialUrl =
+                instagramCleanString(
+                    body.tutorial_url,
+                    1000
+                );
+
+            const instructions =
+                instagramCleanString(
+                    body.instructions,
+                    10000
+                );
+
+            const enabled =
+                Number(body.enabled) === 0 ? 0 : 1;
+
+            if (
+                !Number.isFinite(rateUsd) ||
+                rateUsd < 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid Instagram rate.'
+                });
+            }
+
+            await connection.execute(
+                `
+                INSERT INTO instagram_settings
+                (
+                    id,
+                    rate_usd,
+                    tutorial_url,
+                    instructions,
+                    task_limit,
+                    assignment_timeout_minutes,
+                    enabled
+                )
+                VALUES
+                (1, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    rate_usd = VALUES(rate_usd),
+                    tutorial_url = VALUES(tutorial_url),
+                    instructions = VALUES(instructions),
+                    task_limit = VALUES(task_limit),
+                    assignment_timeout_minutes =
+                        VALUES(assignment_timeout_minutes),
+                    enabled = VALUES(enabled)
+                `,
+                [
+                    rateUsd,
+                    tutorialUrl,
+                    instructions,
+                    taskLimit,
+                    assignmentTimeout,
+                    enabled
+                ]
+            );
+
+            return res.json({
+                success: true,
+                message: 'Instagram settings updated successfully.',
+                updated_by: admin.telegram_id
+            });
+        }
+
+        // ====================================================
+        // UNKNOWN ACTION
+        // ====================================================
+
+        if (!action) {
+            return res.status(400).json({
+                success: false,
+                message: 'Instagram action is required.'
+            });
+        }
+
+        // Remaining Instagram actions are handled below.
+                // ====================================================
+        // GET / ASSIGN CURRENT INSTAGRAM TASK
+        // ====================================================
+
+        if (action === 'get_task') {
+
+            const user = await instagramRequireUser(
+                connection,
+                tgId
+            );
+
+            const settings =
+                await instagramGetSettings(connection);
+
+            if (Number(settings.enabled || 0) !== 1) {
+
+                return res.json({
+                    success: true,
+                    available: false,
+                    message: 'Instagram Sell is currently unavailable.'
+                });
+            }
+
+            await connection.beginTransaction();
+
+            try {
+
+                // ------------------------------------------------
+                // First check whether this user already has
+                // an active assignment.
+                // ------------------------------------------------
+
+                const [existingRows] =
+                    await connection.execute(
+                        `
+                        SELECT *
+                        FROM instagram_account_pool
+                        WHERE assigned_tg_id = ?
+                        AND status = 'assigned'
+                        ORDER BY assigned_at ASC
+                        LIMIT 1
+                        FOR UPDATE
+                        `,
+                        [user.telegram_id]
+                    );
+
+                let account = null;
+
+                if (existingRows.length > 0) {
+
+                    account = existingRows[0];
+
+                } else {
+
+                    // --------------------------------------------
+                    // Release expired assignments first.
+                    // --------------------------------------------
+
+                    const timeoutMinutes =
+                        Math.max(
+                            1,
+                            Number(
+                                settings.assignment_timeout_minutes || 60
+                            )
+                        );
+
+                    await connection.execute(
+                        `
+                        UPDATE instagram_account_pool
+                        SET
+                            assigned_tg_id = NULL,
+                            assigned_at = NULL,
+                            status = 'available'
+                        WHERE status = 'assigned'
+                        AND assigned_at IS NOT NULL
+                        AND assigned_at <
+                            DATE_SUB(
+                                CURRENT_TIMESTAMP,
+                                INTERVAL ? MINUTE
+                            )
+                        `,
+                        [timeoutMinutes]
+                    );
+
+                    // --------------------------------------------
+                    // Assign the oldest available account.
+                    // --------------------------------------------
+
+                    const [availableRows] =
+                        await connection.execute(
+                            `
+                            SELECT *
+                            FROM instagram_account_pool
+                            WHERE status = 'available'
+                            AND assigned_tg_id IS NULL
+                            ORDER BY id ASC
+                            LIMIT 1
+                            FOR UPDATE
+                            `
+                        );
+
+                    if (availableRows.length > 0) {
+
+                        const selected =
+                            availableRows[0];
+
+                        await connection.execute(
+                            `
+                            UPDATE instagram_account_pool
+                            SET
+                                assigned_tg_id = ?,
+                                assigned_at = CURRENT_TIMESTAMP,
+                                status = 'assigned'
+                            WHERE id = ?
+                            AND status = 'available'
+                            AND assigned_tg_id IS NULL
+                            `,
+                            [
+                                user.telegram_id,
+                                selected.id
+                            ]
+                        );
+
+                        const [assignedRows] =
+                            await connection.execute(
+                                `
+                                SELECT *
+                                FROM instagram_account_pool
+                                WHERE id = ?
+                                LIMIT 1
+                                `,
+                                [selected.id]
+                            );
+
+                        account =
+                            assignedRows.length > 0
+                                ? assignedRows[0]
+                                : null;
+                    }
+                }
+
+                await connection.commit();
+
+                if (!account) {
+
+                    return res.json({
+                        success: true,
+                        available: false,
+                        message:
+                            'No Instagram task is currently available.'
+                    });
+                }
+
+                return res.json({
+                    success: true,
+                    available: true,
+
+                    task: {
+                        id: account.id,
+
+                        username:
+                            account.instagram_username,
+
+                        full_name:
+                            account.full_name,
+
+                        bio:
+                            account.bio,
+
+                        password:
+                            decryptInstagramSecret(
+                                account.password_encrypted
+                            ),
+
+                        assigned_at:
+                            account.assigned_at
+                    }
+                });
+
+            } catch (error) {
+
+                try {
+                    await connection.rollback();
+                } catch (e) {}
+
+                throw error;
+            }
+        }
+
+        // ====================================================
+        // USER HISTORY
+        // ====================================================
+
+        if (action === 'get_history') {
+
+            const user = await instagramRequireUser(
+                connection,
+                tgId
+            );
+
+            const [rows] =
+                await connection.execute(
+                    `
+                    SELECT
+                        id,
+                        instagram_username,
+                        full_name,
+                        bio,
+                        status,
+                        rate_usd,
+                        credited_usd,
+                        submitted_at,
+                        checked_at,
+                        reviewed_at,
+                        admin_note,
+                        created_at
+                    FROM instagram_submissions
+                    WHERE telegram_id = ?
+                    ORDER BY id DESC
+                    `,
+                    [user.telegram_id]
+                );
+
+            return res.json({
+                success: true,
+                history: rows.map(row => ({
+                    id: row.id,
+                    username: row.instagram_username,
+                    full_name: row.full_name,
+                    bio: row.bio,
+                    status: row.status,
+                    rate_usd: Number(row.rate_usd || 0),
+                    credited_usd: Number(row.credited_usd || 0),
+                    submitted_at: row.submitted_at,
+                    checked_at: row.checked_at,
+                    reviewed_at: row.reviewed_at,
+                    admin_note: row.admin_note || '',
+                    created_at: row.created_at
+                }))
+            });
+                    }
+                // ====================================================
+        // SUBMIT INSTAGRAM ACCOUNT
+        // ====================================================
+
+        if (action === 'submit_task') {
+
+            const user = await instagramRequireUser(
+                connection,
+                tgId
+            );
+
+            const poolId =
+                Number(body.pool_id);
+
+            const submittedUsername =
+                instagramCleanString(
+                    body.instagram_username,
+                    255
+                );
+
+            const submittedFullName =
+                instagramCleanString(
+                    body.full_name,
+                    255
+                );
+
+            const submittedBio =
+                instagramCleanString(
+                    body.bio,
+                    2000
+                );
+
+            /*
+             * This is the user's authenticator setup
+             * information. It is encrypted before storage.
+             */
+            const authenticatorSetup =
+                instagramCleanString(
+                    body.authenticator_setup,
+                    1000
+                );
+
+            if (
+                !Number.isInteger(poolId) ||
+                poolId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid task ID.'
+                });
+            }
+
+            if (!submittedUsername) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Instagram username is required.'
+                });
+            }
+
+            if (!authenticatorSetup) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'Authenticator setup information is required.'
+                });
+            }
+
+            await connection.beginTransaction();
+
+            try {
+
+                const [poolRows] =
+                    await connection.execute(
+                        `
+                        SELECT *
+                        FROM instagram_account_pool
+                        WHERE id = ?
+                        FOR UPDATE
+                        `,
+                        [poolId]
+                    );
+
+                if (poolRows.length === 0) {
+                    throw new Error(
+                        'Instagram task not found.'
+                    );
+                }
+
+                const pool = poolRows[0];
+
+                if (
+                    String(pool.assigned_tg_id) !==
+                    String(user.telegram_id)
+                ) {
+                    throw new Error(
+                        'This Instagram task is not assigned to your account.'
+                    );
+                }
+
+                if (pool.status !== 'assigned') {
+                    throw new Error(
+                        'This Instagram task is no longer available.'
+                    );
+                }
+
+                // --------------------------------------------
+                // Prevent duplicate submission.
+                // --------------------------------------------
+
+                const [duplicateRows] =
+                    await connection.execute(
+                        `
+                        SELECT id
+                        FROM instagram_submissions
+                        WHERE pool_id = ?
+                        LIMIT 1
+                        `,
+                        [poolId]
+                    );
+
+                if (duplicateRows.length > 0) {
+                    throw new Error(
+                        'This Instagram task has already been submitted.'
+                    );
+                }
+
+                const settings =
+                    await instagramGetSettings(
+                        connection
+                    );
+
+                const rateUsd =
+                    Number(settings.rate_usd || 0);
+
+                const authenticatorEncrypted =
+                    encryptInstagramSecret(
+                        authenticatorSetup
+                    );
+
+                // --------------------------------------------
+                // Store the submitted account.
+                // Password from the assigned pool is copied
+                // into encrypted storage, never plaintext.
+                // --------------------------------------------
+
+                await connection.execute(
+                    `
+                    INSERT INTO instagram_submissions
+                    (
+                        pool_id,
+                        telegram_id,
+                        instagram_username,
+                        password_encrypted,
+                        full_name,
+                        bio,
+                        authenticator_encrypted,
+                        rate_usd,
+                        credited_usd,
+                        status,
+                        submitted_at
+                    )
+                    VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?, 0, 'pending', CURRENT_TIMESTAMP)
+                    `,
+                    [
+                        poolId,
+                        user.telegram_id,
+                        submittedUsername,
+                        pool.password_encrypted,
+                        submittedFullName,
+                        submittedBio,
+                        authenticatorEncrypted,
+                        rateUsd
+                    ]
+                );
+
+                // --------------------------------------------
+                // Permanently consume this pool account.
+                // It cannot go to another user.
+                // --------------------------------------------
+
+                await connection.execute(
+                    `
+                    UPDATE instagram_account_pool
+                    SET
+                        status = 'submitted',
+                        submitted_tg_id = ?,
+                        submitted_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    AND assigned_tg_id = ?
+                    AND status = 'assigned'
+                    `,
+                    [
+                        user.telegram_id,
+                        poolId,
+                        user.telegram_id
+                    ]
+                );
+
+                await connection.commit();
+
+                return res.json({
+                    success: true,
+                    message:
+                        'Instagram account submitted successfully.',
+                    rate_usd: rateUsd
+                });
+
+            } catch (error) {
+
+                try {
+                    await connection.rollback();
+                } catch (e) {}
+
+                throw error;
+            }
+        }
+                // ====================================================
+        // ADMIN BULK UPLOAD
+        // ====================================================
+
+        if (action === 'admin_bulk_upload') {
+
+            const admin =
+                await instagramRequireAdmin(
+                    connection,
+                    tgId
+                );
+
+            let records = body.records;
+
+            if (typeof records === 'string') {
+
+                try {
+                    records = JSON.parse(records);
+                } catch (error) {
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            'Invalid JSON records.'
+                    });
+                }
+            }
+
+            if (!Array.isArray(records)) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'records must be an array.'
+                });
+            }
+
+            if (records.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'No Instagram accounts were supplied.'
+                });
+            }
+
+            if (records.length > 10000) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'Maximum 10,000 records per upload.'
+                });
+            }
+
+            await connection.beginTransaction();
+
+            try {
+
+                let inserted = 0;
+                let skipped = 0;
+
+                for (const item of records) {
+
+                    const username =
+                        instagramCleanString(
+                            item.username ||
+                            item.instagram_username,
+                            255
+                        );
+
+                    const fullName =
+                        instagramCleanString(
+                            item.full_name ||
+                            item.fullName,
+                            255
+                        );
+
+                    const bio =
+                        instagramCleanString(
+                            item.bio,
+                            2000
+                        );
+
+                    const password =
+                        instagramCleanString(
+                            item.password,
+                            500
+                        );
+
+                    if (
+                        !username ||
+                        !fullName ||
+                        !password
+                    ) {
+                        skipped++;
+                        continue;
+                    }
+
+                    // Prevent duplicate username in pool.
+                    const [exists] =
+                        await connection.execute(
+                            `
+                            SELECT id
+                            FROM instagram_account_pool
+                            WHERE instagram_username = ?
+                            AND status IN
+                            ('available','assigned')
+                            LIMIT 1
+                            `,
+                            [username]
+                        );
+
+                    if (exists.length > 0) {
+                        skipped++;
+                        continue;
+                    }
+
+                    const encryptedPassword =
+                        encryptInstagramSecret(
+                            password
+                        );
+
+                    await connection.execute(
+                        `
+                        INSERT INTO instagram_account_pool
+                        (
+                            instagram_username,
+                            password_encrypted,
+                            full_name,
+                            bio,
+                            status
+                        )
+                        VALUES
+                        (?, ?, ?, ?, 'available')
+                        `,
+                        [
+                            username,
+                            encryptedPassword,
+                            fullName,
+                            bio
+                        ]
+                    );
+
+                    inserted++;
+                }
+
+                await connection.commit();
+
+                return res.json({
+                    success: true,
+                    message:
+                        'Instagram bulk upload completed.',
+                    inserted,
+                    skipped,
+                    uploaded_by: admin.telegram_id
+                });
+
+            } catch (error) {
+
+                try {
+                    await connection.rollback();
+                } catch (e) {}
+
+                throw error;
+            }
+        }
+
+        // ====================================================
+        // ADMIN GET POOL
+        // ====================================================
+
+        if (action === 'admin_get_pool') {
+
+            await instagramRequireAdmin(
+                connection,
+                tgId
+            );
+
+            const limit =
+                Math.min(
+                    500,
+                    Math.max(
+                        1,
+                        Number(body.limit || 100)
+                    )
+                );
+
+            const [rows] =
+                await connection.execute(
+                    `
+                    SELECT
+                        id,
+                        instagram_username,
+                        full_name,
+                        bio,
+                        status,
+                        assigned_tg_id,
+                        assigned_at,
+                        submitted_tg_id,
+                        submitted_at,
+                        created_at
+                    FROM instagram_account_pool
+                    ORDER BY id DESC
+                    LIMIT ${limit}
+                    `
+                );
+
+            const [stats] =
+                await connection.execute(
+                    `
+                    SELECT
+                        COUNT(*) AS total,
+                        SUM(status = 'available') AS available,
+                        SUM(status = 'assigned') AS assigned,
+                        SUM(status = 'submitted') AS submitted
+                    FROM instagram_account_pool
+                    `
+                );
+
+            return res.json({
+                success: true,
+                pool: rows,
+                stats: stats[0] || {}
+            });
+        }
+                // ====================================================
+        // ADMIN GET SUBMISSIONS
+        // ====================================================
+
+        if (action === 'admin_get_submissions') {
+
+            await instagramRequireAdmin(
+                connection,
+                tgId
+            );
+
+            const statusFilter =
+                instagramCleanString(
+                    body.status,
+                    30
+                );
+
+            let rows;
+
+            if (
+                statusFilter &&
+                [
+                    'pending',
+                    'checking',
+                    'approved',
+                    'rejected'
+                ].includes(statusFilter)
+            ) {
+
+                [rows] =
+                    await connection.execute(
+                        `
+                        SELECT
+                            s.*,
+                            u.username AS user_username,
+                            u.first_name AS user_first_name
+                        FROM instagram_submissions s
+                        LEFT JOIN users u
+                            ON u.telegram_id = s.telegram_id
+                        WHERE s.status = ?
+                        ORDER BY
+                            CASE
+                                WHEN s.status IN
+                                ('pending','checking')
+                                THEN 0
+                                ELSE 1
+                            END,
+                            s.id DESC
+                        `,
+                        [statusFilter]
+                    );
+
+            } else {
+
+                [rows] =
+                    await connection.execute(
+                        `
+                        SELECT
+                            s.*,
+                            u.username AS user_username,
+                            u.first_name AS user_first_name
+                        FROM instagram_submissions s
+                        LEFT JOIN users u
+                            ON u.telegram_id = s.telegram_id
+                        ORDER BY
+                            CASE
+                                WHEN s.status IN
+                                ('pending','checking')
+                                THEN 0
+                                ELSE 1
+                            END,
+                            s.id DESC
+                        `
+                    );
+            }
+
+            return res.json({
+                success: true,
+
+                submissions: rows.map(row => ({
+                    id: row.id,
+                    telegram_id: row.telegram_id,
+
+                    user_username:
+                        row.user_username || '',
+
+                    user_first_name:
+                        row.user_first_name || '',
+
+                    instagram_username:
+                        row.instagram_username,
+
+                    full_name:
+                        row.full_name,
+
+                    bio:
+                        row.bio,
+
+                    password:
+                        decryptInstagramSecret(
+                            row.password_encrypted
+                        ),
+
+                    authenticator_setup:
+                        decryptInstagramSecret(
+                            row.authenticator_encrypted
+                        ),
+
+                    rate_usd:
+                        Number(row.rate_usd || 0),
+
+                    credited_usd:
+                        Number(row.credited_usd || 0),
+
+                    status:
+                        row.status,
+
+                    submitted_at:
+                        row.submitted_at,
+
+                    checked_at:
+                        row.checked_at,
+
+                    reviewed_at:
+                        row.reviewed_at,
+
+                    admin_note:
+                        row.admin_note || ''
+                }))
+            });
+        }
+
+        // ====================================================
+        // ADMIN CHECKING
+        // ====================================================
+
+        if (action === 'admin_checking') {
+
+            const admin =
+                await instagramRequireAdmin(
+                    connection,
+                    tgId
+                );
+
+            const submissionId =
+                Number(body.submission_id);
+
+            if (
+                !Number.isInteger(submissionId) ||
+                submissionId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'Valid submission ID is required.'
+                });
+            }
+
+            const [result] =
+                await connection.execute(
+                    `
+                    UPDATE instagram_submissions
+                    SET
+                        status = 'checking',
+                        checked_at = CURRENT_TIMESTAMP,
+                        admin_telegram_id = ?
+                    WHERE id = ?
+                    AND status = 'pending'
+                    `,
+                    [
+                        admin.telegram_id,
+                        submissionId
+                    ]
+                );
+
+            if (result.affectedRows === 0) {
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        'Submission not found or already processed.'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message:
+                    'Instagram submission moved to checking.'
+            });
+        }
+                // ====================================================
+        // ADMIN APPROVE
+        // ====================================================
+
+        if (action === 'admin_approve') {
+
+            const admin =
+                await instagramRequireAdmin(
+                    connection,
+                    tgId
+                );
+
+            const submissionId =
+                Number(body.submission_id);
+
+            const adminNote =
+                instagramCleanString(
+                    body.admin_note,
+                    2000
+                );
+
+            if (
+                !Number.isInteger(submissionId) ||
+                submissionId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'Valid submission ID is required.'
+                });
+            }
+
+            await connection.beginTransaction();
+
+            try {
+
+                // --------------------------------------------
+                // Lock submission
+                // --------------------------------------------
+
+                const [submissionRows] =
+                    await connection.execute(
+                        `
+                        SELECT *
+                        FROM instagram_submissions
+                        WHERE id = ?
+                        FOR UPDATE
+                        `,
+                        [submissionId]
+                    );
+
+                if (submissionRows.length === 0) {
+                    throw new Error(
+                        'Instagram submission not found.'
+                    );
+                }
+
+                const submission =
+                    submissionRows[0];
+
+                if (
+                    submission.status !== 'checking' &&
+                    submission.status !== 'pending'
+                ) {
+                    throw new Error(
+                        `This submission has already been ${submission.status}.`
+                    );
+                }
+
+                const creditUsd =
+                    Number(
+                        submission.rate_usd || 0
+                    );
+
+                if (
+                    !Number.isFinite(creditUsd) ||
+                    creditUsd <= 0
+                ) {
+                    throw new Error(
+                        'Invalid Instagram credit amount.'
+                    );
+                }
+
+                // --------------------------------------------
+                // Lock user
+                // --------------------------------------------
+
+                const [userRows] =
+                    await connection.execute(
+                        `
+                        SELECT *
+                        FROM users
+                        WHERE telegram_id = ?
+                        FOR UPDATE
+                        `,
+                        [submission.telegram_id]
+                    );
+
+                if (userRows.length === 0) {
+                    throw new Error(
+                        'Instagram submission user not found.'
+                    );
+                }
+
+                const user =
+                    userRows[0];
+
+                const balanceBefore =
+                    Number(user.balance || 0);
+
+                const balanceAfter =
+                    balanceBefore + creditUsd;
+
+                // --------------------------------------------
+                // Credit user
+                // --------------------------------------------
+
+                await connection.execute(
+                    `
+                    UPDATE users
+                    SET balance = ?
+                    WHERE telegram_id = ?
+                    `,
+                    [
+                        balanceAfter,
+                        submission.telegram_id
+                    ]
+                );
+
+                // --------------------------------------------
+                // Main transaction
+                // --------------------------------------------
+
+                const [transactionResult] =
+                    await connection.execute(
+                        `
+                        INSERT INTO transactions
+                        (
+                            telegram_id,
+                            transaction_type,
+                            source_id,
+                            source_reference,
+                            amount_usd,
+                            balance_before,
+                            balance_after,
+                            status,
+                            description
+                        )
+                        VALUES
+                        (
+                            ?,
+                            'instagram_sell',
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            'completed',
+                            ?
+                        )
+                        `,
+                        [
+                            submission.telegram_id,
+                            submission.id,
+                            `INSTAGRAM-${submission.id}`,
+                            creditUsd,
+                            balanceBefore,
+                            balanceAfter,
+                            `Instagram Sell #${submission.id} approved`
+                        ]
+                    );
+
+                const sourceTransactionId =
+                    transactionResult.insertId;
+
+                // --------------------------------------------
+                // Existing AHTG referral system
+                // --------------------------------------------
+
+                let referralCommission = 0;
+                let referrerTelegramId = null;
+
+                const [referrerRows] =
+                    await connection.execute(
+                        `
+                        SELECT referred_by
+                        FROM users
+                        WHERE telegram_id = ?
+                        LIMIT 1
+                        `,
+                        [submission.telegram_id]
+                    );
+
+                if (
+                    referrerRows.length > 0 &&
+                    referrerRows[0].referred_by
+                ) {
+
+                    const referralCode =
+                        String(
+                            referrerRows[0].referred_by
+                        ).trim();
+
+                    const [referrerUserRows] =
+                        await connection.execute(
+                            `
+                            SELECT telegram_id
+                            FROM users
+                            WHERE referral_code = ?
+                            LIMIT 1
+                            `,
+                            [referralCode]
+                        );
+
+                    if (
+                        referrerUserRows.length > 0
+                    ) {
+                        referrerTelegramId =
+                            String(
+                                referrerUserRows[0].telegram_id
+                            );
+                    }
+                }
+
+                const referralPercent =
+                    await instagramGetReferralPercent(
+                        connection
+                    );
+
+                if (
+                    referrerTelegramId &&
+                    referrerTelegramId !==
+                        String(submission.telegram_id) &&
+                    referralPercent > 0
+                ) {
+
+                    referralCommission =
+                        creditUsd *
+                        referralPercent /
+                        100;
+
+                    const [
+                        referrerBalanceRows
+                    ] =
+                        await connection.execute(
+                            `
+                            SELECT balance
+                            FROM users
+                            WHERE telegram_id = ?
+                            FOR UPDATE
+                            `,
+                            [referrerTelegramId]
+                        );
+
+                    if (
+                        referrerBalanceRows.length > 0 &&
+                        referralCommission > 0
+                    ) {
+
+                        const referrerBefore =
+                            Number(
+                                referrerBalanceRows[0]
+                                    .balance || 0
+                            );
+
+                        const referrerAfter =
+                            referrerBefore +
+                            referralCommission;
+
+                        // ------------------------------------
+                        // Prevent duplicate referral commission
+                        // ------------------------------------
+
+                        const [
+                            existingCommissionRows
+                        ] =
+                            await connection.execute(
+                                `
+                                SELECT id
+                                FROM referral_commissions
+                                WHERE source_transaction_id = ?
+                                AND referrer_telegram_id = ?
+                                LIMIT 1
+                                `,
+                                [
+                                    sourceTransactionId,
+                                    referrerTelegramId
+                                ]
+                            );
+
+                        if (
+                            existingCommissionRows.length === 0
+                        ) {
+
+                            const [
+                                commissionInsert
+                            ] =
+                                await connection.execute(
+                                    `
+                                    INSERT INTO referral_commissions
+                                    (
+                                        source_transaction_id,
+                                        referrer_telegram_id,
+                                        referred_telegram_id,
+                                        commission_percent,
+                                        source_amount_usd,
+                                        commission_amount_usd,
+                                        status
+                                    )
+                                    VALUES
+                                    (
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        'completed'
+                                    )
+                                    `,
+                                    [
+                                        sourceTransactionId,
+                                        referrerTelegramId,
+                                        submission.telegram_id,
+                                        referralPercent,
+                                        creditUsd,
+                                        referralCommission
+                                    ]
+                                );
+
+                            await connection.execute(
+                                `
+                                UPDATE users
+                                SET balance = ?
+                                WHERE telegram_id = ?
+                                `,
+                                [
+                                    referrerAfter,
+                                    referrerTelegramId
+                                ]
+                            );
+
+                            const [
+                                commissionTransaction
+                            ] =
+                                await connection.execute(
+                                    `
+                                    INSERT INTO transactions
+                                    (
+                                        telegram_id,
+                                        transaction_type,
+                                        source_id,
+                                        source_reference,
+                                        amount_usd,
+                                        balance_before,
+                                        balance_after,
+                                        status,
+                                        description
+                                    )
+                                    VALUES
+                                    (
+                                        ?,
+                                        'referral_commission',
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        'completed',
+                                        ?
+                                    )
+                                    `,
+                                    [
+                                        referrerTelegramId,
+                                        sourceTransactionId,
+                                        `INSTAGRAM-${submission.id}`,
+                                        referralCommission,
+                                        referrerBefore,
+                                        referrerAfter,
+                                        `Direct referral commission from Instagram Sell #${submission.id}`
+                                    ]
+                                );
+
+                            await connection.execute(
+                                `
+                                UPDATE referral_commissions
+                                SET commission_transaction_id = ?
+                                WHERE id = ?
+                                `,
+                                [
+                                    commissionTransaction.insertId,
+                                    commissionInsert.insertId
+                                ]
+                            );
+                        }
+                    }
+                }
+
+                // --------------------------------------------
+                // Final submission status
+                // --------------------------------------------
+
+                await connection.execute(
+                    `
+                    UPDATE instagram_submissions
+                    SET
+                        status = 'approved',
+                        credited_usd = ?,
+                        admin_telegram_id = ?,
+                        admin_note = ?,
+                        reviewed_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    AND status IN ('pending','checking')
+                    `,
+                    [
+                        creditUsd,
+                        admin.telegram_id,
+                        adminNote || null,
+                        submissionId
+                    ]
+                );
+
+                // --------------------------------------------
+                // Pool becomes completed
+                // --------------------------------------------
+
+                await connection.execute(
+                    `
+                    UPDATE instagram_account_pool
+                    SET
+                        status = 'completed'
+                    WHERE id = ?
+                    AND status = 'submitted'
+                    `,
+                    [submission.pool_id]
+                );
+
+                await connection.commit();
+
+                return res.json({
+                    success: true,
+                    message:
+                        'Instagram submission approved and balance credited.',
+                    submission_id:
+                        submissionId,
+                    credited_usd:
+                        Number(
+                            creditUsd.toFixed(4)
+                        ),
+                    referral_commission_usd:
+                        Number(
+                            referralCommission.toFixed(4)
+                        )
+                });
+
+            } catch (error) {
+
+                try {
+                    await connection.rollback();
+                } catch (e) {}
+
+                throw error;
+            }
+                }
+                // ====================================================
+        // ADMIN REJECT
+        // ====================================================
+
+        if (action === 'admin_reject') {
+
+            const admin =
+                await instagramRequireAdmin(
+                    connection,
+                    tgId
+                );
+
+            const submissionId =
+                Number(body.submission_id);
+
+            const adminNote =
+                instagramCleanString(
+                    body.admin_note,
+                    2000
+                );
+
+            if (
+                !Number.isInteger(submissionId) ||
+                submissionId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'Valid submission ID is required.'
+                });
+            }
+
+            await connection.beginTransaction();
+
+            try {
+
+                const [rows] =
+                    await connection.execute(
+                        `
+                        SELECT *
+                        FROM instagram_submissions
+                        WHERE id = ?
+                        FOR UPDATE
+                        `,
+                        [submissionId]
+                    );
+
+                if (rows.length === 0) {
+                    throw new Error(
+                        'Instagram submission not found.'
+                    );
+                }
+
+                const submission = rows[0];
+
+                if (
+                    submission.status !== 'checking' &&
+                    submission.status !== 'pending'
+                ) {
+                    throw new Error(
+                        `This submission has already been ${submission.status}.`
+                    );
+                }
+
+                await connection.execute(
+                    `
+                    UPDATE instagram_submissions
+                    SET
+                        status = 'rejected',
+                        credited_usd = 0,
+                        admin_telegram_id = ?,
+                        admin_note = ?,
+                        reviewed_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    AND status IN ('pending','checking')
+                    `,
+                    [
+                        admin.telegram_id,
+                        adminNote || null,
+                        submissionId
+                    ]
+                );
+
+                await connection.execute(
+                    `
+                    UPDATE instagram_account_pool
+                    SET
+                        status = 'rejected'
+                    WHERE id = ?
+                    AND status = 'submitted'
+                    `,
+                    [submission.pool_id]
+                );
+
+                await connection.commit();
+
+                return res.json({
+                    success: true,
+                    message:
+                        'Instagram submission rejected successfully.'
+                });
+
+            } catch (error) {
+
+                try {
+                    await connection.rollback();
+                } catch (e) {}
+
+                throw error;
+            }
+        }
+
+        // ====================================================
+        // ADMIN DASHBOARD STATS
+        // ====================================================
+
+        if (action === 'admin_stats') {
+
+            await instagramRequireAdmin(
+                connection,
+                tgId
+            );
+
+            const [submissionStats] =
+                await connection.execute(
+                    `
+                    SELECT
+                        COUNT(*) AS total,
+                        SUM(status = 'pending') AS pending,
+                        SUM(status = 'checking') AS checking,
+                        SUM(status = 'approved') AS approved,
+                        SUM(status = 'rejected') AS rejected,
+                        COALESCE(
+                            SUM(credited_usd),
+                            0
+                        ) AS total_paid
+                    FROM instagram_submissions
+                    `
+                );
+
+            const [poolStats] =
+                await connection.execute(
+                    `
+                    SELECT
+                        COUNT(*) AS total,
+                        SUM(status = 'available') AS available,
+                        SUM(status = 'assigned') AS assigned,
+                        SUM(status = 'submitted') AS submitted,
+                        SUM(status = 'completed') AS completed,
+                        SUM(status = 'rejected') AS rejected
+                    FROM instagram_account_pool
+                    `
+                );
+
+            return res.json({
+                success: true,
+                submissions:
+                    submissionStats[0] || {},
+                pool:
+                    poolStats[0] || {}
+            });
+        }
+
+        // ====================================================
+        // INVALID ACTION
+        // ====================================================
+
+        return res.status(400).json({
+            success: false,
+            message:
+                'Invalid Instagram action.'
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Instagram API Error:',
+            error
+        );
+
+        return res.status(
+            error.statusCode || 500
+        ).json({
+            success: false,
+            message:
+                error.message ||
+                'Internal Server Error'
+        });
+
+    } finally {
+
+        if (connection) {
+
+            try {
+                await connection.end();
+            } catch (e) {}
+
+        }
+    }
+});
+
+// ============================================================
+// END OF INSTAGRAM SELL API
+// ============================================================
+
 
              // ============================================================
 // ২. MAIN API ROUTE
