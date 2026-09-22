@@ -364,11 +364,25 @@ app.all('/api/deposit', async (req, res) => {
                 const sourceTransactionId = transactionResult.insertId;
 
                 let referralCommission = 0;
-                let referrerTelegramId = null;
-                const [referrerRows] = await connection.execute(`SELECT referred_by FROM users WHERE telegram_id = ? LIMIT 1`, [deposit.telegram_id]);
-                if (referrerRows.length > 0 && referrerRows[0].referred_by) {
-                    referrerTelegramId = String(referrerRows[0].referred_by);
-                }
+let referrerTelegramId = null;
+
+const [referrerRows] = await connection.execute(
+    `SELECT referred_by FROM users WHERE telegram_id = ? LIMIT 1`,
+    [deposit.telegram_id]
+);
+
+if (referrerRows.length > 0 && referrerRows[0].referred_by) {
+    const referralCode = String(referrerRows[0].referred_by).trim();
+
+    const [referrerUserRows] = await connection.execute(
+        `SELECT telegram_id FROM users WHERE referral_code = ? LIMIT 1`,
+        [referralCode]
+    );
+
+    if (referrerUserRows.length > 0) {
+        referrerTelegramId = String(referrerUserRows[0].telegram_id);
+    }
+}
                 const [referralSettingsRows] = await connection.execute(`SELECT referral_percentage FROM settings WHERE id = 1 LIMIT 1`);
                 const referralPercent = referralSettingsRows.length > 0 ? Number(referralSettingsRows[0].referral_percentage || 0) : 0;
 
