@@ -27,7 +27,7 @@ button{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);co
   </div>
 
   <div class="card">
-    <div class="row"><strong>Bulk Account Upload</strong><span class="muted">CSV</span></div>
+  <input id="csvFile" type="file" accept=".csv,text/csv,application/vnd.ms-excel,*/*">
     <div class="muted" style="margin:8px 0">CSV columns: username, full_name, bio, password</div>
     <input id="csvFile" type="file" accept=".csv,text/csv">
     <div class="actions" style="margin-top:10px"><button id="uploadBtn">Upload Accounts</button><button id="refreshBtn" class="secondary">Refresh</button></div>
