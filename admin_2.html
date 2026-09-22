@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AL-HUDA TECH GLOBAL</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #090d16; color: #f8fafc; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 480px; background: #1e293b; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); border: 1px solid #334155; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+        .header h2 { color: #f43f5e; font-size: 22px; margin-bottom: 5px; }
+        .header p { color: #94a3b8; font-size: 13px; }
+        .card { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; text-align: center; }
+        .card h3 { color: #38bdf8; margin-bottom: 8px; font-size: 18px; }
+        .card p { color: #cbd5e1; font-size: 14px; line-height: 1.5; }
+        .btn { display: block; width: 100%; background: #334155; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; margin-top: 10px; transition: 0.2s; }
+        .btn:hover { background: #475569; }
+        .btn-accent { background: #e11d48; }
+        .btn-accent:hover { background: #be123c; }
+        .form-group { text-align: left; margin-top: 10px; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+        .form-input, .form-textarea { width: 100%; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; color: #fff; font-size: 13px; outline: none; margin-bottom: 8px; }
+        .form-textarea { resize: vertical; min-height: 60px; }
+        .loading, .error-msg { text-align: center; padding: 30px; color: #94a3b8; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="admin-app">
+        <div class="loading">Verifying Admin Access...</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let tgId = urlParams.get('tg_id');
+
+        if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            tgId = tg.initDataUnsafe.user.id;
+        }
+
+        async function verifyAdmin() {
+            const container = document.getElementById('admin-app');
+
+            if (!tgId) {
+                container.innerHTML = `
+                    <div class="error-msg">
+                        <h3>⚠️ Access Denied</h3>
+                        <p>Unauthorized access attempt detected.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // রেন্ডারের এক্সপ্রেস এপিআই ব্যবহার করে অ্যাডমিন চেক
+                const response = await fetch(`/api/get-user?tg_id=${tgId}`);
+                const data = await response.json();
+
+                if (!response.ok || !data.success || data.user.role !== 'admin') {
+                    container.innerHTML = `
+                        <div class="error-msg">
+                            <h3>🚫 Restricted Area</h3>
+                            <p>You do not have administrator privileges to view this page.</p>
+                            <a href="index.html?tg_id=${tgId}" class="btn">Go to User Dashboard</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const admin = data.user;
+
+                let referralSettings = { referral_percentage: 5.00, referral_notice: '' };
+                try {
+                    const refRes = await fetch(`/api/action`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'get_admin_data', tg_id: tgId })
+                    });
+                    const refData = await refRes.json();
+                    if (refData.success && refData.settings) {
+                        referralSettings = refData.settings;
+                    }
+                } catch (e) {
+                    console.log('Could not fetch extra settings, using defaults');
+                }
+
+                container.innerHTML = `
+                    <div class="header">
+                        <h2>🛡️ Admin Control Panel</h2>
+                        <p>Logged in as: <b>${admin.first_name}</b> (Admin)</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Welcome to Admin Dashboard</h3>
+                        <p>Manage your platform control center, user stats, and system configurations below.</p>
+                    </div>
+
+                    <div class="card" style="text-align: left; font-size: 13px;">
+                        <p><b>Admin Telegram ID:</b> ${admin.telegram_id}</p>
+                        <p><b>System Status:</b> Operational 🟢</p>
+                    </div>
+
+                    <div class="card" style="text-align: left;">
+                        <h3 style="font-size: 16px; margin-bottom: 10px;">⚙️ Referral System Settings</h3>
+                        <div class="form-group">
+                            <label>Commission Percentage (%)</label>
+                            <input type="number" id="refPercentage" class="form-input" value="${referralSettings.referral_percentage || 5.00}" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Referral Notice</label>
+                            <textarea id="refNotice" class="form-textarea">${referralSettings.referral_notice || ''}</textarea>
+                        </div>
+                        <button class="btn btn-accent" onclick="saveReferralSettings()">Save Referral Settings</button>
+                    </div>
+
+                    <a href="index.html?tg_id=${tgId}" class="btn">🏠 Switch to User View</a>
+                `;
+
+            } catch (error) {
+                console.error('Admin verification error:', error);
+                container.innerHTML = `
+                    <div class="error-msg">
+                        <h3>❌ Error</h3>
+                        <p>Failed to verify admin permissions.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function saveReferralSettings() {
+            const percentage = document.getElementById('refPercentage').value;
+            const notice = document.getElementById('refNotice').value;
+
+            try {
+                const res = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'update_referral_settings', 
+                        tg_id: tgId, 
+                        referral_percentage: percentage, 
+                        referral_notice: notice 
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('Referral settings updated successfully!');
+                } else {
+                    alert('Failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Server error while updating settings.');
+            }
+        }
+
+        verifyAdmin();
+    </script>
+</body>
+</html>
