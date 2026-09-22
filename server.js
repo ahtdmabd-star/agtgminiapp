@@ -5,130 +5,406 @@ const mysql = require('mysql2/promise');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট করা হলো (কোনো .env লাগবে না)
+// সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট করা হলো
+// কোনো .env লাগবে না
 const dbConfig = {
     host: 'mysql-14cc93c7-alhudatechglobal-601b.i.aivencloud.com',
     port: 14363,
     user: 'avnadmin',
     password: 'AVNS_hhfXItvXPam49_lMnOU',
     database: 'defaultdb',
-    ssl: { rejectUnauthorized: false }
+    ssl: {
+        rejectUnauthorized: false
+    }
 };
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// স্ট্যাটিক ফাইল সার্ভ করার জন্য (index.html, admin.html ইত্যাদি)
+// স্ট্যাটিক ফাইল সার্ভ করার জন্য
+// index.html, admin.html ইত্যাদি
 app.use(express.static(path.join(__dirname, '/')));
 
-// ১. গেট ইউজার এপিআই (আগের get-user.js এর কাজ)
+
+// ============================================================
+// ১. GET USER API
+// ============================================================
+
 app.get('/api/get-user', async (req, res) => {
+
     const tgId = req.query.tg_id;
+
     if (!tgId) {
-        return res.status(400).json({ success: false, message: 'Telegram ID is missing.' });
+        return res.status(400).json({
+            success: false,
+            message: 'Telegram ID is missing.'
+        });
     }
 
     let connection;
+
     try {
+
         connection = await mysql.createConnection(dbConfig);
-        const [rows] = await connection.execute('SELECT * FROM users WHERE telegram_id = ?', [tgId]);
+
+        const [rows] = await connection.execute(
+            'SELECT * FROM users WHERE telegram_id = ?',
+            [tgId]
+        );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'User account not found. Please start the bot first.' });
+            return res.status(404).json({
+                success: false,
+                message: 'User account not found. Please start the bot first.'
+            });
         }
 
         const user = rows[0];
+
         if (user.telegram_verified !== 'verified') {
-            return res.status(403).json({ success: false, message: 'Please join our channel and group, then verify your account via the bot.' });
+            return res.status(403).json({
+                success: false,
+                message: 'Please join our channel and group, then verify your account via the bot.'
+            });
         }
 
-        res.json({ success: true, user });
+
+        // ========================================================
+        // REFERRAL SETTINGS
+        // ========================================================
+        // settings table থেকে referral percentage এবং notice নেওয়া হচ্ছে.
+        // এতে users table বা অন্য কোনো existing system পরিবর্তন হচ্ছে না.
+        // ========================================================
+
+        let settings = {
+            referral_percentage: 5.00,
+            referral_notice: ''
+        };
+
+        try {
+
+            const [settingsRows] = await connection.execute(
+                'SELECT referral_percentage, referral_notice FROM settings WHERE id = 1'
+            );
+
+            if (settingsRows.length > 0) {
+                settings = settingsRows[0];
+            }
+
+        } catch (err) {
+
+            console.log(
+                'Settings table fetch note: Using default values.'
+            );
+
+        }
+
+
+        // User + Referral Settings একসাথে পাঠানো হচ্ছে
+        res.json({
+            success: true,
+            user: user,
+            settings: settings
+        });
+
+
     } catch (error) {
+
         console.error('Database Error:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error: ' + error.message });
+
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error: ' + error.message
+        });
+
+
     } finally {
-        if (connection) await connection.end();
+
+        if (connection) {
+            await connection.end();
+        }
+
     }
+
 });
 
-// ২. মেইন এপিআই রাউট (আগের api.js এর কাজ - রেফারেল এবং অ্যাডমিন ডাটা ম্যানেজমেন্ট)
+
+// ============================================================
+// ২. MAIN API ROUTE
+// ============================================================
+// Referral এবং Admin Data Management
+// ============================================================
+
 app.all('/api/action', async (req, res) => {
+
     const method = req.method;
+
     if (method !== 'POST' && method !== 'GET') {
-        return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+
+        return res.status(405).json({
+            success: false,
+            message: 'Method Not Allowed'
+        });
+
     }
 
-    const body = req.method === 'POST' ? req.body : req.query;
+
+    const body = req.method === 'POST'
+        ? req.body
+        : req.query;
+
     const action = body.action;
     const tgId = body.tg_id;
 
     let connection;
+
     try {
+
         connection = await mysql.createConnection(dbConfig);
-        let responseData = { success: false, message: 'Invalid Action' };
+
+        let responseData = {
+            success: false,
+            message: 'Invalid Action'
+        };
+
+
+        // ========================================================
+        // GET USER
+        // ========================================================
 
         if (action === 'get_user') {
-            if (!tgId) return res.status(400).json({ success: false, message: 'Telegram ID is required' });
-            const [users] = await connection.execute('SELECT * FROM users WHERE telegram_id = ?', [tgId]);
-            if (users.length > 0) responseData = { success: true, user: users[0] };
-            else responseData = { success: false, message: 'User not found' };
-        } 
-        else if (action === 'get_admin_data') {
-            if (!tgId) return res.status(400).json({ success: false, message: 'Telegram ID is required' });
-            const [users] = await connection.execute('SELECT * FROM users WHERE telegram_id = ?', [tgId]);
-            if (users.length === 0 || users[0].role !== 'admin') {
-                await connection.end();
-                return res.status(403).json({ success: false, message: 'Unauthorized: Admin access required' });
+
+            if (!tgId) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: 'Telegram ID is required'
+                });
+
             }
 
-            let settings = { referral_percentage: 5.00, referral_notice: '' };
-            try {
-                const [settingsRows] = await connection.execute('SELECT referral_percentage, referral_notice FROM settings WHERE id = 1');
-                if (settingsRows.length > 0) settings = settingsRows[0];
-            } catch (err) {
-                console.log('Settings table fetch note: Using default values.');
-            }
-
-            responseData = { success: true, user: users[0], settings: settings };
-        } 
-        else if (action === 'update_referral_settings') {
-            const { referral_percentage, referral_notice } = body;
-            if (!tgId) return res.status(400).json({ success: false, message: 'Telegram ID is required' });
-
-            const [adminCheck] = await connection.execute('SELECT role FROM users WHERE telegram_id = ?', [tgId]);
-            if (adminCheck.length === 0 || adminCheck[0].role !== 'admin') {
-                await connection.end();
-                return res.status(403).json({ success: false, message: 'Unauthorized access' });
-            }
-
-            await connection.execute(
-                'UPDATE settings SET referral_percentage = ?, referral_notice = ? WHERE id = 1',
-                [referral_percentage, referral_notice]
+            const [users] = await connection.execute(
+                'SELECT * FROM users WHERE telegram_id = ?',
+                [tgId]
             );
 
-            responseData = { success: true, message: 'Referral settings updated successfully' };
+            if (users.length > 0) {
+
+                responseData = {
+                    success: true,
+                    user: users[0]
+                };
+
+            } else {
+
+                responseData = {
+                    success: false,
+                    message: 'User not found'
+                };
+
+            }
+
         }
 
-        if (connection) await connection.end();
+
+        // ========================================================
+        // GET ADMIN DATA
+        // ========================================================
+
+        else if (action === 'get_admin_data') {
+
+            if (!tgId) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: 'Telegram ID is required'
+                });
+
+            }
+
+
+            const [users] = await connection.execute(
+                'SELECT * FROM users WHERE telegram_id = ?',
+                [tgId]
+            );
+
+
+            if (
+                users.length === 0 ||
+                users[0].role !== 'admin'
+            ) {
+
+                await connection.end();
+
+                return res.status(403).json({
+                    success: false,
+                    message: 'Unauthorized: Admin access required'
+                });
+
+            }
+
+
+            // Admin panel-এর জন্য referral settings
+            let settings = {
+                referral_percentage: 5.00,
+                referral_notice: ''
+            };
+
+
+            try {
+
+                const [settingsRows] = await connection.execute(
+                    'SELECT referral_percentage, referral_notice FROM settings WHERE id = 1'
+                );
+
+
+                if (settingsRows.length > 0) {
+
+                    settings = settingsRows[0];
+
+                }
+
+            } catch (err) {
+
+                console.log(
+                    'Settings table fetch note: Using default values.'
+                );
+
+            }
+
+
+            responseData = {
+                success: true,
+                user: users[0],
+                settings: settings
+            };
+
+        }
+
+
+        // ========================================================
+        // UPDATE REFERRAL SETTINGS
+        // ========================================================
+
+        else if (action === 'update_referral_settings') {
+
+            const {
+                referral_percentage,
+                referral_notice
+            } = body;
+
+
+            if (!tgId) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: 'Telegram ID is required'
+                });
+
+            }
+
+
+            // Admin check
+            const [adminCheck] = await connection.execute(
+                'SELECT role FROM users WHERE telegram_id = ?',
+                [tgId]
+            );
+
+
+            if (
+                adminCheck.length === 0 ||
+                adminCheck[0].role !== 'admin'
+            ) {
+
+                await connection.end();
+
+                return res.status(403).json({
+                    success: false,
+                    message: 'Unauthorized access'
+                });
+
+            }
+
+
+            // Referral settings update
+            await connection.execute(
+                'UPDATE settings SET referral_percentage = ?, referral_notice = ? WHERE id = 1',
+                [
+                    referral_percentage,
+                    referral_notice
+                ]
+            );
+
+
+            responseData = {
+                success: true,
+                message: 'Referral settings updated successfully'
+            };
+
+        }
+
+
+        // ========================================================
+        // SEND RESPONSE
+        // ========================================================
+
+        if (connection) {
+            await connection.end();
+        }
+
         res.json(responseData);
 
+
     } catch (error) {
+
         console.error('API Error:', error);
-        if (connection) await connection.end();
-        res.status(500).json({ success: false, message: error.message });
+
+
+        if (connection) {
+            await connection.end();
+        }
+
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
     }
+
 });
 
-// সেলফ-পিং (Self-Ping) মেকানিজম যাতে রেন্ডার সার্ভার ২৪ ঘণ্টা লাইভ থাকে এবং ঘুমিয়ে না পড়ে
+
+// ============================================================
+// SELF-PING
+// ============================================================
+// Render server যাতে ঘুমিয়ে না পড়ে
+// ============================================================
+
 setInterval(() => {
+
     const appUrl = process.env.RENDER_EXTERNAL_URL;
+
     if (appUrl) {
-        // প্রতি ১৪ মিনিট পর পর নিজের সার্ভারেই রিকোয়েস্ট পাঠাবে
-        fetch(`${appUrl}/api/get-user?tg_id=ping`).catch(() => {});
+
+        // প্রতি ১৪ মিনিট পর নিজের server-এ request
+        fetch(
+            `${appUrl}/api/get-user?tg_id=ping`
+        ).catch(() => {});
+
     }
+
 }, 14 * 60 * 1000);
 
+
+// ============================================================
+// START SERVER
+// ============================================================
+
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+
+    console.log(
+        `Server is running on port ${PORT}`
+    );
+
 });
-        
