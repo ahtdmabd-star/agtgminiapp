@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Withdraw Management | AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#06101d;--panel:#0c1b2d;--panel2:#10253e;--line:#1c3854;--text:#f0f6ff;--muted:#91a8c0;--blue:#2f80ed;--blue2:#245fb3;--green:#28c76f;--red:#ff5c6c;--yellow:#ffb020;--shadow:0 18px 50px rgba(0,0,0,.32)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:linear-gradient(180deg,#05101c,#091a2c);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{max-width:1050px;margin:auto;padding:12px 14px 35px}.topbar{height:60px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:30;background:rgba(6,16,29,.94);backdrop-filter:blur(14px)}
+.icon-btn{width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:#0b1b2d;color:#e6f1ff;display:grid;place-items:center}.icon-btn svg{width:20px;height:20px}
+.title{font-size:17px;font-weight:850}.subtitle{font-size:10px;color:var(--muted);margin-top:2px}.spacer{flex:1}
+.card{background:linear-gradient(145deg,#0e2035,#0a1829);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:13px;box-shadow:var(--shadow)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#0b1b2d;color:#dbeaff;border-radius:11px;padding:10px 13px;font-weight:750}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));border-color:transparent}.btn.danger{background:rgba(255,92,108,.1);color:#ff8490;border-color:rgba(255,92,108,.3)}.btn.success{background:rgba(40,199,111,.1);color:#61e49a;border-color:rgba(40,199,111,.3)}.btn:disabled{opacity:.45}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.section-title{font-size:14px;font-weight:850}
+.filter{background:#081625;border:1px solid var(--line);color:#fff;border-radius:10px;padding:9px 11px;outline:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#081625;border:1px solid #17324e;border-radius:13px;padding:13px}.stat small{display:block;color:var(--muted);font-size:10px}.stat strong{display:block;font-size:19px;margin-top:5px}
+.request{padding:15px 0;border-bottom:1px solid #1a334e}.request:last-child{border-bottom:0}.req-head{display:flex;justify-content:space-between;gap:12px}.user{font-size:13px;font-weight:800}.meta{font-size:10px;color:var(--muted);margin-top:4px}.amount{text-align:right;font-weight:850}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:850;text-transform:capitalize;margin-top:6px}.pending{background:rgba(255,176,32,.12);color:#ffc75e}.approved{background:rgba(40,199,111,.12);color:#5be295}.rejected{background:rgba(255,92,108,.12);color:#ff7e8b}
+.details{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.detail{background:#081625;border:1px solid #17304a;border-radius:11px;padding:9px}.detail span{display:block;color:var(--muted);font-size:9px}.detail b{display:block;font-size:12px;margin-top:3px;word-break:break-word}
+.actions{display:flex;gap:8px;margin-top:11px}.actions .btn{flex:1}.note{width:100%;background:#081625;border:1px solid var(--line);color:#fff;border-radius:10px;padding:10px;margin-top:10px;outline:0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}.modal.show{display:flex}.modal-box{width:min(620px,100%);max-height:90vh;overflow:auto;background:#0b1d31;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 22px 80px rgba(0,0,0,.5)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.close{border:1px solid var(--line);background:#081625;color:#fff;width:36px;height:36px;border-radius:10px}
+.field{margin:11px 0}.field label{display:block;color:#a8bdd2;font-size:10px;margin-bottom:6px}.input,.textarea,.select{width:100%;background:#081625;border:1px solid var(--line);color:#fff;border-radius:10px;padding:11px;outline:0}.textarea{min-height:120px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.save{width:100%;margin-top:7px}.method-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #18304a}.method-row:last-child{border-bottom:0}.switch{position:relative;width:43px;height:24px;background:#253c53;border-radius:99px;border:0}.switch:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;border-radius:50%;background:#9fb2c5;transition:.2s}.switch.on{background:rgba(47,128,237,.4)}.switch.on:after{left:22px;background:#fff}
+.empty{text-align:center;color:var(--muted);padding:28px 10px;font-size:12px}.loading{padding:28px;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#10253c;border:1px solid var(--line);border-radius:11px;padding:11px 15px;z-index:150;display:none;box-shadow:var(--shadow);font-size:12px}.toast.show{display:block}
+@media(max-width:720px){.stats{grid-template-columns:1fr 1fr}.details{grid-template-columns:1fr 1fr}.details .detail:last-child{grid-column:1/-1}}
+@media(max-width:480px){.details{grid-template-columns:1fr}.details .detail:last-child{grid-column:auto}.grid2{grid-template-columns:1fr}.stats{gap:7px}.stat strong{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <button class="icon-btn" id="backBtn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/><path d="M9 12h11"/></svg></button>
+    <div><div class="title">Withdraw Management</div><div class="subtitle">AL-HUDA TECH GLOBAL ADMIN</div></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 .1.1a2 2 0 0 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.2a2 2 0 0 1-4 0v-.2a2 2 0 0 0-3.4-1.4l-.1.1A2 2 0 1 1 3 15l.1-.1A2 2 0 0 0 1.7 11.5h-.2a2 2 0 0 1 0-4h.2A2 2 0 0 0 3 4.1L2.9 4A2 2 0 1 1 5.7 1.2l.1.1A2 2 0 0 0 9.2 0h.2a2 2 0 0 1 4 0v.2a2 2 0 0 0 3.4 1.4l.1-.1A2 2 0 1 1 19.7 4l-.1.1a2 2 0 0 0 1.4 3.4h.2a2 2 0 0 1 0 4H21a2 2 0 0 0-1.6 3.5Z" transform="translate(0 2) scale(.9)"/></svg></button>
+    <button class="icon-btn" id="homeBtn" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></button>
+  </div>
+
+  <div class="card">
+    <div class="stats">
+      <div class="stat"><small>Pending</small><strong id="pendingCount">0</strong></div>
+      <div class="stat"><small>Approved</small><strong id="approvedCount">0</strong></div>
+      <div class="stat"><small>Rejected</small><strong id="rejectedCount">0</strong></div>
+      <div class="stat"><small>Total Requests</small><strong id="totalCount">0</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title-row">
+      <div class="section-title">Withdraw Requests</div>
+      <select class="filter" id="statusFilter">
+        <option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div id="requests" class="loading">Checking admin access...</div>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head"><div class="section-title">Withdraw Settings</div><button class="close" id="closeSettings">×</button></div>
+    <div class="grid2">
+      <div class="field"><label>Minimum USDT Withdrawal (USD)</label><input class="input" id="minUsdt" type="number" step="0.0001"></div>
+      <div class="field"><label>Maximum USDT Withdrawal (USD)</label><input class="input" id="maxUsdt" type="number" step="0.0001"></div>
+      <div class="field"><label>Minimum BDT Withdrawal</label><input class="input" id="minBdt" type="number" step="0.01"></div>
+      <div class="field"><label>Maximum BDT Withdrawal</label><input class="input" id="maxBdt" type="number" step="0.01"></div>
+      <div class="field"><label>Exchange Rate: 1 USD = BDT</label><input class="input" id="rate" type="number" step="0.0001"></div>
+      <div class="field"><label>USDT Withdraw Charge (%)</label><input class="input" id="usdtCharge" type="number" step="0.01" min="0" max="100"></div>
+      <div class="field"><label>BDT Withdraw Charge (%)</label><input class="input" id="bdtCharge" type="number" step="0.01" min="0" max="100"></div>
+      <div class="field"><label>Exchange Fee Type</label><select class="select" id="feeType"><option value="percent">Percent</option><option value="fixed">Fixed USD</option></select></div>
+    </div>
+    <div class="field"><label>Exchange Fee Value</label><input class="input" id="feeValue" type="number" step="0.0001" min="0"></div>
+    <div class="field"><label>Withdrawal Rules</label><textarea class="textarea" id="rules"></textarea></div>
+    <button class="btn primary save" id="saveSettings">Save All Settings</button>
+    <div style="height:10px"></div>
+    <div class="section-title">Withdraw Methods</div>
+    <div id="methodSettings"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand();try{tg.BackButton.show()}catch(e){}}
+const params=new URLSearchParams(location.search);const tgId=params.get('tg_id')||tg?.initDataUnsafe?.user?.id;const API='/api/withdraw';
+let state={settings:null,methods:[],requests:[]};
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function money(v,d=4){return Number(v||0).toFixed(d)}
+function back(){if(history.length>1)history.back();else location.href='index.html'+(tgId?'?tg_id='+encodeURIComponent(tgId):'')}
+function home(){location.href='index.html'+(tgId?'?tg_id='+encodeURIComponent(tgId):'')}
+document.getElementById('backBtn').onclick=back;document.getElementById('homeBtn').onclick=home;try{tg?.BackButton?.onClick(back)}catch(e){}
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2200)}
+async function api(action,extra={}){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,tg_id:tgId,...extra})});
+  const j=await r.json();if(!r.ok||j.success===false)throw new Error(j.message||'Request failed');return j;
+}
+function fillSettings(s){
+  document.getElementById('minUsdt').value=s.minimum_usdt_withdraw_usd??1;
+  document.getElementById('maxUsdt').value=s.max_usdt_withdraw_usd??0;
+  document.getElementById('minBdt').value=s.minimum_bdt_withdraw??100;
+  document.getElementById('maxBdt').value=s.max_exchange_withdraw_bdt??0;
+  document.getElementById('rate').value=s.exchange_rate_bdt??130;
+  document.getElementById('usdtCharge').value=s.usdt_withdraw_charge_percent??0;
+  document.getElementById('bdtCharge').value=s.bdt_withdraw_charge_percent??0;
+  document.getElementById('feeType').value=s.exchange_fee_type||'percent';
+  document.getElementById('feeValue').value=s.exchange_fee_value??0;
+  document.getElementById('rules').value=s.withdraw_rules||'';
+}
+function renderMethodSettings(){
+  document.getElementById('methodSettings').innerHTML=state.methods.map(m=>`<div class="method-row"><div><b>${esc(m.method_name)}</b><div class="meta">${esc(m.method_code)}</div></div><button class="switch ${Number(m.enabled)?'on':''}" data-code="${esc(m.method_code)}" data-enabled="${Number(m.enabled)?1:0}"></button><button class="btn" data-sort="${esc(m.method_code)}">Order</button></div>`).join('');
+  document.querySelectorAll('.switch').forEach(b=>b.onclick=async()=>{try{const enabled=Number(b.dataset.enabled)?0:1;await api('update_withdraw_method',{method_code:b.dataset.code,enabled,sort_order:state.methods.find(x=>x.method_code===b.dataset.code)?.sort_order||0});await load();openSettings();toast('Method updated')}catch(e){toast(e.message)}});
+  document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=async()=>{const m=state.methods.find(x=>x.method_code===b.dataset.sort);const v=prompt('Enter sort order',m?.sort_order??0);if(v===null)return;try{await api('update_withdraw_method',{method_code:m.method_code,enabled:Number(m.enabled),sort_order:Number(v)});await load();openSettings();toast('Sort order updated')}catch(e){toast(e.message)}});
+}
+function renderRequests(){
+  const filter=document.getElementById('statusFilter').value;
+  const list=state.requests.filter(x=>filter==='all'||x.status===filter);
+  const box=document.getElementById('requests');
+  if(!list.length){box.innerHTML='<div class="empty">No requests found.</div>';return}
+  box.innerHTML=list.map(x=>{
+    const usd=['bep20','trx'].includes(x.method_code), cur=usd?'$':'৳';
+    const digits=usd?4:2;
+    const pending=x.status==='pending';
+    return `<div class="request">
+      <div class="req-head">
+        <div><div class="user">User ID: ${esc(x.telegram_id)}</div><div class="meta">${esc(x.method_name)} · ${esc(x.source_balance)} balance · ${esc(x.created_at)}</div></div>
+        <div><div class="amount">${cur}${money(x.requested_amount,digits)}</div><span class="badge ${esc(x.status)}">${esc(x.status)}</span></div>
+      </div>
+      <div class="details">
+        <div class="detail"><span>Account / Wallet</span><b>${esc(x.account_number)}</b></div>
+        <div class="detail"><span>Charge</span><b>${cur}${money(x.charge_amount,digits)} (${money(x.charge_percent,2)}%)</b></div>
+        <div class="detail"><span>Receivable</span><b>${cur}${money(x.net_amount,digits)}</b></div>
+        <div class="detail"><span>Exchange Rate</span><b>${Number(x.exchange_rate||1).toFixed(4)}</b></div>
+        <div class="detail"><span>Admin</span><b>${esc(x.admin_telegram_id||'—')}</b></div>
+        <div class="detail"><span>Admin Note</span><b>${esc(x.admin_note||'—')}</b></div>
+      </div>
+      ${pending?`<textarea class="note" id="note-${x.id}" placeholder="Optional admin note"></textarea><div class="actions"><button class="btn success" onclick="review(${x.id},'approve')">Approve</button><button class="btn danger" onclick="review(${x.id},'reject')">Reject</button></div>`:''}
+    </div>`;
+  }).join('');
+}
+async function review(id,type){
+  const note=document.getElementById('note-'+id)?.value||'';
+  if(!confirm(type==='approve'?'Approve this withdrawal request?':'Reject this withdrawal request?'))return;
+  try{await api(type==='approve'?'approve_withdraw':'reject_withdraw',{withdraw_id:id,admin_note:note});toast(type==='approve'?'Withdrawal approved':'Withdrawal rejected');await load()}catch(e){toast(e.message)}
+}
+window.review=review;
+function openSettings(){document.getElementById('settingsModal').classList.add('show');fillSettings(state.settings||{});renderMethodSettings()}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('show')}
+document.getElementById('settingsBtn').onclick=openSettings;document.getElementById('closeSettings').onclick=closeSettings;
+document.getElementById('statusFilter').onchange=renderRequests;
+document.getElementById('saveSettings').onclick=async()=>{
+  try{
+    await api('update_withdraw_settings',{
+      minimum_usdt_withdraw_usd:Number(document.getElementById('minUsdt').value||0),
+      max_usdt_withdraw_usd:Number(document.getElementById('maxUsdt').value||0),
+      minimum_bdt_withdraw:Number(document.getElementById('minBdt').value||0),
+      max_exchange_withdraw_bdt:Number(document.getElementById('maxBdt').value||0),
+      exchange_rate_bdt:Number(document.getElementById('rate').value||0),
+      usdt_withdraw_charge_percent:Number(document.getElementById('usdtCharge').value||0),
+      bdt_withdraw_charge_percent:Number(document.getElementById('bdtCharge').value||0),
+      exchange_fee_type:document.getElementById('feeType').value,
+      exchange_fee_value:Number(document.getElementById('feeValue').value||0),
+      withdraw_rules:document.getElementById('rules').value
+    });
+    toast('All settings saved');await load();openSettings();
+  }catch(e){toast(e.message)}
+};
+async function load(){
+  if(!tgId){document.getElementById('requests').innerHTML='<div class="empty">Telegram user ID was not found.</div>';return}
+  try{
+    const j=await api('get_admin_withdraw_data');
+    state=j;
+    const req=j.requests||[];
+    document.getElementById('pendingCount').textContent=req.filter(x=>x.status==='pending').length;
+    document.getElementById('approvedCount').textContent=req.filter(x=>x.status==='approved').length;
+    document.getElementById('rejectedCount').textContent=req.filter(x=>x.status==='rejected').length;
+    document.getElementById('totalCount').textContent=req.length;
+    renderRequests();
+  }catch(e){
+    document.getElementById('requests').innerHTML='<div class="empty">'+esc(e.message)+'</div>';
+  }
+}
+load();
+</script>
+</body>
+</html>
