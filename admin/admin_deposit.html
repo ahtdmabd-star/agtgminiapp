@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Deposit Management | AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#071321;--panel:#0c1d2f;--panel2:#10263b;--line:#19364f;--text:#eef6ff;--muted:#8ea7bd;--accent:#2d8cff;--good:#22c58b;--warn:#f5b83d;--bad:#ef5b67}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#071321,#081827 55%,#06111d);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
+.wrap{max-width:1050px;margin:auto;padding:16px 14px 35px}.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}.back{width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:#fff}.brand{font-size:18px;font-weight:800}.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}.card{background:rgba(12,29,47,.97);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.16)}h2{font-size:16px;margin:0 0 13px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#091827;border:1px solid var(--line);border-radius:13px;padding:11px}.stat span{font-size:11px;color:var(--muted)}.stat b{display:block;margin-top:5px;font-size:17px}
+label{display:block;color:var(--muted);font-size:12px;margin:11px 0 6px}input,textarea,select{width:100%;border:1px solid var(--line);background:#081522;color:#fff;border-radius:11px;padding:12px;outline:none}textarea{min-height:100px;resize:vertical}.save{border:0;background:var(--accent);color:#fff;border-radius:11px;padding:12px 15px;font-weight:800;margin-top:12px}.method-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.method{background:#091827;border:1px solid var(--line);border-radius:13px;padding:12px}.method h3{font-size:14px;margin:0 0 9px}.switch{display:flex;align-items:center;justify-content:space-between}.switch input{width:auto}.queue{display:flex;flex-direction:column;gap:9px}.item{border:1px solid var(--line);border-radius:14px;padding:13px;background:#091827}.item.pending{border-color:#725a25}.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.muted{color:var(--muted);font-size:11px}.amount{font-size:18px;font-weight:800}.badge{font-size:11px;border-radius:20px;padding:4px 8px;border:1px solid}.pending-b{color:var(--warn)}.approved-b{color:var(--good)}.rejected-b{color:var(--bad)}.actions{display:flex;gap:8px;margin-top:11px}.approve,.reject{flex:1;border:0;border-radius:10px;padding:11px;font-weight:800}.approve{background:var(--good);color:#04140e}.reject{background:#421b22;color:#fff;border:1px solid #6b2b35}.tabs{display:flex;gap:8px;margin-bottom:12px}.tab{border:1px solid var(--line);background:#091827;color:#b8ccdc;border-radius:10px;padding:9px 12px}.tab.active{background:#0d2540;color:#fff;border-color:var(--accent)}.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.show{display:flex}.modalbox{width:100%;max-width:390px;background:#0c1d2f;border:1px solid var(--line);border-radius:18px;padding:20px}.modalbox h3{margin:0 0 10px}.close{width:100%;margin-top:10px;padding:11px;border:1px solid var(--line);background:#10263b;color:#fff;border-radius:10px}
+@media(min-width:800px){.grid{grid-template-columns:360px 1fr}.wide{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<button class="back" id="back">‹</button>
+<div><div class="brand">AL-HUDA TECH GLOBAL</div><div class="sub">Deposit Management</div></div>
+</header>
+
+<div id="access" class="card">Checking administrator access...</div>
+<div id="panel" style="display:none">
+<div class="grid">
+<section class="card">
+<h2>Deposit Settings</h2>
+<label>Minimum Deposit (BDT)</label><input id="min" type="number" step="0.01">
+<label>USD Rate (BDT per $1)</label><input id="rate" type="number" step="0.01">
+<label>Deposit Charge (%)</label><input id="charge" type="number" step="0.01" min="0" max="100">
+<label>Deposit Rules</label><textarea id="rules"></textarea>
+<button class="save" id="saveSettings">Save Settings</button>
+</section>
+
+<section class="card">
+<h2>Payment Methods</h2>
+<div class="method-grid" id="methodGrid"></div>
+</section>
+
+<section class="card wide">
+<div class="stats">
+<div class="stat"><span>Pending</span><b id="pending">0</b></div>
+<div class="stat"><span>Approved</span><b id="approved">0</b></div>
+<div class="stat"><span>Rejected</span><b id="rejected">0</b></div>
+</div>
+</section>
+
+<section class="card wide">
+<h2>Deposit Requests</h2>
+<div class="tabs"><button class="tab active" data-filter="all">All</button><button class="tab" data-filter="pending">Pending</button><button class="tab" data-filter="approved">Approved</button><button class="tab" data-filter="rejected">Rejected</button></div>
+<div class="queue" id="queue"></div>
+</section>
+</div>
+</div>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox"><h3 id="mt">Review Deposit</h3><div id="mb"></div><label id="noteLabel">Admin Note</label><textarea id="adminNote" placeholder="Optional note"></textarea><button class="approve" id="confirmApprove">Approve Deposit</button><button class="reject" id="confirmReject">Reject Deposit</button><button class="close" id="closeModal">Cancel</button></div></div>
+
+<script>
+const tg=window.Telegram?.WebApp;tg?.expand();
+const params=new URLSearchParams(location.search);const tgId=params.get("tg_id")||tg?.initDataUnsafe?.user?.id||"";
+const $=id=>document.getElementById(id);let data=null,currentFilter="all",reviewId=null;
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function usd(v){return "$"+Number(v||0).toFixed(2)}
+function goBack(){if(history.length>1)history.back();else location.href="admin.html?tg_id="+encodeURIComponent(tgId)}
+tg?.BackButton?.show();tg?.BackButton?.onClick(goBack);$("back").onclick=goBack;
+async function api(action,extra={}){
+ const r=await fetch("/api/deposit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,tg_id:tgId,...extra}),cache:"no-store"});
+ const j=await r.json().catch(()=>({success:false,message:"Invalid server response"}));
+ if(!r.ok||!j.success)throw new Error(j.message||"Request failed");return j;
+}
+async function load(){
+ try{data=await api("get_admin_deposit_data");$("access").style.display="none";$("panel").style.display="block";render()}catch(e){$("access").innerHTML=`<b>Access Denied</b><div style="margin-top:7px;color:#8ea7bd">${esc(e.message)}</div>`}
+}
+function render(){
+ const s=data.settings;
+ $("min").value=s.minimum_deposit_bdt;$("rate").value=s.usd_rate;$("charge").value=s.deposit_charge_percent;$("rules").value=s.deposit_rules||"";
+ $("methodGrid").innerHTML=data.methods.map(m=>`<div class="method"><h3>${esc(m.method_name)}</h3><label>Account / Address</label><input data-account="${esc(m.method_code)}" value="${esc(m.payment_account||"")}"><div class="switch" style="margin-top:9px"><span class="muted">Enabled</span><input type="checkbox" data-enabled="${esc(m.method_code)}" ${Number(m.enabled)?'checked':''}></div><label>Sort Order</label><input type="number" data-sort="${esc(m.method_code)}" value="${esc(m.sort_order)}"><button class="save" data-save-method="${esc(m.method_code)}">Save</button></div>`).join("");
+ document.querySelectorAll("[data-save-method]").forEach(b=>b.onclick=()=>saveMethod(b.dataset.saveMethod));
+ const rows=data.requests||[];$("pending").textContent=rows.filter(x=>x.status==="pending").length;$("approved").textContent=rows.filter(x=>x.status==="approved").length;$("rejected").textContent=rows.filter(x=>x.status==="rejected").length;
+ const shown=currentFilter==="all"?rows:rows.filter(x=>x.status===currentFilter);
+ $("queue").innerHTML=shown.length?shown.map(row=>card(row)).join(""):'<div style="color:#8ea7bd;text-align:center;padding:18px">No records found.</div>';
+ document.querySelectorAll(".review").forEach(b=>b.onclick=()=>openReview(Number(b.dataset.id)));
+}
+function card(x){
+ const pending=x.status==="pending";
+ return `<div class="item ${pending?"pending":""}"><div class="row"><div><b>${esc(x.first_name||x.username||"User")}</b><div class="muted">Telegram ID: ${esc(x.telegram_id)}</div></div><span class="badge ${x.status}-b">${esc(x.status)}</span></div><div class="row" style="margin-top:10px"><div><div class="muted">Payment</div><div>${esc(x.method_name)} · ${esc(x.currency)} ${esc(x.payment_amount)}</div></div><div><div class="muted">Net Credit</div><div class="amount">${usd(x.net_usd)}</div></div></div><div class="muted" style="margin-top:8px">Gross: ${usd(x.gross_usd)} · Charge: ${usd(x.charge_usd)} · TX: ${esc(x.transaction_id)}</div><div class="muted" style="margin-top:5px">${esc(x.created_at||"")}</div>${pending?`<div class="actions"><button class="approve review" data-id="${x.id}">Review</button></div>`:""}${x.admin_note?`<div class="muted" style="margin-top:8px">Admin note: ${esc(x.admin_note)}</div>`:""}</div>`
+}
+async function saveMethod(code){
+ const account=document.querySelector(`[data-account="${CSS.escape(code)}"]`).value;
+ const enabled=document.querySelector(`[data-enabled="${CSS.escape(code)}"]`).checked?1:0;
+ const sort=Number(document.querySelector(`[data-sort="${CSS.escape(code)}"]`).value||0);
+ try{await api("update_deposit_method",{method_code:code,payment_account:account,enabled,sort_order:sort});await load()}catch(e){alert(e.message)}
+}
+$("saveSettings").onclick=async()=>{
+ try{await api("update_deposit_settings",{minimum_deposit_bdt:Number($("min").value),usd_rate:Number($("rate").value),deposit_charge_percent:Number($("charge").value),deposit_rules:$("rules").value});await load()}catch(e){alert(e.message)}
+};
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");currentFilter=b.dataset.filter;render()});
+function openReview(id){
+ reviewId=id;const x=data.requests.find(r=>Number(r.id)===id);if(!x)return;
+ $("mt").textContent="Review Deposit #"+x.id;
+ $("mb").innerHTML=`<div class="muted">User</div><b>${esc(x.first_name||x.username||"User")}</b><div class="muted" style="margin-top:9px">Method</div><b>${esc(x.method_name)} · ${esc(x.currency)} ${esc(x.payment_amount)}</b><div class="muted" style="margin-top:9px">Gross / Charge / Net</div><b>${usd(x.gross_usd)} / ${usd(x.charge_usd)} / ${usd(x.net_usd)}</b><div class="muted" style="margin-top:9px">Transaction ID / Hash</div><div style="word-break:break-all">${esc(x.transaction_id)}</div>`;
+ $("adminNote").value="";$("modal").classList.add("show");
+}
+$("closeModal").onclick=()=>$("modal").classList.remove("show");
+async function review(action){
+ if(!reviewId)return;$("confirmApprove").disabled=true;$("confirmReject").disabled=true;
+ try{await api(action,{deposit_id:reviewId,admin_note:$("adminNote").value.trim()});$("modal").classList.remove("show");await load()}catch(e){alert(e.message)}finally{$("confirmApprove").disabled=false;$("confirmReject").disabled=false}
+}
+$("confirmApprove").onclick=()=>review("approve_deposit");$("confirmReject").onclick=()=>review("reject_deposit");
+load();
+</script>
+</body>
+</html>
