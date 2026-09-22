@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Accounts Management - AL-HUDA TECH GLOBAL</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #090d16; color: #f8fafc; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 500px; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 12px; }
+        .header h2 { color: #f43f5e; font-size: 20px; margin-bottom: 3px; }
+        .header p { color: #94a3b8; font-size: 12px; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: #111827; padding: 15px; border-radius: 14px; border: 1px solid #1f2937; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .stat-card h3 { font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; }
+        .stat-card .val { font-size: 18px; font-weight: 700; color: #38bdf8; }
+
+        /* Profit / Loss Card */
+        .profit-card { background: linear-gradient(135deg, #1e1b4b 0%, #111827 100%); border: 1px solid #312e81; padding: 15px; border-radius: 14px; margin-bottom: 20px; text-align: center; }
+        .profit-card h3 { font-size: 12px; color: #a5b4fc; text-transform: uppercase; margin-bottom: 5px; }
+        .profit-card .val { font-size: 22px; font-weight: 800; }
+        .profit-card .val.profit { color: #4ade80; }
+        .profit-card .val.loss { color: #f87171; }
+
+        .section-title { font-size: 14px; font-weight: 600; color: #cbd5e1; margin: 20px 0 10px 2px; border-left: 3px solid #38bdf8; padding-left: 8px; }
+
+        /* Wallet Cards */
+        .wallet-card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .wallet-info h4 { font-size: 14px; color: #f8fafc; font-weight: 600; }
+        .wallet-info span { font-size: 15px; font-weight: 700; color: #38bdf8; }
+        .wallet-actions { display: flex; gap: 6px; }
+        
+        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; transition: 0.2s; }
+        .btn-plus { background: #16a34a; }
+        .btn-plus:hover { background: #15803d; }
+        .btn-minus { background: #dc2626; }
+        .btn-minus:hover { background: #b91c1c; }
+
+        /* Total Cash Box */
+        .total-box { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 20px; }
+        .total-box span { font-size: 14px; color: #94a3b8; font-weight: 600; }
+        .total-box b { font-size: 18px; color: #4ade80; }
+
+        /* Modal Popup */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: #111827; border: 1px solid #374151; padding: 20px; border-radius: 14px; width: 100%; max-width: 350px; text-align: center; }
+        .modal-content h3 { font-size: 16px; margin-bottom: 15px; color: #f8fafc; }
+        .modal-input { width: 100%; background: #070a12; border: 1px solid #4b5563; padding: 10px; border-radius: 8px; color: white; font-size: 14px; outline: none; margin-bottom: 15px; text-align: center; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .btn-confirm { background: #2563eb; color: white; }
+        .btn-cancel { background: #374151; color: #d1d5db; }
+
+        .btn-back { display: block; width: 100%; background: #334155; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; text-align: center; text-decoration: none; margin-top: 20px; font-size: 12px; }
+        .loading, .error-msg { text-align: center; padding: 40px; color: #94a3b8; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="accounts-app">
+        <div class="loading">Loading Accounts Data...</div>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div class="modal" id="txModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add Amount</h3>
+            <input type="number" id="txAmount" class="modal-input" placeholder="Enter amount (e.g. 500)" step="0.01">
+            <div class="modal-btns">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="submitTransaction()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let tgId = urlParams.get('tg_id');
+        if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            tgId = tg.initDataUnsafe.user.id;
+        }
+
+        let currentWallet = '';
+        let currentType = '';
+
+        async function fetchAccountsData() {
+            const container = document.getElementById('accounts-app');
+            try {
+                const res = await fetch(`/api/action?action=get_admin_accounts&tg_id=${tgId}`);
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    container.innerHTML = `<div class="error-msg"><h3>Access Denied</h3><p>${data.message || 'Unauthorized'}</p></div>`;
+                    return;
+                }
+
+                const stats = data.stats; // total_users, total_user_balance, wallets, total_wallet_balance, profit_loss
+                let walletsHtml = '';
+
+                stats.wallets.forEach(w => {
+                    walletsHtml += `
+                        <div class="wallet-card">
+                            <div class="wallet-info">
+                                <h4>${w.wallet_name}</h4>
+                                <span>৳${parseFloat(w.balance).toFixed(2)}</span>
+                            </div>
+                            <div class="wallet-actions">
+                                <button class="action-btn btn-plus" onclick="openModal('${w.wallet_name}', 'add')">+</button>
+                                <button class="action-btn btn-minus" onclick="openModal('${w.wallet_name}', 'sub')">-</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                let plClass = stats.profit_loss >= 0 ? 'profit' : 'loss';
+                let plText = stats.profit_loss >= 0 ? `+৳${stats.profit_loss.toFixed(2)} (লাভ)` : `-৳${Math.abs(stats.profit_loss).toFixed(2)} (ঘাটতি)`;
+
+                container.innerHTML = `
+                    <div class="header">
+                        <h2>💳 Admin Accounts & Ledger</h2>
+                        <p>Manage personal wallets & system balance</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Users</h3>
+                            <div class="val">${stats.total_users}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>User Wallets Balance</h3>
+                            <div class="val">৳${stats.total_user_balance.toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <div class="profit-card">
+                        <h3>Net Profit / Deficit (ঘাটতি বা লাভ)</h3>
+                        <div class="val ${plClass}">${plText}</div>
+                    </div>
+
+                    <div class="section-title">📱 Personal Wallets Ledger</div>
+                    ${walletsHtml}
+
+                    <div class="total-box">
+                        <span>Total Cash in Wallets:</span>
+                        <b>৳${stats.total_wallet_balance.toFixed(2)}</b>
+                    </div>
+
+                    <a href="dashboard.html?tg_id=${tgId}" class="btn-back">⬅ Back to Admin Dashboard</a>
+                `;
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('accounts-app').innerHTML = `<div class="error-msg"><h3>Connection Error</h3><p>Failed to load accounts data.</p></div>`;
+            }
+        }
+
+        function openModal(walletName, type) {
+            currentWallet = walletName;
+            currentType = type;
+            document.getElementById('modalTitle').innerText = `${type === 'add' ? 'Add to' : 'Subtract from'} ${walletName}`;
+            document.getElementById('txAmount').value = '';
+            document.getElementById('txModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('txModal').style.display = 'none';
+        }
+
+        async function submitTransaction() {
+            const amount = document.getElementById('txAmount').value;
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update_wallet_balance',
+                        tg_id: tgId,
+                        wallet_name: currentWallet,
+                        type: currentType,
+                        amount: parseFloat(amount)
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    closeModal();
+                    fetchAccountsData();
+                } else {
+                    alert('Failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Server error while processing transaction.');
+            }
+        }
+
+        fetchAccountsData();
+    </script>
+</body>
+</html>
