@@ -1,165 +1,2859 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - AL-HUDA TECH GLOBAL</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #090d16; color: #f8fafc; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 480px; background: #1e293b; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); border: 1px solid #334155; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
-        .header h2 { color: #f43f5e; font-size: 22px; margin-bottom: 5px; }
-        .header p { color: #94a3b8; font-size: 13px; }
-        .card { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; text-align: center; }
-        .card h3 { color: #38bdf8; margin-bottom: 8px; font-size: 18px; }
-        .card p { color: #cbd5e1; font-size: 14px; line-height: 1.5; }
-        .btn { display: block; width: 100%; background: #334155; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; margin-top: 10px; transition: 0.2s; }
-        .btn:hover { background: #475569; }
-        .btn-accent { background: #e11d48; }
-        .btn-accent:hover { background: #be123c; }
-        .form-group { text-align: left; margin-top: 10px; }
-        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
-        .form-input, .form-textarea { width: 100%; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; color: #fff; font-size: 13px; outline: none; margin-bottom: 8px; }
-        .form-textarea { resize: vertical; min-height: 60px; }
-        .loading, .error-msg { text-align: center; padding: 30px; color: #94a3b8; line-height: 1.6; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin Dashboard - AL-HUDA TECH GLOBAL</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#050914;
+    --panel:#0c1424;
+    --panel2:#101b2e;
+    --panel3:#14233a;
+    --border:#20314b;
+    --border-light:#29405e;
+    --primary:#38bdf8;
+    --primary-dark:#0284c7;
+    --success:#34d399;
+    --danger:#f43f5e;
+    --warning:#fbbf24;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --muted2:#64748b;
+    --white:#ffffff;
+}
+
+html{
+    min-height:100%;
+    background:var(--bg);
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(14,165,233,.12),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(30,64,175,.10),
+            transparent 30%
+        ),
+        var(--bg);
+    color:var(--text);
+    font-family:
+        "Segoe UI",
+        Tahoma,
+        Geneva,
+        Verdana,
+        sans-serif;
+    padding:16px;
+    -webkit-font-smoothing:antialiased;
+}
+
+button,
+input,
+textarea{
+    font-family:inherit;
+}
+
+button,
+a{
+    -webkit-tap-highlight-color:transparent;
+}
+
+button{
+    cursor:pointer;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+.admin-shell{
+    width:100%;
+    max-width:760px;
+    margin:0 auto;
+}
+
+.top-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:17px;
+    margin-bottom:14px;
+    background:rgba(12,20,36,.94);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:
+        0 14px 35px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.brand-area{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+
+.brand-icon{
+    width:43px;
+    height:43px;
+    flex:0 0 43px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--primary);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(56,189,248,.16),
+            rgba(2,132,199,.06)
+        );
+    border:1px solid rgba(56,189,248,.22);
+    border-radius:13px;
+}
+
+.brand-icon svg{
+    width:23px;
+    height:23px;
+}
+
+.brand-title{
+    font-size:18px;
+    line-height:1.2;
+    font-weight:800;
+    letter-spacing:.2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.brand-subtitle{
+    margin-top:4px;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:500;
+}
+
+.logout-btn{
+    border:1px solid rgba(244,63,94,.35);
+    background:rgba(244,63,94,.12);
+    color:#fb7185;
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:700;
+    transition:.2s ease;
+}
+
+.logout-btn:hover{
+    background:var(--danger);
+    color:var(--white);
+}
+
+.welcome-card{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    padding:22px;
+    margin-bottom:14px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15,35,59,.98),
+            rgba(10,22,39,.98)
+        );
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 14px 32px rgba(0,0,0,.22);
+}
+
+.welcome-label{
+    color:var(--primary);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.3px;
+    margin-bottom:7px;
+}
+
+.welcome-title{
+    font-size:26px;
+    line-height:1.2;
+    font-weight:800;
+}
+
+.welcome-text{
+    max-width:520px;
+    margin-top:8px;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.65;
+}
+
+.admin-status{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    flex-shrink:0;
+    padding:7px 10px;
+    border-radius:999px;
+    color:#6ee7b7;
+    background:rgba(52,211,153,.08);
+    border:1px solid rgba(52,211,153,.18);
+    font-size:11px;
+    font-weight:700;
+}
+
+.status-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--success);
+    box-shadow:0 0 10px rgba(52,211,153,.75);
+    animation:statusPulse 1.8s infinite;
+}
+
+@keyframes statusPulse{
+    0%,100%{
+        opacity:1;
+        transform:scale(1);
+    }
+    50%{
+        opacity:.45;
+        transform:scale(.8);
+    }
+}
+
+.balance-card{
+    position:relative;
+    overflow:hidden;
+    padding:22px;
+    margin-bottom:14px;
+    background:
+        linear-gradient(
+            135deg,
+            #0b2740,
+            #0b182b 58%,
+            #08111f
+        );
+    border:1px solid rgba(56,189,248,.23);
+    border-radius:18px;
+    box-shadow:
+        0 18px 40px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.balance-card::before{
+    content:"";
+    position:absolute;
+    width:170px;
+    height:170px;
+    right:-70px;
+    top:-85px;
+    border-radius:50%;
+    background:rgba(56,189,248,.08);
+}
+
+.balance-card-top{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.balance-label{
+    color:#93c5fd;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.9px;
+}
+
+.balance-value{
+    margin-top:7px;
+    font-size:38px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:-1px;
+}
+
+.balance-icon{
+    width:48px;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:14px;
+    color:var(--primary);
+    background:rgba(56,189,248,.10);
+    border:1px solid rgba(56,189,248,.20);
+}
+
+.balance-icon svg{
+    width:25px;
+    height:25px;
+}
+
+.balance-footer{
+    position:relative;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+    padding-top:13px;
+    border-top:1px solid rgba(148,163,184,.13);
+    color:var(--muted);
+    font-size:11px;
+}
+
+.balance-footer strong{
+    color:#bae6fd;
+    font-size:11px;
+}
+    .section-heading{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin-bottom:15px;
+}
+
+.section-heading-icon{
+    width:38px;
+    height:38px;
+    flex:0 0 38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--primary);
+    background:rgba(56,189,248,.08);
+    border:1px solid rgba(56,189,248,.16);
+    border-radius:11px;
+}
+
+.section-heading-icon svg{
+    width:19px;
+    height:19px;
+}
+
+.section-heading h2{
+    font-size:15px;
+    font-weight:800;
+}
+
+.section-heading p{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:10px;
+}
+
+.info-card,
+.actions-section{
+    padding:20px;
+    margin-bottom:14px;
+    background:rgba(12,20,36,.94);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 12px 30px rgba(0,0,0,.20);
+}
+
+.info-list{
+    overflow:hidden;
+    border:1px solid rgba(148,163,184,.10);
+    border-radius:13px;
+}
+
+.info-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:14px;
+    background:rgba(15,23,42,.62);
+    border-bottom:1px solid rgba(148,163,184,.08);
+}
+
+.info-row:last-child{
+    border-bottom:0;
+}
+
+.info-label{
+    color:var(--muted);
+    font-size:11px;
+    font-weight:600;
+}
+
+.info-value{
+    max-width:60%;
+    color:var(--text);
+    font-size:12px;
+    font-weight:700;
+    text-align:right;
+    word-break:break-word;
+}
+
+.role-value{
+    color:#7dd3fc;
+}
+
+.status-value{
+    color:#6ee7b7;
+}
+
+.referral-card{
+    position:relative;
+    overflow:hidden;
+    padding:20px;
+    margin-bottom:14px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(14,34,54,.98),
+            rgba(9,19,34,.98)
+        );
+    border:1px solid rgba(56,189,248,.24);
+    border-radius:18px;
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+.referral-card::after{
+    content:"";
+    position:absolute;
+    width:190px;
+    height:190px;
+    right:-110px;
+    bottom:-120px;
+    border-radius:50%;
+    background:rgba(14,165,233,.08);
+    pointer-events:none;
+}
+
+.referral-card-top{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.referral-icon{
+    width:44px;
+    height:44px;
+    flex:0 0 44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#67e8f9;
+    background:rgba(34,211,238,.08);
+    border:1px solid rgba(34,211,238,.18);
+    border-radius:13px;
+}
+
+.referral-icon svg{
+    width:22px;
+    height:22px;
+}
+
+.referral-title{
+    font-size:17px;
+    font-weight:800;
+}
+
+.referral-subtitle{
+    margin-top:4px;
+    color:var(--muted);
+    font-size:10px;
+}
+
+.referral-stat{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:17px;
+    padding:17px;
+    background:rgba(5,14,26,.55);
+    border:1px solid rgba(56,189,248,.14);
+    border-radius:14px;
+}
+
+.referral-stat span{
+    display:block;
+    color:var(--muted);
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+}
+
+.referral-stat strong{
+    display:block;
+    margin-top:5px;
+    color:#67e8f9;
+    font-size:30px;
+    line-height:1;
+    font-weight:850;
+}
+
+.referral-stat-icon{
+    width:43px;
+    height:43px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#38bdf8;
+    background:rgba(56,189,248,.08);
+    border:1px solid rgba(56,189,248,.15);
+    border-radius:12px;
+}
+
+.referral-stat-icon svg{
+    width:21px;
+    height:21px;
+}
+
+.referral-notice-display{
+    position:relative;
+    z-index:1;
+    margin-top:12px;
+    padding:15px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(56,189,248,.09),
+            rgba(56,189,248,.025)
+        );
+    border-left:3px solid var(--primary);
+    border-top:1px solid rgba(56,189,248,.12);
+    border-right:1px solid rgba(56,189,248,.12);
+    border-bottom:1px solid rgba(56,189,248,.12);
+    border-radius:11px;
+}
+
+.referral-notice-label{
+    color:#7dd3fc;
+    font-size:9px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+    margin-bottom:7px;
+}
+
+.referral-notice-text{
+    color:#e2e8f0;
+    font-size:12px;
+    line-height:1.65;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+.referral-settings-btn{
+    position:relative;
+    z-index:1;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:13px;
+    padding:13px;
+    border:1px solid rgba(56,189,248,.28);
+    border-radius:11px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(14,165,233,.22),
+            rgba(2,132,199,.12)
+        );
+    color:#bae6fd;
+    font-size:12px;
+    font-weight:800;
+    transition:.2s ease;
+}
+
+.referral-settings-btn:hover{
+    background:var(--primary-dark);
+    color:#fff;
+}
+
+.referral-settings-btn svg{
+    width:17px;
+    height:17px;
+}
+
+.actions-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.admin-action{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-width:0;
+    padding:16px 14px;
+    background:rgba(15,23,42,.72);
+    border:1px solid rgba(148,163,184,.13);
+    border-radius:14px;
+    transition:.2s ease;
+}
+
+.admin-action:hover{
+    transform:translateY(-1px);
+    border-color:rgba(56,189,248,.30);
+    background:rgba(17,36,57,.92);
+}
+
+.settings-action{
+    border-color:rgba(56,189,248,.20);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(14,165,233,.10),
+            rgba(15,23,42,.72)
+        );
+}
+
+.admin-action-icon{
+    width:40px;
+    height:40px;
+    flex:0 0 40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--primary);
+    background:rgba(56,189,248,.08);
+    border:1px solid rgba(56,189,248,.15);
+    border-radius:11px;
+}
+
+.admin-action-icon svg{
+    width:19px;
+    height:19px;
+}
+
+.admin-action strong{
+    display:block;
+    font-size:12px;
+    font-weight:800;
+}
+
+.admin-action span{
+    display:block;
+    margin-top:4px;
+    color:var(--muted);
+    font-size:9px;
+    line-height:1.3;
+}
+
+.arrow-icon{
+    width:16px;
+    height:16px;
+    margin-left:auto;
+    flex:0 0 16px;
+    color:var(--muted2);
+}
+
+.admin-footer{
+    padding:20px 10px 8px;
+    text-align:center;
+}
+
+.footer-brand{
+    color:#7dd3fc;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.6px;
+}
+
+.footer-status{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:8px;
+    color:var(--muted);
+    font-size:9px;
+}
+
+.footer-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--success);
+}
+
+.footer-copy{
+    margin-top:6px;
+    color:var(--muted2);
+    font-size:8px;
+    }
+    .loading{
+    min-height:70vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    color:var(--muted);
+    font-size:12px;
+}
+
+.loading-spinner{
+    width:34px;
+    height:34px;
+    border:3px solid rgba(56,189,248,.14);
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.error-screen{
+    min-height:70vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:30px 20px;
+}
+
+.error-icon{
+    width:64px;
+    height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:15px;
+    color:var(--warning);
+    background:rgba(251,191,36,.08);
+    border:1px solid rgba(251,191,36,.16);
+    border-radius:18px;
+}
+
+.error-icon.danger{
+    color:#fb7185;
+    background:rgba(244,63,94,.08);
+    border-color:rgba(244,63,94,.16);
+}
+
+.error-icon svg{
+    width:30px;
+    height:30px;
+}
+
+.error-screen h2{
+    font-size:20px;
+    font-weight:800;
+}
+
+.error-screen p{
+    max-width:340px;
+    margin-top:7px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+}
+
+.action-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:180px;
+    margin-top:18px;
+    padding:12px 17px;
+    border-radius:11px;
+    font-size:12px;
+    font-weight:800;
+    border:1px solid transparent;
+}
+
+.action-btn.primary{
+    background:var(--primary-dark);
+    color:#fff;
+}
+
+.action-btn.secondary{
+    background:rgba(51,65,85,.45);
+    color:#e2e8f0;
+    border-color:rgba(148,163,184,.15);
+}
+
+body.modal-open{
+    overflow:hidden;
+}
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    background:rgba(1,5,12,.78);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+}
+
+.modal-overlay.active{
+    display:flex;
+    animation:fadeIn .18s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+    }
+    to{
+        opacity:1;
+    }
+}
+
+.modal{
+    width:100%;
+    max-width:520px;
+    max-height:90vh;
+    overflow-y:auto;
+    background:#0b1424;
+    border:1px solid var(--border-light);
+    border-radius:18px;
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.55),
+        0 0 0 1px rgba(255,255,255,.015);
+    animation:modalUp .22s ease;
+}
+
+@keyframes modalUp{
+    from{
+        opacity:0;
+        transform:translateY(12px) scale(.98);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+.modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:18px;
+    border-bottom:1px solid rgba(148,163,184,.10);
+}
+
+.modal-title-area{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-width:0;
+}
+
+.modal-icon{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--primary);
+    background:rgba(56,189,248,.08);
+    border:1px solid rgba(56,189,248,.16);
+    border-radius:12px;
+}
+
+.modal-icon svg{
+    width:21px;
+    height:21px;
+}
+
+.modal-title{
+    font-size:15px;
+    font-weight:800;
+}
+
+.modal-subtitle{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:9px;
+}
+
+.modal-close{
+    width:34px;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 34px;
+    border:1px solid rgba(148,163,184,.12);
+    border-radius:9px;
+    background:rgba(51,65,85,.30);
+    color:var(--muted);
+}
+
+.modal-close:hover{
+    color:#fff;
+    background:rgba(244,63,94,.15);
+}
+
+.modal-close svg{
+    width:17px;
+    height:17px;
+}
+
+.modal-body{
+    padding:18px;
+}
+
+.setting-highlight{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:15px;
+    margin-bottom:17px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(56,189,248,.10),
+            rgba(56,189,248,.025)
+        );
+    border:1px solid rgba(56,189,248,.15);
+    border-radius:13px;
+}
+
+.setting-highlight-icon{
+    width:38px;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#67e8f9;
+    background:rgba(34,211,238,.08);
+    border:1px solid rgba(34,211,238,.14);
+    border-radius:10px;
+}
+
+.setting-highlight-icon svg{
+    width:18px;
+    height:18px;
+}
+
+.setting-highlight > div:last-child{
+    flex:1;
+}
+
+.setting-highlight span{
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.7px;
+}
+
+.setting-highlight strong{
+    display:block;
+    margin-top:3px;
+    color:#67e8f9;
+    font-size:23px;
+    line-height:1;
+}
+
+.form-group{
+    margin-top:15px;
+}
+
+.form-group:first-of-type{
+    margin-top:0;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:7px;
+    color:#cbd5e1;
+    font-size:11px;
+    font-weight:700;
+}
+
+.input-wrapper{
+    position:relative;
+}
+
+.form-input,
+.form-textarea{
+    width:100%;
+    outline:none;
+    color:#f8fafc;
+    background:#07101e;
+    border:1px solid #22354e;
+    border-radius:11px;
+    transition:.2s ease;
+}
+
+.form-input{
+    height:44px;
+    padding:0 43px 0 13px;
+    font-size:13px;
+}
+
+.form-textarea{
+    min-height:110px;
+    resize:vertical;
+    padding:12px 13px;
+    font-size:12px;
+    line-height:1.55;
+}
+
+.form-input:focus,
+.form-textarea:focus{
+    border-color:rgba(56,189,248,.60);
+    box-shadow:0 0 0 3px rgba(56,189,248,.08);
+}
+
+.input-suffix{
+    position:absolute;
+    top:50%;
+    right:14px;
+    transform:translateY(-50%);
+    color:#67e8f9;
+    font-size:13px;
+    font-weight:800;
+    pointer-events:none;
+}
+
+.form-group small{
+    display:block;
+    margin-top:6px;
+    color:var(--muted2);
+    font-size:9px;
+    line-height:1.4;
+}
+
+.notice-preview{
+    margin-top:16px;
+    padding:13px;
+    background:rgba(15,23,42,.72);
+    border-left:3px solid var(--primary);
+    border-top:1px solid rgba(56,189,248,.10);
+    border-right:1px solid rgba(56,189,248,.10);
+    border-bottom:1px solid rgba(56,189,248,.10);
+    border-radius:10px;
+}
+
+.preview-label{
+    color:#7dd3fc;
+    margin-bottom:6px;
+    font-size:9px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.7px;
+}
+
+#refNoticePreview{
+    color:#cbd5e1;
+    font-size:11px;
+    line-height:1.55;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+.modal-footer{
+    display:grid;
+    grid-template-columns:1fr 1.5fr;
+    gap:10px;
+    padding:15px 18px 18px;
+    border-top:1px solid rgba(148,163,184,.10);
+}
+
+.modal-btn{
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    border-radius:10px;
+    font-size:11px;
+    font-weight:800;
+    transition:.2s ease;
+}
+
+.modal-btn svg{
+    width:16px;
+    height:16px;
+}
+
+.modal-btn.secondary{
+    color:#cbd5e1;
+    background:rgba(51,65,85,.38);
+    border:1px solid rgba(148,163,184,.13);
+}
+
+.modal-btn.primary{
+    color:#fff;
+    background:
+        linear-gradient(
+            135deg,
+            #0284c7,
+            #0369a1
+        );
+    border:1px solid rgba(56,189,248,.20);
+}
+
+.modal-btn.primary:hover{
+    filter:brightness(1.08);
+}
+
+.modal-btn:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+.button-spinner{
+    width:14px;
+    height:14px;
+    border:2px solid rgba(255,255,255,.30);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    }
+    @media (max-width:600px){
+
+    body{
+        padding:10px;
+    }
+
+    .top-header{
+        padding:14px;
+        border-radius:15px;
+    }
+
+    .brand-icon{
+        width:39px;
+        height:39px;
+        flex-basis:39px;
+    }
+
+    .brand-icon svg{
+        width:21px;
+        height:21px;
+    }
+
+    .brand-title{
+        font-size:15px;
+    }
+
+    .brand-subtitle{
+        font-size:9px;
+    }
+
+    .logout-btn{
+        padding:9px 11px;
+        font-size:10px;
+    }
+
+    .welcome-card{
+        padding:17px;
+        border-radius:15px;
+    }
+
+    .welcome-title{
+        font-size:21px;
+    }
+
+    .welcome-text{
+        font-size:11px;
+    }
+
+    .admin-status{
+        padding:6px 8px;
+        font-size:9px;
+    }
+
+    .balance-card{
+        padding:18px;
+        border-radius:15px;
+    }
+
+    .balance-value{
+        font-size:31px;
+    }
+
+    .info-card,
+    .actions-section,
+    .referral-card{
+        padding:16px;
+        border-radius:15px;
+    }
+
+    .info-row{
+        padding:12px;
+    }
+
+    .info-value{
+        max-width:56%;
+        font-size:11px;
+    }
+
+    .actions-grid{
+        grid-template-columns:1fr;
+    }
+
+    .modal-overlay{
+        padding:10px;
+    }
+
+    .modal{
+        max-height:94vh;
+        border-radius:15px;
+    }
+
+    .modal-header{
+        padding:15px;
+    }
+
+    .modal-body{
+        padding:15px;
+    }
+
+    .modal-footer{
+        padding:13px 15px 15px;
+    }
+
+}
+
+@media (max-width:390px){
+
+    .brand-title{
+        font-size:14px;
+    }
+
+    .logout-btn{
+        padding:8px 9px;
+        font-size:9px;
+    }
+
+    .welcome-card{
+        display:block;
+    }
+
+    .admin-status{
+        width:max-content;
+        margin-top:12px;
+    }
+
+    .balance-value{
+        font-size:29px;
+    }
+
+    .section-heading h2{
+        font-size:14px;
+    }
+
+    .referral-stat strong{
+        font-size:27px;
+    }
+
+    .modal-footer{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <div class="container" id="admin-app">
-        <div class="loading">Verifying Admin Access...</div>
+<div class="admin-shell" id="admin-app">
+
+    <div class="loading">
+        <div class="loading-spinner"></div>
+        <div>Verifying Admin Access...</div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+</div>
 
-        const urlParams = new URLSearchParams(window.location.search);
-        let tgId = urlParams.get('tg_id');
+<div class="modal-overlay" id="referralModal">
 
-        if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            tgId = tg.initDataUnsafe.user.id;
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div class="modal-title-area">
+
+                <div class="modal-icon">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M3 21v-2a4 4 0 0 1 4-4h4"/>
+                        <path d="M16 11v8"/>
+                        <path d="M13 16h6"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <div class="modal-title">
+                        Referral Settings
+                    </div>
+
+                    <div class="modal-subtitle">
+                        Manage commission and referral instructions
+                    </div>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeReferralModal()"
+            >
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path d="M18 6L6 18"/>
+                    <path d="M6 6l12 12"/>
+                </svg>
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="setting-highlight">
+
+                <div class="setting-highlight-icon">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <path d="M12 2v20"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H15a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <span>Current Commission</span>
+                    <strong id="currentReferralPercentage">5%</strong>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="refPercentage">
+                    Commission Percentage
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="number"
+                        id="refPercentage"
+                        class="form-input"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value="5.00"
+                        placeholder="Enter percentage"
+                    >
+
+                    <span class="input-suffix">%</span>
+
+                </div>
+
+                <small>
+                    This percentage is used by the referral system.
+                </small>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="refNotice">
+                    Referral Notice
+                </label>
+
+                <textarea
+                    id="refNotice"
+                    class="form-textarea"
+                    placeholder="Enter the referral instruction shown to users..."
+                ></textarea>
+
+                <small>
+                    The text entered here can be displayed in the user referral section.
+                </small>
+
+            </div>
+
+            <div class="notice-preview">
+
+                <div class="preview-label">
+                    Live Preview
+                </div>
+
+                <div id="refNoticePreview">
+                    Your referral notice will appear here.
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="modal-btn secondary"
+                onclick="closeReferralModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="modal-btn primary"
+                id="saveReferralBtn"
+                onclick="saveReferralSettings()"
+            >
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>
+                    <path d="M17 21v-8H7v8"/>
+                    <path d="M7 3v5h8"/>
+                </svg>
+                Save Changes
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const tg = window.Telegram.WebApp;
+
+tg.expand();
+
+const urlParams =
+    new URLSearchParams(window.location.search);
+
+let tgId =
+    urlParams.get('tg_id');
+
+if (
+    !tgId &&
+    tg.initDataUnsafe &&
+    tg.initDataUnsafe.user
+) {
+    tgId =
+        tg.initDataUnsafe.user.id;
+    }
+    function escapeHtml(value){
+
+    if(
+        value === null ||
+        value === undefined
+    ){
+        return '';
+    }
+
+    return String(value)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+}
+
+
+function formatBalance(value){
+
+    const number =
+        parseFloat(value);
+
+    if(
+        Number.isNaN(number)
+    ){
+        return '$0.00';
+    }
+
+    return '$' +
+        number.toFixed(2);
+}
+
+
+function formatPercentage(value){
+
+    const number =
+        parseFloat(value);
+
+    if(
+        Number.isNaN(number)
+    ){
+        return '5%';
+    }
+
+    if(
+        Number.isInteger(number)
+    ){
+        return number + '%';
+    }
+
+    return number.toFixed(2) + '%';
+}
+
+
+function openReferralModal(){
+
+    const modal =
+        document.getElementById(
+            'referralModal'
+        );
+
+    if(!modal){
+        return;
+    }
+
+    modal.classList.add('active');
+
+    document.body.classList.add(
+        'modal-open'
+    );
+
+    updateNoticePreview();
+}
+
+
+function closeReferralModal(){
+
+    const modal =
+        document.getElementById(
+            'referralModal'
+        );
+
+    if(!modal){
+        return;
+    }
+
+    modal.classList.remove(
+        'active'
+    );
+
+    document.body.classList.remove(
+        'modal-open'
+    );
+}
+
+
+function updateNoticePreview(){
+
+    const input =
+        document.getElementById(
+            'refNotice'
+        );
+
+    const preview =
+        document.getElementById(
+            'refNoticePreview'
+        );
+
+    if(
+        !input ||
+        !preview
+    ){
+        return;
+    }
+
+    const value =
+        input.value.trim();
+
+    preview.textContent =
+        value ||
+        'Your referral notice will appear here.';
+}
+
+
+function logoutAdmin(){
+
+    try{
+
+        if(
+            window.Telegram &&
+            window.Telegram.WebApp
+        ){
+
+            window.Telegram.WebApp.close();
+
         }
 
-        async function verifyAdmin() {
-            const container = document.getElementById('admin-app');
+    }catch(error){
 
-            if (!tgId) {
-                container.innerHTML = `
-                    <div class="error-msg">
-                        <h3>⚠️ Access Denied</h3>
-                        <p>Unauthorized access attempt detected.</p>
+        console.log(
+            'Telegram WebApp close error:',
+            error
+        );
+
+    }
+
+}
+
+
+document.addEventListener(
+    'keydown',
+    function(event){
+
+        if(
+            event.key === 'Escape'
+        ){
+
+            closeReferralModal();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    'click',
+    function(event){
+
+        const modal =
+            document.getElementById(
+                'referralModal'
+            );
+
+        if(
+            modal &&
+            event.target === modal
+        ){
+
+            closeReferralModal();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    'input',
+    function(event){
+
+        if(
+            event.target &&
+            event.target.id === 'refNotice'
+        ){
+
+            updateNoticePreview();
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   ADMIN VERIFICATION
+========================================== */
+
+async function verifyAdmin(){
+
+    const container =
+        document.getElementById(
+            'admin-app'
+        );
+
+    if(!container){
+        return;
+    }
+
+    if(!tgId){
+
+        container.innerHTML = `
+
+            <div class="error-screen">
+
+                <div class="error-icon danger">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4"/>
+                        <path d="M12 16h.01"/>
+
+                    </svg>
+
+                </div>
+
+                <h2>
+                    Access Denied
+                </h2>
+
+                <p>
+                    A valid Telegram account is required
+                    to access this administrator panel.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    try{
+
+        const response =
+            await fetch(
+                `/api/get-user?tg_id=${encodeURIComponent(tgId)}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            !response.ok ||
+            !data.success ||
+            !data.user ||
+            data.user.role !== 'admin'
+        ){
+
+            container.innerHTML = `
+
+                <div class="error-screen">
+
+                    <div class="error-icon danger">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <circle cx="12" cy="12" r="10"/>
+
+                            <path d="M15 9l-6 6"/>
+                            <path d="M9 9l6 6"/>
+
+                        </svg>
+
                     </div>
-                `;
-                return;
-            }
 
-            try {
-                // রেন্ডারের এক্সপ্রেস এপিআই ব্যবহার করে অ্যাডমিন চেক
-                const response = await fetch(`/api/get-user?tg_id=${tgId}`);
-                const data = await response.json();
+                    <h2>
+                        Restricted Area
+                    </h2>
 
-                if (!response.ok || !data.success || data.user.role !== 'admin') {
-                    container.innerHTML = `
-                        <div class="error-msg">
-                            <h3>🚫 Restricted Area</h3>
-                            <p>You do not have administrator privileges to view this page.</p>
-                            <a href="index.html?tg_id=${tgId}" class="btn">Go to User Dashboard</a>
-                        </div>
-                    `;
-                    return;
-                }
+                    <p>
+                        Administrator privileges are required
+                        to access this page.
+                    </p>
 
-                const admin = data.user;
+                    <a
+                        href="index.html?tg_id=${encodeURIComponent(tgId)}"
+                        class="action-btn secondary"
+                    >
+                        Go to User Dashboard
+                    </a>
 
-                let referralSettings = { referral_percentage: 5.00, referral_notice: '' };
-                try {
-                    const refRes = await fetch(`/api/action`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'get_admin_data', tg_id: tgId })
-                    });
-                    const refData = await refRes.json();
-                    if (refData.success && refData.settings) {
-                        referralSettings = refData.settings;
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        const admin =
+            data.user;
+
+
+        let referralSettings = {
+            referral_percentage: 5.00,
+            referral_notice: ''
+        };
+
+
+        try{
+
+            const refRes =
+                await fetch(
+                    '/api/action',
+                    {
+                        method:'POST',
+                        headers:{
+                            'Content-Type':
+                                'application/json'
+                        },
+                        body:JSON.stringify({
+                            action:
+                                'get_admin_data',
+                            tg_id:
+                                tgId
+                        })
                     }
-                } catch (e) {
-                    console.log('Could not fetch extra settings, using defaults');
-                }
+                );
 
-                container.innerHTML = `
-                    <div class="header">
-                        <h2>🛡️ Admin Control Panel</h2>
-                        <p>Logged in as: <b>${admin.first_name}</b> (Admin)</p>
-                    </div>
 
-                    <div class="card">
-                        <h3>Welcome to Admin Dashboard</h3>
-                        <p>Manage your platform control center, user stats, and system configurations below.</p>
-                    </div>
+            const refData =
+                await refRes.json();
 
-                    <div class="card" style="text-align: left; font-size: 13px;">
-                        <p><b>Admin Telegram ID:</b> ${admin.telegram_id}</p>
-                        <p><b>System Status:</b> Operational 🟢</p>
-                    </div>
 
-                    <div class="card" style="text-align: left;">
-                        <h3 style="font-size: 16px; margin-bottom: 10px;">⚙️ Referral System Settings</h3>
-                        <div class="form-group">
-                            <label>Commission Percentage (%)</label>
-                            <input type="number" id="refPercentage" class="form-input" value="${referralSettings.referral_percentage || 5.00}" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label>Referral Notice</label>
-                            <textarea id="refNotice" class="form-textarea">${referralSettings.referral_notice || ''}</textarea>
-                        </div>
-                        <button class="btn btn-accent" onclick="saveReferralSettings()">Save Referral Settings</button>
-                    </div>
+            if(
+                refData.success &&
+                refData.settings
+            ){
 
-                    <a href="index.html?tg_id=${tgId}" class="btn">🏠 Switch to User View</a>
-                `;
+                referralSettings =
+                    refData.settings;
 
-            } catch (error) {
-                console.error('Admin verification error:', error);
-                container.innerHTML = `
-                    <div class="error-msg">
-                        <h3>❌ Error</h3>
-                        <p>Failed to verify admin permissions.</p>
-                    </div>
-                `;
             }
+
+        }catch(settingsError){
+
+            console.log(
+                'Referral settings could not be loaded.',
+                settingsError
+            );
+
         }
 
-        async function saveReferralSettings() {
-            const percentage = document.getElementById('refPercentage').value;
-            const notice = document.getElementById('refNotice').value;
 
-            try {
-                const res = await fetch('/api/action', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action: 'update_referral_settings', 
-                        tg_id: tgId, 
-                        referral_percentage: percentage, 
-                        referral_notice: notice 
+        const adminName =
+            admin.first_name ||
+            admin.username ||
+            'Administrator';
+
+
+        const adminUsername =
+            admin.username
+                ? '@' + admin.username
+                : 'Not available';
+
+
+        const adminTelegramId =
+            admin.telegram_id ||
+            tgId;
+
+
+        const adminBalance =
+            formatBalance(
+                admin.balance
+            );
+
+
+        const referralPercentage =
+            formatPercentage(
+                referralSettings.referral_percentage
+            );
+
+
+        const referralNotice =
+            referralSettings.referral_notice ||
+            'Invite users with your referral link and earn commission according to the current referral percentage.';
+                container.innerHTML = `
+
+            <header class="top-header">
+
+                <div class="brand-area">
+
+                    <div class="brand-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path d="M12 3l9 5-9 5-9-5 9-5Z"/>
+                            <path d="M3 12l9 5 9-5"/>
+                            <path d="M3 16l9 5 9-5"/>
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <div class="brand-title">
+                            AL-HUDA TECH GLOBAL
+                        </div>
+
+                        <div class="brand-subtitle">
+                            Administrator Control Panel
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="logout-btn"
+                    onclick="logoutAdmin()"
+                >
+                    Logout
+                </button>
+
+            </header>
+
+
+            <section class="welcome-card">
+
+                <div>
+
+                    <div class="welcome-label">
+                        ADMINISTRATOR ACCOUNT
+                    </div>
+
+                    <h1 class="welcome-title">
+                        Welcome, ${escapeHtml(adminName)}
+                    </h1>
+
+                    <p class="welcome-text">
+                        Manage your account information,
+                        referral system and administration tools
+                        from one secure dashboard.
+                    </p>
+
+                </div>
+
+                <div class="admin-status">
+
+                    <span class="status-dot"></span>
+
+                    Active
+
+                </div>
+
+            </section>
+
+
+            <section class="balance-card">
+
+                <div class="balance-card-top">
+
+                    <div>
+
+                        <div class="balance-label">
+                            Available Balance
+                        </div>
+
+                        <div class="balance-value">
+                            ${adminBalance}
+                        </div>
+
+                    </div>
+
+                    <div class="balance-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <rect
+                                x="2"
+                                y="5"
+                                width="20"
+                                height="14"
+                                rx="2"
+                            />
+
+                            <path d="M16 12h.01"/>
+
+                            <path d="M2 10h20"/>
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+                <div class="balance-footer">
+
+                    <span>
+                        Account Balance
+                    </span>
+
+                    <strong>
+                        USD
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+            <section class="info-card">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+
+                            <circle
+                                cx="12"
+                                cy="7"
+                                r="4"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Account Information
+                        </h2>
+
+                        <p>
+                            Administrator account details
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-list">
+
+                    <div class="info-row">
+
+                        <div class="info-label">
+                            Full Name
+                        </div>
+
+                        <div class="info-value">
+                            ${escapeHtml(adminName)}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-label">
+                            Telegram Username
+                        </div>
+
+                        <div class="info-value">
+                            ${escapeHtml(adminUsername)}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-label">
+                            Telegram ID
+                        </div>
+
+                        <div class="info-value">
+                            ${escapeHtml(adminTelegramId)}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-label">
+                            Account Role
+                        </div>
+
+                        <div class="info-value role-value">
+                            Administrator
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <div class="info-label">
+                            Account Status
+                        </div>
+
+                        <div class="info-value status-value">
+                            ${escapeHtml(
+                                admin.status || 'Active'
+                            )}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+                        <section class="referral-card">
+
+                <div class="referral-card-top">
+
+                    <div class="referral-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <circle
+                                cx="9"
+                                cy="7"
+                                r="4"
+                            />
+
+                            <path
+                                d="M3 21v-2a4 4 0 0 1 4-4h4"
+                            />
+
+                            <path
+                                d="M16 11v8"
+                            />
+
+                            <path
+                                d="M13 16h6"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <div class="referral-title">
+                            Referral System
+                        </div>
+
+                        <div class="referral-subtitle">
+                            Control referral commission and user instructions
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="referral-stat">
+
+                    <div>
+
+                        <span>
+                            Current Commission
+                        </span>
+
+                        <strong
+                            id="dashboardReferralPercentage"
+                        >
+                            ${referralPercentage}
+                        </strong>
+
+                    </div>
+
+                    <div class="referral-stat-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path d="M12 2v20"/>
+
+                            <path
+                                d="M17 5H9.5a3.5 3.5 0 0 0 0 7H15a3.5 3.5 0 0 1 0 7H6"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+
+                <div class="referral-notice-display">
+
+                    <div class="referral-notice-label">
+                        Current Referral Notice
+                    </div>
+
+                    <div
+                        class="referral-notice-text"
+                        id="dashboardReferralNotice"
+                    >
+                        ${escapeHtml(
+                            referralNotice
+                        )}
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="referral-settings-btn"
+                    onclick="openReferralModal()"
+                >
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="3"
+                        />
+
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-1.5 1.5-.06-.06A1.65 1.65 0 0 0 16 18.67a1.65 1.65 0 0 0-1 .? "
+                        />
+
+                    </svg>
+
+                    Referral Settings
+
+                </button>
+
+            </section>
+
+
+            <section class="actions-section">
+
+                <div class="section-heading">
+
+                    <div class="section-heading-icon">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="3"
+                            />
+
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"
+                            />
+
+                            <path
+                                d="M4.6 9a1.65 1.65 0 0 0-.33 1.82"
+                            />
+
+                            <path
+                                d="M9 4.6a1.65 1.65 0 0 0 1.82-.33"
+                            />
+
+                            <path
+                                d="M15 19.4a1.65 1.65 0 0 0-1.82.33"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Administration
+                        </h2>
+
+                        <p>
+                            Access administrator tools
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="actions-grid">
+
+                    <a
+                        href="Settings.html?tg_id=${encodeURIComponent(tgId)}"
+                        class="admin-action settings-action"
+                    >
+
+                        <div class="admin-action-icon">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="3"
+                                />
+
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06"
+                                />
+
+                                <path
+                                    d="M4.6 9a1.65 1.65 0 0 0-.33 1.82l.06.06"
+                                />
+
+                            </svg>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Go to Settings
+                            </strong>
+
+                            <span>
+                                Manage system settings
+                            </span>
+
+                        </div>
+
+                        <svg
+                            class="arrow-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+
+                            <path d="M9 18l6-6-6-6"/>
+
+                        </svg>
+
+                    </a>
+
+
+                    <a
+                        href="index.html?tg_id=${encodeURIComponent(tgId)}"
+                        class="admin-action"
+                    >
+
+                        <div class="admin-action-icon">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <path
+                                    d="M3 10.5L12 3l9 7.5"
+                                />
+
+                                <path
+                                    d="M5 9.5V21h14V9.5"
+                                />
+
+                                <path
+                                    d="M9 21v-6h6v6"
+                                />
+
+                            </svg>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                User Dashboard
+                            </strong>
+
+                            <span>
+                                Switch to user view
+                            </span>
+
+                        </div>
+
+                        <svg
+                            class="arrow-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+
+                            <path d="M9 18l6-6-6-6"/>
+
+                        </svg>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <footer class="admin-footer">
+
+                <div class="footer-brand">
+                    AL-HUDA TECH GLOBAL
+                </div>
+
+                <div class="footer-status">
+
+                    <span class="footer-dot"></span>
+
+                    System Operational
+
+                </div>
+
+                <div class="footer-copy">
+                    Administrator Control Center
+                </div>
+
+            </footer>
+
+        `;
+                const percentageInput =
+            document.getElementById(
+                'refPercentage'
+            );
+
+        const noticeInput =
+            document.getElementById(
+                'refNotice'
+            );
+
+        const currentPercentage =
+            document.getElementById(
+                'currentReferralPercentage'
+            );
+
+
+        if(percentageInput){
+
+            percentageInput.value =
+                referralSettings.referral_percentage !== null &&
+                referralSettings.referral_percentage !== undefined &&
+                referralSettings.referral_percentage !== ''
+                    ? referralSettings.referral_percentage
+                    : 5.00;
+
+        }
+
+
+        if(noticeInput){
+
+            noticeInput.value =
+                referralNotice;
+
+        }
+
+
+        if(currentPercentage){
+
+            currentPercentage.textContent =
+                referralPercentage;
+
+        }
+
+
+        updateNoticePreview();
+
+
+    }catch(error){
+
+        console.error(
+            'Admin verification error:',
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="error-screen">
+
+                <div class="error-icon danger">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                        />
+
+                        <path
+                            d="M12 8v4"
+                        />
+
+                        <path
+                            d="M12 16h.01"
+                        />
+
+                    </svg>
+
+                </div>
+
+                <h2>
+                    Connection Error
+                </h2>
+
+                <p>
+                    Failed to verify administrator permissions.
+                    Please check your connection and try again.
+                </p>
+
+                <button
+                    type="button"
+                    class="action-btn primary"
+                    onclick="location.reload()"
+                >
+                    Try Again
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* ==========================================
+   SAVE REFERRAL SETTINGS
+========================================== */
+
+async function saveReferralSettings(){
+
+    const percentageInput =
+        document.getElementById(
+            'refPercentage'
+        );
+
+    const noticeInput =
+        document.getElementById(
+            'refNotice'
+        );
+
+    const saveButton =
+        document.getElementById(
+            'saveReferralBtn'
+        );
+
+
+    if(
+        !percentageInput ||
+        !noticeInput
+    ){
+        return;
+    }
+
+
+    const percentage =
+        percentageInput.value.trim();
+
+    const notice =
+        noticeInput.value.trim();
+
+
+    if(
+        percentage === '' ||
+        Number.isNaN(
+            parseFloat(percentage)
+        )
+    ){
+
+        alert(
+            'Please enter a valid referral commission percentage.'
+        );
+
+        percentageInput.focus();
+
+        return;
+    }
+
+
+    const percentageNumber =
+        parseFloat(percentage);
+
+
+    if(
+        percentageNumber < 0 ||
+        percentageNumber > 100
+    ){
+
+        alert(
+            'Referral commission must be between 0% and 100%.'
+        );
+
+        percentageInput.focus();
+
+        return;
+    }
+
+
+    const originalButtonHTML =
+        saveButton
+            ? saveButton.innerHTML
+            : 'Save Changes';
+
+
+    if(saveButton){
+
+        saveButton.disabled =
+            true;
+
+        saveButton.innerHTML = `
+
+            <span class="button-spinner"></span>
+
+            Saving...
+
+        `;
+
+    }
+        try{
+
+        const res =
+            await fetch(
+                '/api/action',
+                {
+                    method:'POST',
+
+                    headers:{
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body:JSON.stringify({
+
+                        action:
+                            'update_referral_settings',
+
+                        tg_id:
+                            tgId,
+
+                        referral_percentage:
+                            percentage,
+
+                        referral_notice:
+                            notice
+
                     })
-                });
-                const result = await res.json();
-                if (result.success) {
-                    alert('Referral settings updated successfully!');
-                } else {
-                    alert('Failed: ' + (result.message || 'Unknown error'));
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Server error while updating settings.');
+            );
+
+
+        const result =
+            await res.json();
+
+
+        if(result.success){
+
+            const formattedPercentage =
+                formatPercentage(
+                    percentageNumber
+                );
+
+
+            const dashboardPercentage =
+                document.getElementById(
+                    'dashboardReferralPercentage'
+                );
+
+
+            const currentPercentage =
+                document.getElementById(
+                    'currentReferralPercentage'
+                );
+
+
+            const dashboardNotice =
+                document.getElementById(
+                    'dashboardReferralNotice'
+                );
+
+
+            if(dashboardPercentage){
+
+                dashboardPercentage.textContent =
+                    formattedPercentage;
+
             }
+
+
+            if(currentPercentage){
+
+                currentPercentage.textContent =
+                    formattedPercentage;
+
+            }
+
+
+            if(dashboardNotice){
+
+                dashboardNotice.textContent =
+                    notice ||
+                    'No referral notice has been configured.';
+
+            }
+
+
+            alert(
+                'Referral settings updated successfully.'
+            );
+
+
+            closeReferralModal();
+
+
+        }else{
+
+            alert(
+                'Failed: ' +
+                (
+                    result.message ||
+                    'Unknown error'
+                )
+            );
+
         }
 
-        verifyAdmin();
-    </script>
+
+    }catch(error){
+
+        console.error(
+            'Referral settings update error:',
+            error
+        );
+
+
+        alert(
+            'Server error while updating referral settings.'
+        );
+
+
+    }finally{
+
+        if(saveButton){
+
+            saveButton.disabled =
+                false;
+
+            saveButton.innerHTML =
+                originalButtonHTML;
+
+        }
+
+    }
+
+}
+
+
+/* ==========================================
+   MODAL INITIALIZATION
+========================================== */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function(){
+
+        const modal =
+            document.getElementById(
+                'referralModal'
+            );
+
+
+        if(!modal){
+            return;
+        }
+
+
+        modal.addEventListener(
+            'click',
+            function(event){
+
+                if(
+                    event.target === modal
+                ){
+
+                    closeReferralModal();
+
+                }
+
+            }
+        );
+
+
+        const notice =
+            document.getElementById(
+                'refNotice'
+            );
+
+
+        if(notice){
+
+            notice.addEventListener(
+                'input',
+                updateNoticePreview
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   START ADMIN PANEL
+========================================== */
+
+verifyAdmin();
+
+</script>
+
 </body>
 </html>
