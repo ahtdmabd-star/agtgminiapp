@@ -3299,7 +3299,7 @@ app.all('/api/instagram', async (req, res) => {
                     tgId
                 );
 
-            let records = body.records;
+            let records = body.records ?? body.accounts;
 
             if (typeof records === 'string') {
 
@@ -3384,17 +3384,15 @@ app.all('/api/instagram', async (req, res) => {
 
                     // Prevent duplicate username in pool.
                     const [exists] =
-                        await connection.execute(
-                            `
-                            SELECT id
-                            FROM instagram_account_pool
-                            WHERE instagram_username = ?
-                            AND status IN
-                            ('available','assigned')
-                            LIMIT 1
-                            `,
-                            [username]
-                        );
+    await connection.execute(
+        `
+        SELECT id
+        FROM instagram_account_pool
+        WHERE instagram_username = ?
+        LIMIT 1
+        `,
+        [username]
+    );
 
                     if (exists.length > 0) {
                         skipped++;
