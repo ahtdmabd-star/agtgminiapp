@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit Funds - AL-HUDA TASK</title>
+    <title>Deposit - AL-HUDA TASK</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -21,16 +21,7 @@
             margin: 0;
             padding: 16px;
         }
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
+        .container { max-width: 480px; margin: 0 auto; }
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -38,15 +29,8 @@
             padding: 16px;
             margin-bottom: 16px;
         }
-        .form-group {
-            margin-bottom: 14px;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
         input, select {
             width: 100%;
             padding: 12px;
@@ -69,44 +53,34 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        .loading, .error-msg {
-            text-align: center;
-            padding: 20px;
-            color: var(--text-muted);
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h2>Deposit Balance</h2>
-    </div>
-
-    <div id="app-container">
-        <div class="card">
-            <div class="form-group">
-                <label>Select Payment Gateway</label>
-                <select id="gateway">
-                    <option value="bKash">bKash (Personal)</option>
-                    <option value="Nagad">Nagad (Personal)</option>
-                    <option value="Rocket">Rocket</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Amount (USD / BDT)</label>
-                <input type="number" id="amount" placeholder="Enter amount">
-            </div>
-            <div class="form-group">
-                <label>Sender Account Number</label>
-                <input type="text" id="sender_number" placeholder="e.g., 01XXXXXXXXX">
-            </div>
-            <div class="form-group">
-                <label>Transaction ID (TrxID)</label>
-                <input type="text" id="trx_id" placeholder="Enter TrxID">
-            </div>
-            <button class="submit-btn" onclick="submitDeposit()">Submit Deposit</button>
+    <h2>Deposit Balance</h2>
+    <div class="card">
+        <div class="form-group">
+            <label>Payment Method</label>
+            <select id="gateway">
+                <option value="bKash">bKash (Personal)</option>
+                <option value="Nagad">Nagad (Personal)</option>
+                <option value="Rocket">Rocket</option>
+            </select>
         </div>
+        <div class="form-group">
+            <label>Amount (BDT)</label>
+            <input type="number" id="amount" placeholder="Enter amount">
+        </div>
+        <div class="form-group">
+            <label>Sender Account Number</label>
+            <input type="text" id="sender_number" placeholder="01XXXXXXXXX">
+        </div>
+        <div class="form-group">
+            <label>Transaction ID (TrxID)</label>
+            <input type="text" id="trx_id" placeholder="Enter TrxID">
+        </div>
+        <button class="submit-btn" onclick="submitDeposit()">Submit Deposit Request</button>
     </div>
 </div>
 
@@ -124,7 +98,7 @@
         const trxId = document.getElementById('trx_id').value;
 
         if (!amount || !senderNumber || !trxId) {
-            alert('Please fill in all fields correctly!');
+            alert('সব ফিল্ড সঠিকভাবে পূরণ করুন!');
             return;
         }
 
@@ -136,7 +110,7 @@
                     action: 'create_deposit',
                     tg_id: tgId,
                     gateway: gateway,
-                    amount: amount,
+                    amount: parseFloat(amount),
                     sender_number: senderNumber,
                     trx_id: trxId
                 })
@@ -144,14 +118,14 @@
 
             const result = await response.json();
             if (result.success) {
-                alert('Deposit request submitted successfully! Please wait for admin approval.');
+                alert('ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে!');
                 window.location.reload();
             } else {
-                alert('Error: ' + (result.message || 'Failed to submit'));
+                alert('ত্রুটি: ' + (result.message || 'রিকোয়েস্ট ব্যর্থ হয়েছে'));
             }
         } catch (err) {
             console.error('Error:', err);
-            alert('Server connection error.');
+            alert('সার্ভার কানেকশন ত্রুটি।');
         }
     }
 </script>
