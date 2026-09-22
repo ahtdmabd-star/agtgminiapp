@@ -1,390 +1,1808 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AL-HUDA TECH GLOBAL - Secure Dashboard</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        /* Netlify Badge Complete Hide & Overlay Cover */
-        #netlify-badge, a[href*="netlify.com/trust"], footer img {
-            display: none !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-        }
-        .netlify-overlay-fix {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 35px;
-            background: #070a12;
-            z-index: 999999;
-            pointer-events: none;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AL-HUDA TECH GLOBAL - Secure Dashboard</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    background:#07111f;
+    color:#e8eef8;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+}
+
+button,
+input{
+    font-family:inherit;
+}
+
+.app-shell{
+    width:100%;
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(61,104,171,.14),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(49,193,150,.07),
+            transparent 30%
+        ),
+        #07111f;
+}
+
+.app-wrapper{
+    width:100%;
+    max-width:540px;
+    margin:0 auto;
+    padding:16px 14px 28px;
+}
+
+/* HEADER */
+
+.top-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:8px 2px 16px;
+}
+
+.brand-area{
+    min-width:0;
+}
+
+.brand-small{
+    color:#65758d;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:1.3px;
+    margin-bottom:5px;
+}
+
+.brand-title{
+    color:#ffffff;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+    font-size:23px;
+    font-weight:800;
+    line-height:1.1;
+    letter-spacing:.3px;
+    white-space:nowrap;
+}
+
+.brand-subtitle{
+    color:#8492a8;
+    font-size:10px;
+    margin-top:6px;
+}
+
+.header-status{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 9px;
+    border-radius:10px;
+    background:rgba(94,231,187,.07);
+    border:1px solid rgba(94,231,187,.14);
+    color:#7ce9c4;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:.8px;
+}
+
+.header-status-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#5ee7bb;
+    box-shadow:0 0 9px rgba(94,231,187,.75);
+    animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse{
+    0%,100%{
+        opacity:1;
+        transform:scale(1);
+    }
+    50%{
+        opacity:.45;
+        transform:scale(.75);
+    }
+}
+
+/* LIVE BAR */
+
+.live-bar{
+    width:100%;
+    min-height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 12px;
+    margin-bottom:15px;
+    border-radius:11px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.065);
+}
+
+.live-left{
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+
+.live-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#5ee7bb;
+    box-shadow:0 0 10px rgba(94,231,187,.7);
+    animation:pulse 1.5s infinite;
+}
+
+.live-text{
+    color:#91a0b6;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.9px;
+}
+
+.live-time{
+    color:#5ee7bb;
+    font-size:10px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+}
+
+/* BALANCE CARD */
+
+.balance-card{
+    position:relative;
+    overflow:hidden;
+    padding:18px;
+    border-radius:21px;
+    background:
+        linear-gradient(
+            145deg,
+            #12233e 0%,
+            #0d1a30 55%,
+            #0a1629 100%
+        );
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:
+        0 18px 40px rgba(0,0,0,.25),
+        inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.balance-card::before{
+    content:"";
+    position:absolute;
+    width:190px;
+    height:190px;
+    right:-100px;
+    top:-105px;
+    border-radius:50%;
+    background:rgba(94,231,187,.055);
+}
+
+.balance-card::after{
+    content:"";
+    position:absolute;
+    width:110px;
+    height:110px;
+    left:-70px;
+    bottom:-65px;
+    border-radius:50%;
+    background:rgba(65,126,207,.06);
+}
+
+.balance-top{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.balance-title-area{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.balance-icon{
+    width:43px;
+    height:43px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:13px;
+    color:#5ee7bb;
+    background:rgba(94,231,187,.09);
+    border:1px solid rgba(94,231,187,.16);
+}
+
+.balance-icon svg{
+    width:21px;
+    height:21px;
+}
+
+.balance-title{
+    color:#ffffff;
+    font-size:14px;
+    font-weight:800;
+}
+
+.balance-caption{
+    color:#738199;
+    font-size:10px;
+    margin-top:4px;
+}
+
+.status-badge{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:6px 8px;
+    border-radius:9px;
+    color:#6ee5bc;
+    background:rgba(94,231,187,.06);
+    border:1px solid rgba(94,231,187,.13);
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:.7px;
+}
+
+.status-dot{
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:#5ee7bb;
+}
+
+.balance-amount{
+    position:relative;
+    z-index:1;
+    margin:20px 0 17px;
+    color:#ffffff;
+    font-size:34px;
+    font-weight:900;
+    line-height:1;
+    letter-spacing:-.8px;
+    font-variant-numeric:tabular-nums;
+}
+
+.balance-actions{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+}
+
+.card-btn{
+    height:45px;
+    border:none;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:800;
+    transition:.2s ease;
+}
+
+.card-btn:active{
+    transform:scale(.97);
+}
+
+.card-btn svg{
+    width:17px;
+    height:17px;
+}
+
+.deposit-btn{
+    color:#06141a;
+    background:#5ee7bb;
+    box-shadow:0 8px 20px rgba(94,231,187,.12);
+}
+
+.withdraw-btn{
+    color:#d9e4f3;
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.09);
+}
+
+/* SECTION HEADING */
+
+.section-heading{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:19px 2px 10px;
+}
+
+.section-icon{
+    width:34px;
+    height:34px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    color:#7ca9e9;
+    background:rgba(78,131,205,.08);
+    border:1px solid rgba(78,131,205,.14);
+}
+
+.section-icon svg{
+    width:17px;
+    height:17px;
+}
+
+.section-heading-text strong{
+    display:block;
+    color:#dce6f4;
+    font-size:13px;
+    font-weight:800;
+}
+
+.section-heading-text span{
+    display:block;
+    color:#69788f;
+    font-size:9px;
+    margin-top:3px;
+}
+
+/* ACCOUNT CARD */
+
+.info-card{
+    overflow:hidden;
+    border-radius:17px;
+    background:rgba(13,27,47,.82);
+    border:1px solid rgba(255,255,255,.065);
+}
+
+.info-row{
+    min-height:61px;
+    display:flex;
+    align-items:center;
+    padding:10px 13px;
+    border-bottom:1px solid rgba(255,255,255,.055);
+}
+
+.info-row:last-child{
+    border-bottom:none;
+}
+
+.row-left{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+
+.row-icon{
+    width:34px;
+    height:34px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    color:#7e9dc8;
+    background:rgba(105,142,194,.07);
+    border:1px solid rgba(105,142,194,.10);
+}
+
+.row-icon svg{
+    width:16px;
+    height:16px;
+}
+
+.label{
+    color:#65748a;
+    font-size:9px;
+    margin-bottom:4px;
+}
+
+.value{
+    color:#dce5f3;
+    font-size:12px;
+    font-weight:700;
+    word-break:break-word;
+}
+
+.verified-value{
+    color:#5ee7bb !important;
+}
+
+/* REFERRAL CARD */
+
+        .referral-card{
+            position:relative;
+            overflow:hidden;
+            margin-top:17px;
+            padding:17px;
+            border-radius:20px;
+            background:
+                linear-gradient(
+                    145deg,
+                    #101f37,
+                    #0b172b
+                );
+            border:1px solid rgba(94,231,187,.16);
+            box-shadow:0 15px 35px rgba(0,0,0,.18);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        body { 
-            background: radial-gradient(circle at top, #0f172a 0%, #070a12 100%); 
-            color: #f8fafc; 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 10px 15px 45px 15px;
-            overflow-x: hidden;
-        }
-        
-        .app-wrapper {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin: auto;
+        .referral-card::before{
+            content:"";
+            position:absolute;
+            width:170px;
+            height:170px;
+            right:-95px;
+            top:-95px;
+            border-radius:50%;
+            background:rgba(94,231,187,.055);
         }
 
-        .brand-header {
-            text-align: center;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            color: #38bdf8;
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-        
-        .balance-card { 
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%); 
-            padding: 20px; 
-            border-radius: 20px; 
-            position: relative; 
-            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.25); 
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-        
-        .status-badge { 
-            position: absolute; 
-            top: 16px; 
-            right: 16px; 
-            background: rgba(16, 185, 129, 0.15); 
-            border: 1px solid #34d399; 
-            color: #34d399; 
-            padding: 4px 10px; 
-            border-radius: 30px; 
-            font-size: 10px; 
-            font-weight: 700; 
-            letter-spacing: 0.5px;
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-            text-transform: uppercase;
-        }
-        
-        .status-dot { 
-            width: 6px; 
-            height: 6px; 
-            background: #34d399; 
-            border-radius: 50%; 
-            box-shadow: 0 0 8px #34d399; 
-        }
-        
-        .balance-title { 
-            font-size: 11px; 
-            color: #bae6fd; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            font-weight: 600;
-        }
-        
-        .balance-amount { 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: #ffffff; 
-            margin: 8px 0 16px 0; 
-            letter-spacing: -0.5px;
-        }
-        
-        .balance-amount span {
-            font-size: 14px;
-            font-weight: 600;
-            color: #7dd3fc;
-        }
-        
-        .balance-actions { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-        }
-        
-        .card-btn { 
-            background: rgba(255, 255, 255, 0.1); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            color: white; 
-            padding: 10px 12px; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            font-size: 12px; 
-            cursor: pointer; 
-            text-align: center; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            transition: all 0.2s ease; 
-            backdrop-filter: blur(10px); 
-        }
-        
-        .card-btn:hover { 
-            background: rgba(255, 255, 255, 0.2); 
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-1px);
+        .referral-header{
+            position:relative;
+            z-index:1;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-bottom:14px;
         }
 
-        .info-card { 
-            background: #111827; 
-            padding: 16px; 
-            border-radius: 16px; 
-            border: 1px solid #1f2937; 
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); 
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .info-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            font-size: 13px; 
-        }
-        
-        .label { color: #94a3b8; font-weight: 500; }
-        .value { color: #f1f5f9; font-weight: 600; letter-spacing: 0.3px; }
-
-        .ref-box-container { 
-            display: flex; 
-            gap: 8px; 
-            margin-top: 6px; 
-        }
-        
-        .ref-input { 
-            flex: 1; 
-            background: #070a12; 
-            border: 1px solid #334155; 
-            padding: 10px 12px; 
-            border-radius: 10px; 
-            font-size: 11px; 
-            color: #38bdf8; 
-            outline: none; 
-            font-family: monospace;
-        }
-        
-        .copy-btn { 
-            background: #0284c7; 
-            color: white; 
-            border: none; 
-            padding: 0 16px; 
-            border-radius: 10px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            font-size: 12px; 
-            transition: 0.2s; 
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .copy-btn:hover { background: #0369a1; }
-
-        .btn-full { 
-            width: 100%; 
-            background: linear-gradient(135deg, #2563eb, #1d4ed8); 
-            color: white; 
-            border: none; 
-            padding: 13px; 
-            border-radius: 14px; 
-            font-weight: 600; 
-            font-size: 13px; 
-            cursor: pointer; 
-            text-align: center; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35); 
-            transition: all 0.2s ease; 
-        }
-        
-        .btn-full:hover { opacity: 0.95; transform: translateY(-1px); }
-
-        .app-footer { 
-            text-align: center; 
-            font-size: 11px; 
-            color: #64748b; 
-            margin-top: 8px; 
-            font-weight: 500;
+        .referral-title-area{
+            min-width:0;
+            display:flex;
+            align-items:center;
+            gap:10px;
         }
 
-        .loading, .error-msg { text-align: center; padding: 40px; color: #94a3b8; line-height: 1.6; font-size: 14px; }
-        
-        svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
-    </style>
+        .referral-main-icon{
+            width:42px;
+            height:42px;
+            flex-shrink:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:13px;
+            color:#5ee7bb;
+            background:rgba(94,231,187,.08);
+            border:1px solid rgba(94,231,187,.15);
+        }
+
+        .referral-main-icon svg{
+            width:21px;
+            height:21px;
+        }
+
+        .referral-heading{
+            color:#ffffff;
+            font-size:14px;
+            font-weight:800;
+        }
+
+        .referral-subheading{
+            color:#718098;
+            font-size:9px;
+            margin-top:4px;
+        }
+
+        .commission-box{
+            min-width:83px;
+            padding:8px 9px;
+            flex-shrink:0;
+            text-align:center;
+            border-radius:12px;
+            background:rgba(94,231,187,.065);
+            border:1px solid rgba(94,231,187,.16);
+        }
+
+        .commission-label{
+            display:block;
+            color:#6d7b91;
+            font-size:8px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.7px;
+        }
+
+        .commission-value{
+            display:block;
+            margin-top:3px;
+            color:#5ee7bb;
+            font-size:21px;
+            line-height:1;
+            font-weight:900;
+        }
+
+        .commission-caption{
+            display:block;
+            margin-top:4px;
+            color:#59687e;
+            font-size:7px;
+        }
+
+        .share-text{
+            position:relative;
+            z-index:1;
+            color:#8997ab;
+            font-size:10px;
+            line-height:1.55;
+            margin-bottom:12px;
+        }
+
+        .ref-box-container{
+            position:relative;
+            z-index:1;
+            display:flex;
+            align-items:center;
+            gap:7px;
+        }
+
+        .ref-input{
+            width:100%;
+            min-width:0;
+            height:44px;
+            padding:0 11px;
+            border-radius:11px;
+            outline:none;
+            color:#dce6f4;
+            background:rgba(255,255,255,.035);
+            border:1px solid rgba(255,255,255,.08);
+            font-size:10px;
+        }
+
+        .ref-input:focus{
+            border-color:rgba(94,231,187,.30);
+        }
+
+        .copy-btn{
+            width:46px;
+            height:44px;
+            flex-shrink:0;
+            border:none;
+            border-radius:11px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#07111f;
+            background:#5ee7bb;
+            cursor:pointer;
+            box-shadow:0 7px 18px rgba(94,231,187,.12);
+            transition:.2s ease;
+        }
+
+        .copy-btn:active{
+            transform:scale(.95);
+        }
+
+        .copy-btn svg{
+            width:19px;
+            height:19px;
+        }
+
+        /* TASK BUTTON */
+
+        .btn-full{
+            position:relative;
+            overflow:hidden;
+            width:100%;
+            height:49px;
+            margin-top:13px;
+            border:none;
+            border-radius:13px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            color:#06141a;
+            background:linear-gradient(
+                135deg,
+                #5ee7bb,
+                #42d4a3
+            );
+            box-shadow:0 9px 22px rgba(94,231,187,.13);
+            cursor:pointer;
+            font-size:12px;
+            font-weight:800;
+            transition:.2s ease;
+        }
+
+        .btn-full:active{
+            transform:scale(.98);
+        }
+
+        .btn-full svg{
+            position:relative;
+            z-index:2;
+            width:18px;
+            height:18px;
+        }
+
+        .btn-full span{
+            position:relative;
+            z-index:2;
+        }
+
+        .btn-full::after{
+            content:"";
+            position:absolute;
+            top:0;
+            left:-110%;
+            width:55%;
+            height:100%;
+            background:linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,.25),
+                transparent
+            );
+            animation:shine 3.5s infinite;
+        }
+
+        @keyframes shine{
+            0%{
+                left:-110%;
+            }
+            35%{
+                left:135%;
+            }
+            100%{
+                left:135%;
+            }
+        }
+
+        /* FOOTER */
+
+        .app-footer{
+            padding:22px 4px 8px;
+            text-align:center;
+        }
+
+        .footer-brand{
+            color:#cfd9e8;
+            font-size:11px;
+            font-weight:800;
+            letter-spacing:.8px;
+        }
+
+        .footer-text{
+            margin-top:5px;
+            color:#637188;
+            font-size:9px;
+        }
+
+        .footer-status{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            margin-top:10px;
+            color:#728097;
+            font-size:9px;
+        }
+
+        .footer-dot{
+            width:6px;
+            height:6px;
+            border-radius:50%;
+            background:#5ee7bb;
+            box-shadow:0 0 8px rgba(94,231,187,.65);
+            animation:pulse 1.6s infinite;
+        }
+
+        /* LOADING */
+
+        .loading-screen{
+            min-height:65vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            gap:13px;
+            color:#7c8ba2;
+            font-size:11px;
+        }
+
+        .loader{
+            width:32px;
+            height:32px;
+            border-radius:50%;
+            border:3px solid rgba(255,255,255,.07);
+            border-top-color:#5ee7bb;
+            animation:spin .8s linear infinite;
+        }
+
+        @keyframes spin{
+            to{
+                transform:rotate(360deg);
+            }
+        }
+
+        /* ERROR */
+
+        .error-screen{
+            min-height:65vh;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            text-align:center;
+            padding:25px;
+        }
+
+        .error-icon{
+            width:52px;
+            height:52px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-bottom:14px;
+            border-radius:15px;
+            color:#ff7777;
+            background:rgba(255,90,90,.07);
+            border:1px solid rgba(255,90,90,.16);
+        }
+
+        .error-icon svg{
+            width:24px;
+            height:24px;
+        }
+
+        .error-title{
+            color:#ffffff;
+            font-size:16px;
+            font-weight:800;
+            margin-bottom:7px;
+        }
+
+        .error-text{
+            max-width:285px;
+            color:#79879d;
+            font-size:11px;
+            line-height:1.6;
+        }
+
+        /* SMALL DEVICES */
+
+        @media(max-width:380px){
+
+            .app-wrapper{
+                padding-left:11px;
+                padding-right:11px;
+            }
+
+            .brand-title{
+                font-size:20px;
+            }
+
+            .header-status{
+                padding:6px 7px;
+            }
+
+            .balance-card{
+                padding:16px;
+            }
+
+            .balance-amount{
+                font-size:30px;
+            }
+
+            .commission-box{
+                min-width:76px;
+            }
+
+            .commission-value{
+                font-size:19px;
+            }
+
+            .ref-input{
+                font-size:9px;
+            }
+        }
+
+        @media(min-width:600px){
+
+            .app-wrapper{
+                max-width:560px;
+            }
+        }
+</style>
 </head>
+
 <body>
 
-    <div class="netlify-overlay-fix"></div>
+<div class="app-shell">
 
-    <div class="app-wrapper" id="app">
-        <div class="loading">Loading secure portal...</div>
-    </div>
+<div class="app-wrapper">
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<header class="top-header">
 
-        const urlParams = new URLSearchParams(window.location.search);
-        let tgId = urlParams.get('tg_id');
+<div class="brand-area">
 
-        if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            tgId = tg.initDataUnsafe.user.id;
-        }
+<div class="brand-small">
+ONLINE EARNING PLATFORM
+</div>
 
-        function maskTelegramId(id) {
-            if (!id || id === 'None' || id === 'Direct') return 'Direct / None';
-            const strId = String(id);
-            if (strId.length <= 4) return strId;
-            return strId.substring(0, 2) + '***' + strId.substring(strId.length - 2);
-        }
+<div class="brand-title">
+AL-HUDA TECH GLOBAL
+</div>
 
-        async function fetchUserData() {
-            const appContainer = document.getElementById('app');
+<div class="brand-subtitle">
+Professional Digital Work Platform
+</div>
 
-            if (!tgId) {
-                appContainer.innerHTML = `
-                    <div class="error-msg">
-                        <h3>Access Restricted</h3>
-                        <p>Please open this Mini App securely from the official Telegram Bot.</p>
-                    </div>
-                `;
-                return;
-            }
+</div>
 
-            try {
-                // রেন্ডারের নতুন এক্সপ্রেস এপিআই পাথ
-                const response = await fetch(`/api/get-user?tg_id=${tgId}`);
-                const data = await response.json();
+<div class="header-status">
+<span class="header-status-dot"></span>
+ACTIVE
+</div>
 
-                if (!response.ok || !data.success) {
-                    appContainer.innerHTML = `
-                        <div class="error-msg" style="background: #111827; padding: 25px; border-radius: 16px; border: 1px solid #1f2937;">
-                            <h3 style="color: #f43f5e; margin-bottom: 10px;">Verification Required</h3>
-                            <p style="color: #cbd5e1; font-size: 13px;">${data.message || 'You must join our official Telegram channel and group to access your account. Please verify via the bot.'}</p>
-                        </div>
-                    `;
-                    return;
+</header>
+
+<div class="live-bar">
+
+<div class="live-left">
+<span class="live-dot"></span>
+<span class="live-text">SYSTEM LIVE</span>
+</div>
+
+<span class="live-time" id="liveTime">
+--:--:--
+</span>
+
+</div>
+
+<main id="mainContent">
+
+<div class="loading-screen" id="loadingScreen">
+
+<div class="loader"></div>
+
+<div>
+Loading secure dashboard...
+</div>
+
+</div>
+
+<div class="error-screen" id="errorScreen">
+
+<div class="error-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<path d="M12 9v4"></path>
+<path d="M12 17h.01"></path>
+<path d="M10.3 3.6 2.5 17a2 2 0 0 0 1.73 3h15.54A2 2 0 0 0 21.5 17l-7.8-13.4a2 2 0 0 0-3.4 0Z"></path>
+</svg>
+
+</div>
+
+<div class="error-title" id="errorTitle">
+Verification Required
+</div>
+
+<div class="error-text" id="errorText">
+Please verify your Telegram account before accessing the dashboard.
+</div>
+
+</div>
+
+<div id="dashboardContent" style="display:none;">
+<section class="balance-card">
+
+<div class="balance-top">
+
+<div class="balance-title-area">
+
+<div class="balance-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<rect x="3" y="5" width="18" height="14" rx="3"></rect>
+<path d="M3 9h18"></path>
+<path d="M16 14h2"></path>
+</svg>
+
+</div>
+
+<div>
+
+<div class="balance-title">
+Available Balance
+</div>
+
+<div class="balance-caption">
+Your current account balance
+</div>
+
+</div>
+
+</div>
+
+<div class="status-badge">
+
+<span class="status-dot"></span>
+ACTIVE
+
+</div>
+
+</div>
+
+<div
+class="balance-amount"
+id="balanceAmount"
+>
+$0.00
+</div>
+
+<div class="balance-actions">
+
+<button
+class="card-btn deposit-btn"
+id="depositBtn"
+type="button"
+>
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<path d="M12 3v12"></path>
+<path d="m7 10 5 5 5-5"></path>
+<path d="M5 20h14"></path>
+</svg>
+
+<span>
+Deposit
+</span>
+
+</button>
+
+<button
+class="card-btn withdraw-btn"
+id="withdrawBtn"
+type="button"
+>
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<path d="M12 21V9"></path>
+<path d="m17 14-5-5-5 5"></path>
+<path d="M5 4h14"></path>
+</svg>
+
+<span>
+Withdraw
+</span>
+
+</button>
+
+</div>
+
+</section>
+
+
+<div class="section-heading">
+
+<div class="section-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+</svg>
+
+</div>
+
+<div class="section-heading-text">
+
+<strong>
+Account Information
+</strong>
+
+<span>
+Verified account details
+</span>
+
+</div>
+
+</div>
+
+
+<section class="info-card">
+
+
+<div class="info-row">
+
+<div class="row-left">
+
+<div class="row-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<circle cx="12" cy="8" r="4"></circle>
+<path d="M4 21a8 8 0 0 1 16 0"></path>
+</svg>
+
+</div>
+
+<div>
+
+<div class="label">
+Telegram ID
+</div>
+
+<div
+class="value verified-value"
+id="telegramId"
+>
+--
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="info-row">
+
+<div class="row-left">
+
+<div class="row-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<path d="M20 21a8 8 0 0 0-16 0"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+
+</div>
+
+<div>
+
+<div class="label">
+Referred By
+</div>
+
+<div
+class="value"
+id="referredBy"
+>
+--
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="info-row">
+
+<div class="row-left">
+
+<div class="row-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="M2 21a7 7 0 0 1 14 0"></path>
+<path d="M16 4.13a4 4 0 0 1 0 7.75"></path>
+<path d="M22 21a6 6 0 0 0-5-5.91"></path>
+</svg>
+
+</div>
+
+<div>
+
+<div class="label">
+Total Referrals
+</div>
+
+<div
+class="value"
+id="totalReferrals"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="info-row">
+
+<div class="row-left">
+
+<div class="row-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M15 8.5c-.7-.7-1.6-1-2.8-1-1.5 0-2.7.8-2.7 2 0 3.2 5.5 1.5 5.5 4.5 0 1.2-1.2 2-2.9 2-1.3 0-2.4-.4-3.1-1.1"></path>
+<path d="M12 5.5v13"></path>
+</svg>
+
+</div>
+
+<div>
+
+<div class="label">
+Referral Commission
+</div>
+
+<div
+class="value verified-value"
+id="referralCommissionRow"
+>
+--
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section class="referral-card">
+
+<div class="referral-header">
+
+<div class="referral-title-area">
+
+<div class="referral-main-icon">
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<circle cx="8" cy="8" r="3"></circle>
+<circle cx="16" cy="16" r="3"></circle>
+<path d="m10.5 10.5 3 3"></path>
+<path d="M5 15a4 4 0 0 0-3 4"></path>
+<path d="M19 5a4 4 0 0 1 3 4"></path>
+</svg>
+
+</div>
+
+<div>
+
+<div class="referral-heading">
+Referral Program
+</div>
+
+<div class="referral-subheading">
+Invite users and earn commission
+</div>
+
+</div>
+
+</div>
+
+<div class="commission-box">
+
+<span class="commission-label">
+Commission
+</span>
+
+<span
+class="commission-value"
+id="commissionValue"
+>
+--
+</span>
+
+<span class="commission-caption">
+Per referral
+</span>
+
+</div>
+
+</div>
+
+
+<div
+class="share-text"
+id="shareText"
+>
+Share your referral link and earn commission from eligible referral activity.
+</div>
+
+
+<div class="ref-box-container">
+
+<input
+type="text"
+class="ref-input"
+id="refLinkInput"
+readonly
+value=""
+>
+
+<button
+class="copy-btn"
+id="copyBtn"
+type="button"
+onclick="copyRefLink()"
+>
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<rect x="8" y="8" width="11" height="11" rx="2"></rect>
+<path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path>
+</svg>
+
+</button>
+
+</div>
+
+
+<button
+class="btn-full"
+id="tasksBtn"
+type="button"
+>
+
+<svg
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="1.8"
+>
+<path d="M9 11h6"></path>
+<path d="M9 15h6"></path>
+<path d="M9 7h6"></path>
+<path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path>
+</svg>
+
+<span>
+View Available Tasks
+</span>
+
+</button>
+
+    </section>
+    <footer class="app-footer">
+
+<div class="footer-brand">
+AL-HUDA TECH GLOBAL
+</div>
+
+<div class="footer-text">
+Secure digital earning platform
+</div>
+
+<div class="footer-status">
+
+<span class="footer-dot"></span>
+
+System operational
+
+</div>
+
+</footer>
+
+</div>
+
+</main>
+
+</div>
+
+</div>
+
+<script>
+
+const tg = window.Telegram.WebApp;
+
+tg.expand();
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+let tgId =
+    params.get("tg_id");
+
+if(
+    !tgId &&
+    tg.initDataUnsafe &&
+    tg.initDataUnsafe.user
+){
+    tgId =
+        tg.initDataUnsafe.user.id;
+}
+
+
+function maskTelegramId(id){
+
+    if(!id){
+        return "--";
+    }
+
+    const value =
+        String(id);
+
+    if(value.length <= 6){
+        return value;
+    }
+
+    return (
+        value.substring(0,3) +
+        "••••" +
+        value.substring(
+            value.length - 3
+        )
+    );
+}
+
+
+function getReferralCommission(user){
+
+    const commission =
+        user.referral_commission ??
+        user.referral_percentage ??
+        user.commission_percentage ??
+        user.referral_percent ??
+        user.commission_percent;
+
+    if(
+        commission === undefined ||
+        commission === null ||
+        commission === ""
+    ){
+        return "--";
+    }
+
+    const numericValue =
+        parseFloat(commission);
+
+    if(!Number.isNaN(numericValue)){
+
+        return Number.isInteger(
+            numericValue
+        )
+        ? numericValue + "%"
+        : numericValue.toFixed(2) + "%";
+    }
+
+    return String(
+        commission
+    ).includes("%")
+    ? String(commission)
+    : String(commission) + "%";
+}
+
+
+function updateLiveTime(){
+
+    const timeElement =
+        document.getElementById(
+            "liveTime"
+        );
+
+    if(!timeElement){
+        return;
+    }
+
+    const now =
+        new Date();
+
+    const hours =
+        String(
+            now.getHours()
+        ).padStart(2,"0");
+
+    const minutes =
+        String(
+            now.getMinutes()
+        ).padStart(2,"0");
+
+    const seconds =
+        String(
+            now.getSeconds()
+        ).padStart(2,"0");
+
+    timeElement.textContent =
+        hours +
+        ":" +
+        minutes +
+        ":" +
+        seconds;
+}
+
+
+setInterval(
+    updateLiveTime,
+    1000
+);
+
+updateLiveTime();
+
+
+function showError(
+    title,
+    message
+){
+
+    const loadingScreen =
+        document.getElementById(
+            "loadingScreen"
+        );
+
+    const errorScreen =
+        document.getElementById(
+            "errorScreen"
+        );
+
+    const errorTitle =
+        document.getElementById(
+            "errorTitle"
+        );
+
+    const errorText =
+        document.getElementById(
+            "errorText"
+        );
+
+    const dashboardContent =
+        document.getElementById(
+            "dashboardContent"
+        );
+
+    if(loadingScreen){
+        loadingScreen.style.display =
+            "none";
+    }
+
+    if(dashboardContent){
+        dashboardContent.style.display =
+            "none";
+    }
+
+    if(errorTitle){
+        errorTitle.textContent =
+            title;
+    }
+
+    if(errorText){
+        errorText.textContent =
+            message;
+    }
+
+    if(errorScreen){
+        errorScreen.style.display =
+            "flex";
+    }
+}
+
+
+async function fetchUserData(){
+
+    if(!tgId){
+
+        showError(
+            "Access Restricted",
+            "Telegram account information could not be detected. Please open this dashboard through Telegram."
+        );
+
+        return;
+    }
+
+    try{
+
+        const response =
+            await fetch(
+                `/api/get-user?tg_id=${tgId}`,
+                {
+                    method:"GET",
+                    headers:{
+                        "Accept":
+                            "application/json"
+                    },
+                    cache:"no-store"
                 }
+            );
 
-                const user = data.user;
+        if(!response.ok){
 
-                if (user.role === 'admin') {
-                    window.location.href = `admin_2.html?tg_id=${tgId}`;
-                    return;
-                }
-
-                const maskedReferredBy = maskTelegramId(user.referred_by);
-                const referralLink = `https://t.me/ahtgearnbdbot?start=${user.referral_code}`;
-
-                appContainer.innerHTML = `
-                    <div class="brand-header">AL-HUDA TECH GLOBAL</div>
-
-                    <div class="balance-card">
-                        <div class="status-badge">
-                            <span class="status-dot"></span> Active
-                        </div>
-                        <div class="balance-title">Total Balance</div>
-                        <div class="balance-amount">$${parseFloat(user.balance || 0).toFixed(2)} <span>USDT</span></div>
-                        
-                        <div class="balance-actions">
-                            <a href="user/deposit.html?tg_id=${tgId}" class="card-btn">
-                                <svg viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-                                Deposit
-                            </a>
-                            <a href="user/withdraw.html?tg_id=${tgId}" class="card-btn">
-                                <svg viewBox="0 0 24 24"><path d="M2 9h20V5H2v4zm0 3v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7H2zm5 4h6v2H7v-2z"/></svg>
-                                Withdraw
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="info-card">
-                        <div class="info-row">
-                            <span class="label">Telegram ID</span>
-                            <span class="value">${user.telegram_id}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Referred By</span>
-                            <span class="value">${maskedReferredBy}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Total Referrals</span>
-                            <span class="value">${user.referrals || 0} Users</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Account Status</span>
-                            <span class="value" style="color: #34d399;">VERIFIED</span>
-                        </div>
-                    </div>
-
-                    <div class="info-card">
-                        <div>
-                            <div style="font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 3px;">Referral Partnership Program</div>
-                            <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">Invite your friends using your unique link below and earn instant commission bonuses on their transactions automatically.</div>
-                        </div>
-                        <div class="ref-box-container">
-                            <input type="text" class="ref-input" id="refLinkInput" value="${referralLink}" readonly>
-                            <button class="copy-btn" onclick="copyRefLink()">
-                                <svg viewBox="0 0 24 24" style="width:13px; height:13px;"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                                Copy
-                            </button>
-                        </div>
-                    </div>
-
-                    <a href="user/tasks.html?tg_id=${tgId}" class="btn-full">
-                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        Go to Tasks & Earn More
-                    </a>
-
-                    <div class="app-footer">
-                        &copy; 2026 AL-HUDA TECH GLOBAL. All rights reserved.
-                    </div>
-                `;
-
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                appContainer.innerHTML = `
-                    <div class="error-msg">
-                        <h3>Connection Error</h3>
-                        <p>Failed to establish secure connection. Please try again.</p>
-                    </div>
-                `;
-            }
+            throw new Error(
+                "API request failed"
+            );
         }
 
-        function copyRefLink() {
-            const input = document.getElementById('refLinkInput');
-            input.select();
-            input.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(input.value);
-            alert('Referral link copied successfully!');
+        const data =
+            await response.json();
+
+        if(
+            !data ||
+            !data.user
+        ){
+
+            showError(
+                "Verification Required",
+                "Your Telegram account could not be verified. Please complete the required verification first."
+            );
+
+            return;
         }
+
+        const user =
+            data.user;
+
+        if(
+            user.role === "admin"
+        ){
+
+            window.location.href =
+                `admin_2.html?tg_id=${tgId}`;
+
+            return;
+        }
+
+        const loadingScreen =
+            document.getElementById(
+                "loadingScreen"
+            );
+
+        const dashboardContent =
+            document.getElementById(
+                "dashboardContent"
+            );
+
+        if(loadingScreen){
+            loadingScreen.style.display =
+                "none";
+        }
+
+        if(dashboardContent){
+            dashboardContent.style.display =
+                "block";
+        }
+
+        document.getElementById(
+            "balanceAmount"
+        ).textContent =
+            "$" +
+            Number(
+                user.balance || 0
+            ).toFixed(2);
+
+        document.getElementById(
+            "telegramId"
+        ).textContent =
+            maskTelegramId(
+                user.telegram_id ||
+                tgId
+            );
+
+        document.getElementById(
+            "referredBy"
+        ).textContent =
+            user.referred_by ||
+            "Direct";
+
+        document.getElementById(
+            "totalReferrals"
+        ).textContent =
+            user.referrals || 0;
+
+        const referralCommission =
+            getReferralCommission(
+                user
+            );
+
+        document.getElementById(
+            "commissionValue"
+        ).textContent =
+            referralCommission;
+
+        document.getElementById(
+            "referralCommissionRow"
+        ).textContent =
+            referralCommission;
+
+        const referralLink =
+            `https://t.me/ahtgearnbdbot?start=${user.referral_code}`;
+
+        document.getElementById(
+            "refLinkInput"
+        ).value =
+            referralLink;
+
+        document.getElementById(
+            "shareText"
+        ).textContent =
+            `Share your referral link and earn ${referralCommission} commission from eligible referral activity.`;
+
+        document.getElementById(
+            "depositBtn"
+        ).onclick =
+            function(){
+
+                window.location.href =
+                    `user/deposit.html?tg_id=${tgId}`;
+            };
+
+        document.getElementById(
+            "withdrawBtn"
+        ).onclick =
+            function(){
+
+                window.location.href =
+                    `user/withdraw.html?tg_id=${tgId}`;
+            };
+        document.getElementById(
+            "tasksBtn"
+        ).onclick =
+            function(){
+
+                window.location.href =
+                    `user/tasks.html?tg_id=${tgId}`;
+            };
+
+    }
+    catch(error){
+
+        console.error(
+            "Dashboard error:",
+            error
+        );
+
+        showError(
+            "Verification Required",
+            "Unable to load your account information. Please try again from the Telegram Mini App."
+        );
+    }
+}
+
+
+async function copyRefLink(){
+
+    const input =
+        document.getElementById(
+            "refLinkInput"
+        );
+
+    if(
+        !input ||
+        !input.value
+    ){
+        return;
+    }
+
+    try{
+
+        await navigator.clipboard.writeText(
+            input.value
+        );
+
+        alert(
+            "Referral link copied successfully!"
+        );
+
+    }
+    catch(error){
+
+        input.select();
+
+        input.setSelectionRange(
+            0,
+            99999
+        );
+
+        document.execCommand(
+            "copy"
+        );
+
+        alert(
+            "Referral link copied successfully!"
+        );
+    }
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
         fetchUserData();
-    </script>
+
+    }
+);
+
+</script>
+
 </body>
-  </html>
-  
+</html>
+    
