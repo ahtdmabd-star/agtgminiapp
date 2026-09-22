@@ -153,7 +153,7 @@ qs("#uploadBtn").onclick=async()=>{
   for(let i=0;i<parsed.length;i+=size){
    const chunk=parsed.slice(i,i+size),part=Math.floor(i/size)+1,total=Math.ceil(parsed.length/size);
    qs("#uploadProgressText").textContent="Uploading batch "+part+" of "+total+" ("+chunk.length+" accounts)...";
-   const j=await api("admin_bulk_upload",{accounts:chunk});ins+=Number(j.inserted||0);skip+=Number(j.skipped||0);fail+=Number(j.failed||0);
+   const j=await api("admin_bulk_upload",{records:chunk});ins+=Number(j.inserted||0);skip+=Number(j.skipped||0);fail+=Number(j.failed||0);
    qs("#uploadProgress").style.width=Math.round(((i+chunk.length)/parsed.length)*100)+"%";
   }
   qs("#uploadProgressText").textContent="Finished. Inserted: "+ins+" | Skipped: "+skip+" | Failed: "+fail;
