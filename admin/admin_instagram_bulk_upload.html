@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AL-HUDA TECH GLOBAL - Instagram Admin</title>
+<style>
+:root{--bg:#071426;--card:#0d1d33;--card2:#102640;--border:#203955;--text:#eef5ff;--muted:#8fa5bd;--primary:#2f80ed;--primary2:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#d97706;--input:#08182b;--shadow:0 14px 40px rgba(0,0,0,.28)}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#061223,#08172b);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1100px;margin:auto;padding:16px}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 16px;background:rgba(6,18,35,.94);backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-icon{width:42px;height:42px;border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;background:var(--card)}
+.brand-icon svg{width:23px;height:23px}.brand h1{font-size:17px;margin:0}.brand p{font-size:11px;color:var(--muted);margin:3px 0 0}.actions{display:flex;gap:8px}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;padding:10px 13px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600}
+.btn:hover{background:var(--card2)}.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn.primary:hover{background:var(--primary2)}
+.btn.success{background:var(--success);border-color:var(--success);color:#fff}.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}.btn.warning{background:var(--warning);border-color:var(--warning);color:#fff}
+.btn.small{padding:7px 9px;font-size:12px}.btn:disabled{opacity:.55;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:linear-gradient(180deg,rgba(13,29,51,.98),rgba(10,24,43,.98));border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow);padding:15px}
+.stat-label{color:var(--muted);font-size:12px}.stat-value{font-size:23px;font-weight:700;margin-top:7px}.section{margin-top:14px}.section-title{font-size:15px;font-weight:700;margin:0 0 10px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+label{font-size:12px;color:var(--muted)}input,textarea,select{width:100%;border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:10px;padding:11px 12px;outline:none}
+input:focus,textarea:focus{border-color:var(--primary)}textarea{min-height:110px;resize:vertical}.help{font-size:11px;line-height:1.55;color:var(--muted)}
+.upload-tabs{display:flex;gap:8px;margin-bottom:12px}.tab{flex:1}.tab.active{background:var(--primary);border-color:var(--primary)}
+.drop{border:1px dashed #3a5a79;border-radius:13px;padding:18px;text-align:center;background:#081a2e}.drop input{display:none}.file-name{font-size:12px;color:var(--muted);margin-top:8px;word-break:break-all}
+.preview{max-height:240px;overflow:auto;margin-top:12px;border:1px solid var(--border);border-radius:10px}.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:850px}th,td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left}
+th{color:#a9bdd3;background:#0a1c31;position:sticky;top:0}.status{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;border:1px solid var(--border)}
+.status.pending{color:#fbbf24}.status.checking{color:#60a5fa}.status.approved{color:#4ade80}.status.rejected{color:#f87171}.status.available{color:#4ade80}.status.assigned{color:#60a5fa}.status.submitted{color:#fbbf24}.status.completed{color:#4ade80}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}.notice{display:none;margin:12px 0;padding:11px 12px;border-radius:10px;border:1px solid var(--border);font-size:12px}
+.notice.show{display:block}.notice.ok{border-color:#1f7a43;background:rgba(22,163,74,.12);color:#8df0ae}.notice.err{border-color:#8b2929;background:rgba(220,38,38,.12);color:#ff9a9a}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:none;align-items:flex-end;justify-content:center;padding:12px}.modal-back.show{display:flex}
+.modal{width:min(720px,100%);max-height:92vh;overflow:auto;background:#0b1b30;border:1px solid var(--border);border-radius:18px;padding:17px;box-shadow:var(--shadow)}
+.modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.modal-head h2{font-size:17px;margin:0}.close{border:0;background:transparent;color:var(--muted);font-size:25px}
+.progress{height:8px;background:#071426;border-radius:99px;overflow:hidden;margin-top:9px}.progress i{display:block;height:100%;width:0;background:var(--primary);transition:.2s}.mono{font-family:monospace}.empty{padding:25px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.app{padding:10px}.form-grid{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.stat-value{font-size:19px}.brand h1{font-size:14px}.btn{padding:9px 10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+<div class="brand"><div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg></div><div><h1>AL-HUDA TECH GLOBAL</h1><p>Instagram Account Management</p></div></div>
+<div class="actions"><button class="btn small" id="refreshBtn" type="button">Refresh</button><button class="btn small primary" id="settingsBtn" type="button">Settings</button></div>
+</header>
+<div id="notice" class="notice"></div>
+
+<section class="grid">
+<div class="card"><div class="stat-label">Available Accounts</div><div class="stat-value" id="availableCount">0</div></div>
+<div class="card"><div class="stat-label">Assigned Accounts</div><div class="stat-value" id="assignedCount">0</div></div>
+<div class="card"><div class="stat-label">Pending Reviews</div><div class="stat-value" id="pendingCount">0</div></div>
+<div class="card"><div class="stat-label">Approved Value</div><div class="stat-value" id="paidValue">$0.00</div></div>
+</section>
+
+<section class="card section">
+<div class="section-title">Bulk Account Upload</div>
+<div class="upload-tabs"><button class="btn tab active" id="fileTab" type="button">Upload File</button><button class="btn tab" id="textTab" type="button">Paste Text</button></div>
+
+<div id="filePanel"><div class="drop">
+<label for="csvFile" class="btn primary">Choose CSV / Text File</label>
+<input id="csvFile" type="file" accept=".csv,.txt,text/csv,text/plain,application/vnd.ms-excel,*/*">
+<div class="file-name" id="fileName">No file selected</div>
+</div></div>
+
+<div id="textPanel" style="display:none"><div class="field"><label for="bulkText">Account data</label>
+<textarea id="bulkText" placeholder="username | full_name | bio | password
+account001 | John Doe | My bio | Password123
+account002 | Jane Doe | Bangladesh | Password456"></textarea></div></div>
+
+<div class="help" style="margin-top:10px">One account per line. Recommended format: <span class="mono">username | full_name | bio | password</span>. CSV files with comma separators are also accepted.</div>
+<div class="row-actions" style="margin-top:12px"><button class="btn primary" id="parseBtn" type="button">Read Data</button><button class="btn" id="clearUploadBtn" type="button">Clear</button></div>
+<div id="uploadPreview" class="preview" style="display:none"></div>
+<div id="uploadProgressBox" style="display:none;margin-top:12px"><div class="help" id="uploadProgressText">Preparing upload...</div><div class="progress"><i id="uploadProgress"></i></div></div>
+<div class="row-actions" style="margin-top:12px"><button class="btn success" id="uploadBtn" type="button" disabled>Upload Accounts</button></div>
+</section>
+
+<section class="card section">
+<div class="section-title">Account Pool</div>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Username</th><th>Status</th><th>Assigned TG ID</th><th>Created</th></tr></thead><tbody id="poolBody"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody></table></div>
+</section>
+
+<section class="card section">
+<div class="section-title">User Submissions</div>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Instagram</th><th>Full Name</th><th>Bio</th><th>Password</th><th>Authenticator Setup Key</th><th>Rate</th><th>Status</th><th>Note</th><th>Action</th></tr></thead>
+<tbody id="submissionBody"><tr><td colspan="11" class="empty">Loading...</td></tr></tbody></table></div>
+</section>
+</div>
+
+<div class="modal-back" id="settingsModal"><div class="modal">
+<div class="modal-head"><h2>Instagram Settings</h2><button class="close" id="closeSettings" type="button">&times;</button></div>
+<div class="form-grid">
+<div class="field"><label>Rate (USD)</label><input id="rateUsd" type="number" step="0.0001" min="0"></div>
+<div class="field"><label>Task Limit Per User (0 = unlimited)</label><input id="taskLimit" type="number" min="0"></div>
+<div class="field"><label>Assignment Timeout (minutes)</label><input id="timeoutMinutes" type="number" min="1"></div>
+<div class="field"><label>Enabled</label><select id="enabled"><option value="1">Enabled</option><option value="0">Disabled</option></select></div>
+<div class="field full"><label>Tutorial URL</label><input id="tutorialUrl" type="url" placeholder="https://youtube.com/..."></div>
+<div class="field full"><label>Instructions / Rules</label><textarea id="instructions"></textarea></div>
+</div>
+<div class="row-actions" style="margin-top:13px"><button class="btn primary" id="saveSettings" type="button">Save Settings</button></div>
+</div></div>
+
+<script>
+(function(){
+"use strict";
+const tg=window.Telegram&&window.Telegram.WebApp?window.Telegram.WebApp:null;if(tg){try{tg.ready();tg.expand()}catch(e){}}
+const qs=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+function getTgId(){const u=new URLSearchParams(location.search);return u.get("tg_id")||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user?tg.initDataUnsafe.user.id:"")}
+const tgId=getTgId();
+function notice(msg,ok=false){const n=qs("#notice");n.textContent=msg;n.className="notice show "+(ok?"ok":"err");clearTimeout(notice.timer);notice.timer=setTimeout(()=>n.className="notice",5000)}
+async function api(action,data={}){const r=await fetch("/api/instagram",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,tg_id:tgId,...data})});let j={};try{j=await r.json()}catch(e){throw new Error("Server returned an invalid response.")}if(!r.ok||j.success===false)throw new Error(j.message||"Request failed.");return j}
+function money(v){return "$"+Number(v||0).toFixed(4)}
+function fmt(v){if(!v)return"-";try{return new Date(v).toLocaleString()}catch(e){return v}}
+function badge(v){const s=String(v||"").toLowerCase();return '<span class="status '+esc(s)+'">'+esc(s||"unknown")+"</span>"}
+
+qs("#fileTab").onclick=()=>{qs("#filePanel").style.display="";qs("#textPanel").style.display="none";qs("#fileTab").classList.add("active");qs("#textTab").classList.remove("active")};
+qs("#textTab").onclick=()=>{qs("#filePanel").style.display="none";qs("#textPanel").style.display="";qs("#textTab").classList.add("active");qs("#fileTab").classList.remove("active")};
+qs("#csvFile").onchange=e=>{const f=e.target.files&&e.target.files[0];qs("#fileName").textContent=f?f.name+" ("+Math.round(f.size/1024)+" KB)":"No file selected"};
+
+function csvLine(line){const a=[];let c="",q=false;for(let i=0;i<line.length;i++){const x=line[i];if(x==='"'){if(q&&line[i+1]==='"'){c+='"';i++}else q=!q}else if(x===","&&!q){a.push(c.trim());c=""}else c+=x}a.push(c.trim());return a}
+function parseRows(raw){
+ raw=String(raw||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();if(!raw)return[];
+ const out=[];
+ for(const line of raw.split("\n").map(x=>x.trim()).filter(Boolean)){
+   let p=line.includes("|")?line.split("|"):line.includes("\t")?line.split("\t"):csvLine(line);
+   p=p.map(x=>String(x??"").trim().replace(/^"(.*)"$/,"$1"));
+   const h0=(p[0]||"").toLowerCase(),h1=(p[1]||"").toLowerCase(),h3=(p[3]||"").toLowerCase();
+   if(h0==="username"&&(h1==="full_name"||h1==="fullname")&&h3==="password")continue;
+   if(p.length<4||!p[0]||!p[1]||!p[3])continue;
+   out.push({username:p[0],full_name:p[1],bio:p[2]||"",password:p.slice(3).join(line.includes("|")?" | ":",").trim()});
+ }
+ return out;
+}
+let parsed=[];
+function preview(){
+ const b=qs("#uploadPreview");
+ if(!parsed.length){b.style.display="block";b.innerHTML='<div class="empty">No valid rows found.</div>';qs("#uploadBtn").disabled=true;return}
+ let h='<table><thead><tr><th>#</th><th>Username</th><th>Full Name</th><th>Bio</th><th>Password</th></tr></thead><tbody>';
+ parsed.slice(0,100).forEach((a,i)=>h+="<tr><td>"+(i+1)+"</td><td>"+esc(a.username)+"</td><td>"+esc(a.full_name)+"</td><td>"+esc(a.bio)+"</td><td class=\"mono\">"+esc(a.password)+"</td></tr>");
+ h+="</tbody></table>";if(parsed.length>100)h+='<div class="help" style="padding:10px">Showing first 100 of '+parsed.length+" rows.</div>";
+ b.innerHTML=h;b.style.display="block";qs("#uploadBtn").disabled=false;
+}
+qs("#parseBtn").onclick=async()=>{
+ try{let raw;if(qs("#filePanel").style.display!=="none"){const f=qs("#csvFile").files[0];if(!f){notice("Please choose a CSV or text file.");return}raw=await f.text()}else raw=qs("#bulkText").value;
+ parsed=parseRows(raw);preview();if(parsed.length)notice(parsed.length+" account(s) are ready to upload.",true);else notice("No valid rows found. Use: username | full_name | bio | password")}
+ catch(e){notice("Could not read the file: "+e.message)}
+};
+qs("#clearUploadBtn").onclick=()=>{parsed=[];qs("#csvFile").value="";qs("#fileName").textContent="No file selected";qs("#bulkText").value="";qs("#uploadPreview").style.display="none";qs("#uploadProgressBox").style.display="none";qs("#uploadBtn").disabled=true};
+
+qs("#uploadBtn").onclick=async()=>{
+ if(!parsed.length){notice("Read the data first.");return}
+ const b=qs("#uploadBtn");b.disabled=true;qs("#uploadProgressBox").style.display="";
+ let ins=0,skip=0,fail=0;const size=500;
+ try{
+  for(let i=0;i<parsed.length;i+=size){
+   const chunk=parsed.slice(i,i+size),part=Math.floor(i/size)+1,total=Math.ceil(parsed.length/size);
+   qs("#uploadProgressText").textContent="Uploading batch "+part+" of "+total+" ("+chunk.length+" accounts)...";
+   const j=await api("admin_bulk_upload",{accounts:chunk});ins+=Number(j.inserted||0);skip+=Number(j.skipped||0);fail+=Number(j.failed||0);
+   qs("#uploadProgress").style.width=Math.round(((i+chunk.length)/parsed.length)*100)+"%";
+  }
+  qs("#uploadProgressText").textContent="Finished. Inserted: "+ins+" | Skipped: "+skip+" | Failed: "+fail;
+  notice("Bulk upload completed successfully.",true);parsed=[];qs("#uploadBtn").disabled=true;await loadAll();
+ }catch(e){notice("Upload stopped: "+e.message);qs("#uploadProgressText").textContent="Upload stopped because the server returned an error."}
+ finally{b.disabled=parsed.length===0}
+};
+
+async function settings(){const j=await api("get_settings"),s=j.settings||{};qs("#rateUsd").value=s.rate_usd??"0.0200";qs("#tutorialUrl").value=s.tutorial_url??"";qs("#instructions").value=s.instructions??"";qs("#taskLimit").value=s.task_limit??0;qs("#timeoutMinutes").value=s.assignment_timeout_minutes??60;qs("#enabled").value=Number(s.enabled)===1?"1":"0"}
+qs("#settingsBtn").onclick=async()=>{try{await settings();qs("#settingsModal").classList.add("show")}catch(e){notice(e.message)}};
+qs("#closeSettings").onclick=()=>qs("#settingsModal").classList.remove("show");
+qs("#settingsModal").onclick=e=>{if(e.target===qs("#settingsModal"))qs("#settingsModal").classList.remove("show")};
+qs("#saveSettings").onclick=async()=>{const b=qs("#saveSettings");b.disabled=true;b.textContent="Saving...";try{await api("admin_update_settings",{rate_usd:Number(qs("#rateUsd").value),tutorial_url:qs("#tutorialUrl").value.trim(),instructions:qs("#instructions").value.trim(),task_limit:Number(qs("#taskLimit").value||0),assignment_timeout_minutes:Number(qs("#timeoutMinutes").value||60),enabled:Number(qs("#enabled").value)});notice("Instagram settings updated.",true);qs("#settingsModal").classList.remove("show");await loadAll()}catch(e){notice(e.message)}finally{b.disabled=false;b.textContent="Save Settings"}};
+
+async function pool(){
+ try{const j=await api("admin_get_pool"),r=j.pool||[];qs("#availableCount").textContent=j.stats?.available??r.filter(x=>x.status==="available").length;qs("#assignedCount").textContent=j.stats?.assigned??r.filter(x=>x.status==="assigned").length;
+ if(!r.length){qs("#poolBody").innerHTML='<tr><td colspan="5" class="empty">No accounts in the pool.</td></tr>';return}
+ qs("#poolBody").innerHTML=r.map(x=>"<tr><td>"+esc(x.id)+"</td><td>"+esc(x.instagram_username)+"</td><td>"+badge(x.status)+"</td><td>"+esc(x.assigned_tg_id||"-")+"</td><td>"+esc(fmt(x.created_at))+"</td></tr>").join("")
+ }catch(e){qs("#poolBody").innerHTML='<tr><td colspan="5" class="empty">'+esc(e.message)+"</td></tr>"}
+}
+
+function secret(v){
+ if(v===null||v===undefined||v==="")return'<span class="help">Not provided</span>';
+ const id="s"+Math.random().toString(36).slice(2),safe=esc(v);
+ return '<div class="secret" id="'+id+'" style="max-width:180px;word-break:break-all;font-family:monospace;font-size:11px">Hidden</div><button class="btn small" type="button" data-secret="'+id+'" data-value="'+safe+'">Reveal</button>'
+}
+document.addEventListener("click",async e=>{
+ const s=e.target.closest("[data-secret]");if(s){const el=qs("#"+s.dataset.secret);if(el.dataset.visible==="1"){el.textContent="Hidden";el.dataset.visible="0";s.textContent="Reveal"}else{el.textContent=s.dataset.value;el.dataset.visible="1";s.textContent="Hide"}return}
+ const b=e.target.closest("[data-action]");if(!b)return;const action=b.dataset.action,id=Number(b.dataset.id);if(!id)return;b.disabled=true;
+ try{
+  if(action==="admin_checking"){await api(action,{submission_id:id});notice("Submission moved to checking.",true)}
+  if(action==="admin_approve"){if(!confirm("Approve this submission and credit the user?"))return;await api(action,{submission_id:id});notice("Submission approved and balance credited.",true)}
+  if(action==="admin_reject"){const note=prompt("Rejection note (optional):","");await api(action,{submission_id:id,admin_note:note||""});notice("Submission rejected.",true)}
+  await loadAll()
+ }catch(err){notice(err.message)}finally{b.disabled=false}
+});
+
+async function submissions(){
+ try{
+  const j=await api("admin_get_submissions"),r=j.submissions||[];qs("#pendingCount").textContent=r.filter(x=>x.status==="pending"||x.status==="checking").length;qs("#paidValue").textContent=money(r.reduce((a,x)=>a+Number(x.credited_usd||0),0));
+  if(!r.length){qs("#submissionBody").innerHTML='<tr><td colspan="11" class="empty">No submissions yet.</td></tr>';return}
+  qs("#submissionBody").innerHTML=r.map(x=>{
+   let a=x.status==="pending"?'<button class="btn small warning" data-action="admin_checking" data-id="'+esc(x.id)+'">Checking</button>':x.status==="checking"?'<button class="btn small success" data-action="admin_approve" data-id="'+esc(x.id)+'">Approve</button><button class="btn small danger" data-action="admin_reject" data-id="'+esc(x.id)+'">Reject</button>':'<span class="help">Completed</span>';
+   return "<tr><td>"+esc(x.id)+"</td><td>"+esc(x.user_username||x.telegram_id||"-")+"<br><span class=\"help\">"+esc(x.telegram_id||"")+"</span></td><td>"+esc(x.instagram_username||"-")+"</td><td>"+esc(x.full_name||"-")+"</td><td>"+esc(x.bio||"-")+"</td><td>"+secret(x.password)+"</td><td>"+secret(x.authenticator_setup||x.authenticator_key)+"</td><td>"+money(x.rate_usd)+"</td><td>"+badge(x.status)+"</td><td>"+esc(x.admin_note||"-")+"</td><td><div class=\"row-actions\">"+a+"</div></td></tr>"
+  }).join("")
+ }catch(e){qs("#submissionBody").innerHTML='<tr><td colspan="11" class="empty">'+esc(e.message)+"</td></tr>"}
+}
+async function loadAll(){await Promise.all([settings(),pool(),submissions()])}
+qs("#refreshBtn").onclick=async()=>{const b=qs("#refreshBtn");b.disabled=true;b.textContent="Refreshing...";try{await loadAll();notice("Data refreshed.",true)}catch(e){notice(e.message)}finally{b.disabled=false;b.textContent="Refresh"}};
+loadAll().catch(e=>notice(e.message));
+})();
+</script>
+</body>
+</html>
