@@ -208,7 +208,7 @@ app.all('/api/action', async (req, res) => {
 
 
         // ========================================================
-        // GET ADMIN DATA
+        // GET ADMIN DATA (Existing)
         // ========================================================
 
         else if (action === 'get_admin_data') {
@@ -276,6 +276,64 @@ app.all('/api/action', async (req, res) => {
             responseData = {
                 success: true,
                 user: users[0],
+                settings: settings
+            };
+
+        }
+
+
+        // ========================================================
+        // GET ADMIN DASHBOARD STATS (New Added for Total Users & Total Balance)
+        // ========================================================
+
+        else if (action === 'get_admin_dashboard_stats') {
+
+            if (!tgId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Telegram ID is required'
+                });
+            }
+
+            const [users] = await connection.execute(
+                'SELECT * FROM users WHERE telegram_id = ?',
+                [tgId]
+            );
+
+            if (users.length === 0 || users[0].role !== 'admin') {
+                await connection.end();
+                return res.status(403).json({
+                    success: false,
+                    message: 'Unauthorized: Admin access required'
+                });
+            }
+
+            // মোট ইউজার সংখ্যা এবং মোট ব্যালেন্সের যোগফল হিসাব করা
+            const [countRows] = await connection.execute(
+                'SELECT COUNT(*) as total_users, SUM(balance) as total_balance FROM users'
+            );
+
+            let settings = {
+                referral_percentage: 5.00,
+                referral_notice: ''
+            };
+
+            try {
+                const [settingsRows] = await connection.execute(
+                    'SELECT referral_percentage, referral_notice FROM settings WHERE id = 1'
+                );
+                if (settingsRows.length > 0) {
+                    settings = settingsRows[0];
+                }
+            } catch (err) {}
+
+            responseData = {
+                success: true,
+                user: users[0],
+                stats: {
+                    total_users: countRows[0].total_users || 0,
+                    total_balance: countRows[0].total_balance || 0
+                },
                 settings: settings
             };
 
@@ -408,3 +466,4 @@ app.listen(PORT, () => {
     );
 
 });
+            
