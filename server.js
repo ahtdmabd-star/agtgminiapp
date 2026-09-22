@@ -480,7 +480,77 @@ app.all('/api/action', async (req, res) => {
         // এখানে আপনার নতুন সিস্টেমের কোড রাখুন
         // (ভবিষ্যতে নতুন কোনো এপিআই বা অ্যাকশন যোগ করতে হলে ঠিক এই জায়গায় রাখবেন)
         // ====================================================================
+        // ========================================================
+        // GET ALL USERS (Admin User Management)
+        // ========================================================
 
+
+        
+        else if (action === 'get_all_users') {
+            if (!tgId) {
+                return res.status(400).json({ success: false, message: 'Telegram ID is required' });
+            }
+
+            const [adminCheck] = await connection.execute('SELECT role FROM users WHERE telegram_id = ?', [tgId]);
+            if (adminCheck.length === 0 || adminCheck[0].role !== 'admin') {
+                await connection.end();
+                return res.status(403).json({ success: false, message: 'Unauthorized: Admin access required' });
+            }
+
+            const [allUsers] = await connection.execute('SELECT id, telegram_id, username, first_name, balance, role, status, created_at FROM users ORDER BY id DESC');
+            
+            responseData = {
+                success: true,
+                users: allUsers
+            };
+        }
+
+        // ========================================================
+        // MANAGE USER ACTIONS (Edit Balance, Status, Role, Delete)
+        // ========================================================
+        else if (action === 'manage_user_action') {
+            const { target_tg_id, sub_action, value } = body;
+            if (!tgId || !target_tg_id || !sub_action) {
+                return res.status(400).json({ success: false, message: 'Missing required fields' });
+            }
+
+            const [adminCheck] = await connection.execute('SELECT role FROM users WHERE telegram_id = ?', [tgId]);
+            if (adminCheck.length === 0 || adminCheck[0].role !== 'admin') {
+                await connection.end();
+                return res.status(403).json({ success: false, message: 'Unauthorized access' });
+            }
+
+            if (sub_action === 'balance_add' || sub_action === 'balance_sub') {
+                const [targetUser] = await connection.execute('SELECT balance FROM users WHERE telegram_id = ?', [target_tg_id]);
+                if (targetUser.length === 0) {
+                    await connection.end();
+                    return res.status(404).json({ success: false, message: 'User not found' });
+                }
+                let currentBal = parseFloat(targetUser[0].balance || 0);
+                let amount = parseFloat(value);
+                let newBal = sub_action === 'balance_add' ? currentBal + amount : currentBal - amount;
+                if (newBal < 0) newBal = 0;
+
+                await connection.execute('UPDATE users SET balance = ? WHERE telegram_id = ?', [newBal, target_tg_id]);
+            } 
+            else if (sub_action === 'toggle_status') {
+                // value হবে 'active' অথবা 'banned'
+                await connection.execute('UPDATE users SET status = ? WHERE telegram_id = ?', [value, target_tg_id]);
+            } 
+            else if (sub_action === 'toggle_role') {
+                // value হবে 'admin' অথবা 'user'
+                await connection.execute('UPDATE users SET role = ? WHERE telegram_id = ?', [value, target_tg_id]);
+            } 
+            else if (sub_action === 'delete_user') {
+                await connection.execute('DELETE FROM users WHERE telegram_id = ?', [target_tg_id]);
+            }
+
+            responseData = {
+                success: true,
+                message: 'User action executed successfully'
+            };
+                                                          }
+        
 
 
         // ========================================================
