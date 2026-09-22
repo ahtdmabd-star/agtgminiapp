@@ -341,6 +341,80 @@ app.all('/api/action', async (req, res) => {
 
 
         // ========================================================
+        // GET ADMIN ACCOUNTS & LEDGER STATS (Accounts Page API)
+        // ========================================================
+
+        else if (action === 'get_admin_accounts') {
+            if (!tgId) {
+                return res.status(400).json({ success: false, message: 'Telegram ID is required' });
+            }
+
+            const [users] = await connection.execute('SELECT * FROM users WHERE telegram_id = ?', [tgId]);
+            if (users.length === 0 || users[0].role !== 'admin') {
+                await connection.end();
+                return res.status(403).json({ success: false, message: 'Unauthorized: Admin access required' });
+            }
+
+            const [userStats] = await connection.execute('SELECT COUNT(*) as total_users, SUM(balance) as total_user_balance FROM users');
+            const [wallets] = await connection.execute('SELECT wallet_name, balance FROM admin_accounts');
+
+            let totalWalletBalance = 0;
+            wallets.forEach(w => {
+                totalWalletBalance += parseFloat(w.balance);
+            });
+
+            const totalUserBalance = parseFloat(userStats[0].total_user_balance || 0);
+            const profitLoss = totalWalletBalance - totalUserBalance;
+
+            responseData = {
+                success: true,
+                stats: {
+                    total_users: userStats[0].total_users || 0,
+                    total_user_balance: totalUserBalance,
+                    wallets: wallets,
+                    total_wallet_balance: totalWalletBalance,
+                    profit_loss: profitLoss
+                }
+            };
+        }
+
+
+        // ========================================================
+        // UPDATE WALLET BALANCE (Plus / Minus for Accounts Page)
+        // ========================================================
+
+        else if (action === 'update_wallet_balance') {
+            const { wallet_name, type, amount } = body;
+            if (!tgId || !wallet_name || !type || !amount) {
+                return res.status(400).json({ success: false, message: 'Missing required fields' });
+            }
+
+            const [adminCheck] = await connection.execute('SELECT role FROM users WHERE telegram_id = ?', [tgId]);
+            if (adminCheck.length === 0 || adminCheck[0].role !== 'admin') {
+                await connection.end();
+                return res.status(403).json({ success: false, message: 'Unauthorized access' });
+            }
+
+            const [walletRow] = await connection.execute('SELECT balance FROM admin_accounts WHERE wallet_name = ?', [wallet_name]);
+            if (walletRow.length === 0) {
+                await connection.end();
+                return res.status(404).json({ success: false, message: 'Wallet not found' });
+            }
+
+            let currentBal = parseFloat(walletRow[0].balance);
+            let numAmount = parseFloat(amount);
+            let newBal = type === 'add' ? currentBal + numAmount : currentBal - numAmount;
+
+            await connection.execute('UPDATE admin_accounts SET balance = ? WHERE wallet_name = ?', [newBal, wallet_name]);
+
+            responseData = {
+                success: true,
+                message: 'Wallet balance updated successfully'
+            };
+        }
+
+
+        // ========================================================
         // UPDATE REFERRAL SETTINGS
         // ========================================================
 
@@ -400,6 +474,13 @@ app.all('/api/action', async (req, res) => {
             };
 
         }
+
+
+        // ====================================================================
+        // এখানে আপনার নতুন সিস্টেমের কোড রাখুন
+        // (ভবিষ্যতে নতুন কোনো এপিআই বা অ্যাকশন যোগ করতে হলে ঠিক এই জায়গায় রাখবেন)
+        // ====================================================================
+
 
 
         // ========================================================
@@ -466,4 +547,4 @@ app.listen(PORT, () => {
     );
 
 });
-            
+                    
