@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AL-HUDA TECH GLOBAL - Secure Dashboard</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Netlify Badge Complete Hide & Overlay Cover */
+        #netlify-badge, a[href*="netlify.com/trust"], footer img {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        .netlify-overlay-fix {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35px;
+            background: #070a12;
+            z-index: 999999;
+            pointer-events: none;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { 
+            background: radial-gradient(circle at top, #0f172a 0%, #070a12 100%); 
+            color: #f8fafc; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 10px 15px 45px 15px;
+            overflow-x: hidden;
+        }
+        
+        .app-wrapper {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: auto;
+        }
+
+        .brand-header {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #38bdf8;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        
+        .balance-card { 
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%); 
+            padding: 20px; 
+            border-radius: 20px; 
+            position: relative; 
+            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.25); 
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        
+        .status-badge { 
+            position: absolute; 
+            top: 16px; 
+            right: 16px; 
+            background: rgba(16, 185, 129, 0.15); 
+            border: 1px solid #34d399; 
+            color: #34d399; 
+            padding: 4px 10px; 
+            border-radius: 30px; 
+            font-size: 10px; 
+            font-weight: 700; 
+            letter-spacing: 0.5px;
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            text-transform: uppercase;
+        }
+        
+        .status-dot { 
+            width: 6px; 
+            height: 6px; 
+            background: #34d399; 
+            border-radius: 50%; 
+            box-shadow: 0 0 8px #34d399; 
+        }
+        
+        .balance-title { 
+            font-size: 11px; 
+            color: #bae6fd; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-weight: 600;
+        }
+        
+        .balance-amount { 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: #ffffff; 
+            margin: 8px 0 16px 0; 
+            letter-spacing: -0.5px;
+        }
+        
+        .balance-amount span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7dd3fc;
+        }
+        
+        .balance-actions { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
+        
+        .card-btn { 
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: white; 
+            padding: 10px 12px; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            font-size: 12px; 
+            cursor: pointer; 
+            text-align: center; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            transition: all 0.2s ease; 
+            backdrop-filter: blur(10px); 
+        }
+        
+        .card-btn:hover { 
+            background: rgba(255, 255, 255, 0.2); 
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .info-card { 
+            background: #111827; 
+            padding: 16px; 
+            border-radius: 16px; 
+            border: 1px solid #1f2937; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 13px; 
+        }
+        
+        .label { color: #94a3b8; font-weight: 500; }
+        .value { color: #f1f5f9; font-weight: 600; letter-spacing: 0.3px; }
+
+        .ref-box-container { 
+            display: flex; 
+            gap: 8px; 
+            margin-top: 6px; 
+        }
+        
+        .ref-input { 
+            flex: 1; 
+            background: #070a12; 
+            border: 1px solid #334155; 
+            padding: 10px 12px; 
+            border-radius: 10px; 
+            font-size: 11px; 
+            color: #38bdf8; 
+            outline: none; 
+            font-family: monospace;
+        }
+        
+        .copy-btn { 
+            background: #0284c7; 
+            color: white; 
+            border: none; 
+            padding: 0 16px; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: 0.2s; 
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .copy-btn:hover { background: #0369a1; }
+
+        .btn-full { 
+            width: 100%; 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+            color: white; 
+            border: none; 
+            padding: 13px; 
+            border-radius: 14px; 
+            font-weight: 600; 
+            font-size: 13px; 
+            cursor: pointer; 
+            text-align: center; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35); 
+            transition: all 0.2s ease; 
+        }
+        
+        .btn-full:hover { opacity: 0.95; transform: translateY(-1px); }
+
+        .app-footer { 
+            text-align: center; 
+            font-size: 11px; 
+            color: #64748b; 
+            margin-top: 8px; 
+            font-weight: 500;
+        }
+
+        .loading, .error-msg { text-align: center; padding: 40px; color: #94a3b8; line-height: 1.6; font-size: 14px; }
+        
+        svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="netlify-overlay-fix"></div>
+
+    <div class="app-wrapper" id="app">
+        <div class="loading">Loading secure portal...</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let tgId = urlParams.get('tg_id');
+
+        if (!tgId && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            tgId = tg.initDataUnsafe.user.id;
+        }
+
+        function maskTelegramId(id) {
+            if (!id || id === 'None' || id === 'Direct') return 'Direct / None';
+            const strId = String(id);
+            if (strId.length <= 4) return strId;
+            return strId.substring(0, 2) + '***' + strId.substring(strId.length - 2);
+        }
+
+        async function fetchUserData() {
+            const appContainer = document.getElementById('app');
+
+            if (!tgId) {
+                appContainer.innerHTML = `
+                    <div class="error-msg">
+                        <h3>Access Restricted</h3>
+                        <p>Please open this Mini App securely from the official Telegram Bot.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // রেন্ডারের নতুন এক্সপ্রেস এপিআই পাথ
+                const response = await fetch(`/api/get-user?tg_id=${tgId}`);
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    appContainer.innerHTML = `
+                        <div class="error-msg" style="background: #111827; padding: 25px; border-radius: 16px; border: 1px solid #1f2937;">
+                            <h3 style="color: #f43f5e; margin-bottom: 10px;">Verification Required</h3>
+                            <p style="color: #cbd5e1; font-size: 13px;">${data.message || 'You must join our official Telegram channel and group to access your account. Please verify via the bot.'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const user = data.user;
+
+                if (user.role === 'admin') {
+                    window.location.href = `admin_2.html?tg_id=${tgId}`;
+                    return;
+                }
+
+                const maskedReferredBy = maskTelegramId(user.referred_by);
+                const referralLink = `https://t.me/ahtgearnbdbot?start=${user.referral_code}`;
+
+                appContainer.innerHTML = `
+                    <div class="brand-header">AL-HUDA TECH GLOBAL</div>
+
+                    <div class="balance-card">
+                        <div class="status-badge">
+                            <span class="status-dot"></span> Active
+                        </div>
+                        <div class="balance-title">Total Balance</div>
+                        <div class="balance-amount">$${parseFloat(user.balance || 0).toFixed(2)} <span>USDT</span></div>
+                        
+                        <div class="balance-actions">
+                            <a href="user/deposit.html?tg_id=${tgId}" class="card-btn">
+                                <svg viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                                Deposit
+                            </a>
+                            <a href="user/withdraw.html?tg_id=${tgId}" class="card-btn">
+                                <svg viewBox="0 0 24 24"><path d="M2 9h20V5H2v4zm0 3v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7H2zm5 4h6v2H7v-2z"/></svg>
+                                Withdraw
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-row">
+                            <span class="label">Telegram ID</span>
+                            <span class="value">${user.telegram_id}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Referred By</span>
+                            <span class="value">${maskedReferredBy}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Total Referrals</span>
+                            <span class="value">${user.referrals || 0} Users</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Account Status</span>
+                            <span class="value" style="color: #34d399;">VERIFIED</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 3px;">Referral Partnership Program</div>
+                            <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">Invite your friends using your unique link below and earn instant commission bonuses on their transactions automatically.</div>
+                        </div>
+                        <div class="ref-box-container">
+                            <input type="text" class="ref-input" id="refLinkInput" value="${referralLink}" readonly>
+                            <button class="copy-btn" onclick="copyRefLink()">
+                                <svg viewBox="0 0 24 24" style="width:13px; height:13px;"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <a href="user/tasks.html?tg_id=${tgId}" class="btn-full">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        Go to Tasks & Earn More
+                    </a>
+
+                    <div class="app-footer">
+                        &copy; 2026 AL-HUDA TECH GLOBAL. All rights reserved.
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                appContainer.innerHTML = `
+                    <div class="error-msg">
+                        <h3>Connection Error</h3>
+                        <p>Failed to establish secure connection. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function copyRefLink() {
+            const input = document.getElementById('refLinkInput');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            alert('Referral link copied successfully!');
+        }
+
+        fetchUserData();
+    </script>
+</body>
+  </html>
+  
