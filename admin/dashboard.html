@@ -73,22 +73,22 @@
             }
 
             try {
-                // ব্যাকএন্ডে অ্যাডমিন স্ট্যাটাস ও ডাটা রিকোয়েস্ট পাঠানো
-                const res = await fetch(`/api/admin-action?action=get_admin_dashboard_stats&tg_id=${tgId}`);
+                // ব্যাকএন্ডের সঠিক রাউট /api/action ব্যবহার করা হলো
+                const res = await fetch(`/api/action?action=get_admin_dashboard_stats&tg_id=${tgId}`);
                 const data = await res.json();
 
                 if (!res.ok || !data.success) {
                     container.innerHTML = `
                         <div class="error-msg">
                             <h3>🚫 Restricted Area</h3>
-                            <p>You do not have administrator permissions to view this control panel.</p>
+                            <p>${data.message || 'You do not have administrator permissions to view this control panel.'}</p>
                             <a href="../index.html?tg_id=${tgId}" class="btn" style="margin-top: 15px;">Go to User Dashboard</a>
                         </div>
                     `;
                     return;
                 }
 
-                const admin = data.admin;
+                const admin = data.user;
                 const stats = data.stats;
                 const settings = data.settings;
 
@@ -216,7 +216,7 @@
             const notice = document.getElementById('refNotice').value;
 
             try {
-                const res = await fetch('/api/admin-action', {
+                const res = await fetch('/api/action', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
