@@ -4364,6 +4364,2827 @@ app.all('/api/instagram', async (req, res) => {
 // ============================================================
 // END OF INSTAGRAM SELL API
 // ============================================================
+// ============================================================
+// INSTAGRAM 2FA API - SECTION 1
+// Constants + Common Helpers
+// ============================================================
+
+const INSTAGRAM_2FA_MAX_FIELD_NAME = 255;
+const INSTAGRAM_2FA_MAX_PLACEHOLDER = 500;
+const INSTAGRAM_2FA_MAX_VALUE = 5000;
+
+function instagram2faCleanString(value, maxLength = 500) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    return String(value)
+        .trim()
+        .slice(0, maxLength);
+}
+
+function instagram2faNumber(value, fallback = 0) {
+    const n = Number(value);
+
+    if (!Number.isFinite(n)) {
+        return fallback;
+    }
+
+    return n;
+}
+
+function instagram2faError(message, statusCode = 400) {
+    const error = new Error(message);
+    error.statusCode = statusCode;
+    return error;
+}
+// ============================================================
+// INSTAGRAM 2FA API - SECTION 2
+// User + Admin Authentication
+// ============================================================
+
+async function instagram2faRequireUser(connection, tgId) {
+
+    if (!tgId) {
+        throw instagram2faError(
+            'Telegram ID is required.',
+            400
+        );
+    }
+
+    const [rows] = await connection.execute(
+        `
+        SELECT
+            id,
+            telegram_id,
+            username,
+            first_name,
+            balance,
+            role,
+            status,
+            telegram_verified,
+            referral_code,
+            referred_by
+        FROM users
+        WHERE telegram_id = ?
+        LIMIT 1
+        `,
+        [tgId]
+    );
+
+    if (rows.length === 0) {
+        throw instagram2faError(
+            'User account not found.',
+            404
+        );
+    }
+
+    const user = rows[0];
+
+    if (
+        user.status &&
+        String(user.status).toLowerCase() !== 'active'
+    ) {
+        throw instagram2faError(
+            'Your account is not active.',
+            403
+        );
+    }
+
+    return user;
+}
+
+async function instagram2faRequireAdmin(connection, tgId) {
+
+    const user =
+        await instagram2faRequireUser(
+            connection,
+            tgId
+        );
+
+    if (
+        String(user.role).toLowerCase() !== 'admin'
+    ) {
+        throw instagram2faError(
+            'Admin access required.',
+            403
+        );
+    }
+
+    return user;
+            }
+// ============================================================
+// INSTAGRAM 2FA API - SECTION 3
+// Settings Helper
+// ============================================================
+
+async function instagram2faGetSettings(connection) {
+
+    const [rows] = await connection.execute(
+        `
+        SELECT
+            id,
+            rate_usd,
+            tutorial_url,
+            instructions,
+            test_password_hash,
+            enabled,
+            updated_by,
+            created_at,
+            updated_at
+        FROM instagram_2fa_settings
+        WHERE id = 1
+        LIMIT 1
+        `
+    );
+
+    if (rows.length === 0) {
+
+        return {
+            id: 1,
+            rate_usd: 0.002,
+            tutorial_url: '',
+            instructions: '',
+            test_password_hash: '',
+            enabled: 1
+        };
+    }
+
+    return rows[0];
+}
+// ============================================================
+// INSTAGRAM 2FA API - SECTION 4
+// Referral Helper
+// ============================================================
+
+async function instagram2faGetReferralPercent(connection) {
+
+    const [rows] = await connection.execute(
+        `
+        SELECT referral_percentage
+        FROM settings
+        WHERE id = 1
+        LIMIT 1
+        `
+    );
+
+    if (rows.length === 0) {
+        return 0;
+    }
+
+    const percentage =
+        Number(
+            rows[0].referral_percentage || 0
+        );
+
+    if (
+        !Number.isFinite(percentage) ||
+        percentage < 0
+    ) {
+        return 0;
+    }
+
+    return percentage;
+    }
+// ============================================================
+// INSTAGRAM 2FA API - SECTION 5
+// Main Route
+// ============================================================
+
+app.all('/api/instagram-2fa', async (req, res) => {
+
+    if (
+        req.method !== 'GET' &&
+        req.method !== 'POST'
+    ) {
+        return res.status(405).json({
+            success: false,
+            message: 'Method Not Allowed'
+        });
+    }
+
+    const body =
+        req.method === 'POST'
+            ? req.body
+            : req.query;
+
+    const action =
+        instagram2faCleanString(
+            body.action,
+            100
+        );
+
+    const tgId =
+        instagram2faCleanString(
+            body.tg_id,
+            100
+        );
+
+    let connection;
+
+    try {
+
+        connection =
+            await mysql.createConnection(
+                dbConfig
+            );
+
+        // More actions will be added below.
+        // ====================================================
+// INSTAGRAM 2FA
+// SECTION 6 - GET SETTINGS
+// ====================================================
+
+if (action === 'get_settings') {
+
+    await instagram2faRequireUser(
+        connection,
+        tgId
+    );
+
+    const settings =
+        await instagram2faGetSettings(
+            connection
+        );
+
+    return res.json({
+        success: true,
+
+        settings: {
+            rate_usd:
+                Number(
+                    settings.rate_usd || 0
+                ),
+
+            tutorial_url:
+                settings.tutorial_url || '',
+
+            instructions:
+                settings.instructions || '',
+
+            enabled:
+                Number(settings.enabled) === 1
+        }
+    });
+}
+        // ====================================================
+// INSTAGRAM 2FA
+// SECTION 7 - ADMIN UPDATE SETTINGS
+// ====================================================
+
+if (action === 'admin_update_settings') {
+
+    const admin =
+        await instagram2faRequireAdmin(
+            connection,
+            tgId
+        );
+
+    const rateUsd =
+        instagram2faNumber(
+            body.rate_usd,
+            NaN
+        );
+
+    const tutorialUrl =
+        instagram2faCleanString(
+            body.tutorial_url,
+            2000
+        );
+
+    const instructions =
+        instagram2faCleanString(
+            body.instructions,
+            10000
+        );
+
+    const testPassword =
+        instagram2faCleanString(
+            body.test_password,
+            500
+        );
+
+    const enabled =
+        Number(body.enabled) === 1
+            ? 1
+            : 0;
+
+    if (
+        !Number.isFinite(rateUsd) ||
+        rateUsd < 0
+    ) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid rate.'
+        });
+    }
+
+    if (!testPassword) {
+        return res.status(400).json({
+            success: false,
+            message:
+                'Test Password is required.'
+        });
+    }
+
+    /*
+     * Test password is intentionally stored
+     * as a one-way hash.
+     *
+     * No plaintext password is stored.
+     */
+
+    const cryptoHash =
+        require('crypto');
+
+    const salt =
+        cryptoHash.randomBytes(16)
+            .toString('hex');
+
+    const hash =
+        cryptoHash
+            .scryptSync(
+                testPassword,
+                salt,
+                64
+            )
+            .toString('hex');
+
+    const passwordHash =
+        `scrypt:${salt}:${hash}`;
+
+    await connection.execute(
+        `
+        INSERT INTO instagram_2fa_settings
+        (
+            id,
+            rate_usd,
+            tutorial_url,
+            instructions,
+            test_password_hash,
+            enabled,
+            updated_by
+        )
+        VALUES
+        (
+            1,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
+        ON DUPLICATE KEY UPDATE
+            rate_usd = VALUES(rate_usd),
+            tutorial_url = VALUES(tutorial_url),
+            instructions = VALUES(instructions),
+            test_password_hash =
+                VALUES(test_password_hash),
+            enabled = VALUES(enabled),
+            updated_by = VALUES(updated_by)
+        `,
+        [
+            rateUsd,
+            tutorialUrl,
+            instructions,
+            passwordHash,
+            enabled,
+            admin.telegram_id
+        ]
+    );
+
+    return res.json({
+        success: true,
+        message:
+            'Instagram 2FA settings updated successfully.'
+    });
+}
+        // ====================================================
+// INSTAGRAM 2FA
+// SECTION 8 - GET CUSTOM FIELDS
+// ====================================================
+
+if (action === 'get_fields') {
+
+    await instagram2faRequireUser(
+        connection,
+        tgId
+    );
+
+    const [rows] =
+        await connection.execute(
+            `
+            SELECT
+                id,
+                field_name,
+                placeholder,
+                field_type,
+                required,
+                sort_order
+            FROM instagram_2fa_custom_fields
+            WHERE enabled = 1
+            ORDER BY
+                sort_order ASC,
+                id ASC
+            `
+        );
+
+    return res.json({
+        success: true,
+
+        fields: rows.map(row => ({
+            id: row.id,
+
+            field_name:
+                row.field_name,
+
+            placeholder:
+                row.placeholder || '',
+
+            field_type:
+                row.field_type,
+
+            required:
+                Number(row.required) === 1,
+
+            sort_order:
+                Number(row.sort_order || 0)
+        }))
+    });
+    }
+        // ====================================================
+// INSTAGRAM 2FA
+// SECTION 9 - ADMIN GET CUSTOM FIELDS
+// ====================================================
+
+if (action === 'admin_get_fields') {
+
+    await instagram2faRequireAdmin(
+        connection,
+        tgId
+    );
+
+    const [rows] =
+        await connection.execute(
+            `
+            SELECT
+                id,
+                field_name,
+                placeholder,
+                field_type,
+                required,
+                enabled,
+                sort_order,
+                created_at,
+                updated_at
+            FROM instagram_2fa_custom_fields
+            ORDER BY
+                sort_order ASC,
+                id ASC
+            `
+        );
+
+    return res.json({
+        success: true,
+        fields: rows.map(row => ({
+            id: row.id,
+
+            field_name:
+                row.field_name,
+
+            placeholder:
+                row.placeholder || '',
+
+            field_type:
+                row.field_type,
+
+            required:
+                Number(row.required) === 1,
+
+            enabled:
+                Number(row.enabled) === 1,
+
+            sort_order:
+                Number(row.sort_order || 0),
+
+            created_at:
+                row.created_at,
+
+            updated_at:
+                row.updated_at
+        }))
+    });
+}
+        // ====================================================
+// INSTAGRAM 2FA
+// SECTION 10 - ADMIN ADD CUSTOM FIELD
+// ====================================================
+
+if (action === 'admin_add_field') {
+
+    await instagram2faRequireAdmin(
+        connection,
+        tgId
+    );
+
+    const fieldName =
+        instagram2faCleanString(
+            body.field_name,
+            255
+        );
+
+    const placeholder =
+        instagram2faCleanString(
+            body.placeholder,
+            500
+        );
+
+    const fieldType =
+        instagram2faCleanString(
+            body.field_type || 'text',
+            30
+        );
+
+    const required =
+        Number(body.required) === 1
+            ? 1
+            : 0;
+
+    const sortOrder =
+        Math.max(
+            0,
+            Math.floor(
+                instagram2faNumber(
+                    body.sort_order,
+                    0
+                )
+            )
+        );
+
+    if (!fieldName) {
+        return res.status(400).json({
+            success: false,
+            message:
+                'Field name is required.'
+        });
+    }
+
+    if (
+        fieldType !== 'text' &&
+        fieldType !== 'textarea'
+    ) {
+        return res.status(400).json({
+            success: false,
+            message:
+                'Invalid field type.'
+        });
+    }
+
+    const [duplicate] =
+        await connection.execute(
+            `
+            SELECT id
+            FROM instagram_2fa_custom_fields
+            WHERE field_name = ?
+            LIMIT 1
+            `,
+            [fieldName]
+        );
+
+    if (duplicate.length > 0) {
+        return res.status(409).json({
+            success: false,
+            message:
+                'A field with this name already exists.'
+        });
+    }
+
+    const [result] =
+        await connection.execute(
+            `
+            INSERT INTO
+            instagram_2fa_custom_fields
+            (
+                field_name,
+                placeholder,
+                field_type,
+                required,
+                enabled,
+                sort_order
+            )
+            VALUES
+            (?, ?, ?, ?, 1, ?)
+            `,
+            [
+                fieldName,
+                placeholder,
+                fieldType,
+                required,
+                sortOrder
+            ]
+        );
+
+    return res.json({
+        success: true,
+        message:
+            'Custom field added successfully.',
+        field_id:
+            result.insertId
+    });
+        }
+        // ============================================================
+// SECTION 11
+// ADMIN UPDATE CUSTOM FIELD
+// ============================================================
+
+if (action === 'admin_update_field') {
+
+    const admin =
+        await instagram2faRequireAdmin(
+            connection,
+            tgId
+        );
+
+    const fieldId =
+        Number(body.field_id);
+
+    const fieldName =
+        instagram2faCleanString(
+            body.field_name,
+            255
+        );
+
+    const placeholder =
+        instagram2faCleanString(
+            body.placeholder,
+            500
+        );
+
+    const fieldType =
+        instagram2faCleanString(
+            body.field_type,
+            50
+        ).toLowerCase();
+
+    const required =
+        Number(body.required) === 1
+            ? 1
+            : 0;
+
+    const enabled =
+        Number(body.enabled) === 0
+            ? 0
+            : 1;
+
+    const sortOrder =
+        Math.max(
+            0,
+            Math.floor(
+                Number(body.sort_order || 0)
+            )
+        );
+
+
+    // ============================================
+    // VALIDATION
+    // ============================================
+
+    if (
+        !Number.isInteger(fieldId) ||
+        fieldId <= 0
+    ) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Invalid custom field ID.'
+
+        });
+
+    }
+
+
+    if (!fieldName) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Field name is required.'
+
+        });
+
+    }
+
+
+    if (
+        fieldType !== 'text' &&
+        fieldType !== 'textarea'
+    ) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Invalid field type.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // CHECK FIELD EXISTS
+    // ============================================
+
+    const [fieldRows] =
+        await connection.execute(
+
+            `
+            SELECT id
+            FROM instagram_2fa_custom_fields
+            WHERE id = ?
+            LIMIT 1
+            `,
+
+            [fieldId]
+
+        );
+
+
+    if (fieldRows.length === 0) {
+
+        return res.status(404).json({
+
+            success: false,
+
+            message:
+                'Custom field not found.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // DUPLICATE NAME CHECK
+    // ============================================
+
+    const [duplicateRows] =
+        await connection.execute(
+
+            `
+            SELECT id
+            FROM instagram_2fa_custom_fields
+            WHERE LOWER(field_name) = LOWER(?)
+            AND id <> ?
+            LIMIT 1
+            `,
+
+            [
+                fieldName,
+                fieldId
+            ]
+
+        );
+
+
+    if (duplicateRows.length > 0) {
+
+        return res.status(409).json({
+
+            success: false,
+
+            message:
+                'Another custom field already uses this name.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // UPDATE
+    // ============================================
+
+    await connection.execute(
+
+        `
+        UPDATE instagram_2fa_custom_fields
+        SET
+            field_name = ?,
+            placeholder = ?,
+            field_type = ?,
+            required = ?,
+            enabled = ?,
+            sort_order = ?
+        WHERE id = ?
+        `,
+
+        [
+            fieldName,
+            placeholder || null,
+            fieldType,
+            required,
+            enabled,
+            sortOrder,
+            fieldId
+        ]
+
+    );
+
+
+    return res.json({
+
+        success: true,
+
+        message:
+            'Custom field updated successfully.',
+
+        field_id:
+            fieldId
+
+    });
+
+                                    }
+        // ============================================================
+// SECTION 12
+// ADMIN DISABLE CUSTOM FIELD
+// ============================================================
+
+if (action === 'admin_delete_field') {
+
+    const admin =
+        await instagram2faRequireAdmin(
+            connection,
+            tgId
+        );
+
+    const fieldId =
+        Number(body.field_id);
+
+
+    if (
+        !Number.isInteger(fieldId) ||
+        fieldId <= 0
+    ) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Invalid custom field ID.'
+
+        });
+
+    }
+
+
+    const [fieldRows] =
+        await connection.execute(
+
+            `
+            SELECT id, field_name
+            FROM instagram_2fa_custom_fields
+            WHERE id = ?
+            LIMIT 1
+            `,
+
+            [fieldId]
+
+        );
+
+
+    if (fieldRows.length === 0) {
+
+        return res.status(404).json({
+
+            success: false,
+
+            message:
+                'Custom field not found.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // SOFT DELETE / DISABLE
+    // ============================================
+
+    await connection.execute(
+
+        `
+        UPDATE instagram_2fa_custom_fields
+        SET enabled = 0
+        WHERE id = ?
+        `,
+
+        [fieldId]
+
+    );
+
+
+    return res.json({
+
+        success: true,
+
+        message:
+            'Custom field disabled successfully.',
+
+        field_id:
+            fieldId
+
+    });
+
+    }
+        // ============================================================
+// SECTION 13
+// USER SUBMISSION HISTORY
+// ============================================================
+
+if (action === 'get_history') {
+
+    const user =
+        await instagram2faRequireUser(
+            connection,
+            tgId
+        );
+
+
+    const [submissionRows] =
+        await connection.execute(
+
+            `
+            SELECT
+                id,
+                instagram_username,
+                password_valid,
+                rate_usd,
+                credited_usd,
+                consent_given,
+                status,
+                admin_note,
+                submitted_at,
+                checked_at,
+                reviewed_at,
+                created_at
+            FROM instagram_2fa_submissions
+            WHERE telegram_id = ?
+            ORDER BY id DESC
+            LIMIT 100
+            `,
+
+            [user.telegram_id]
+
+        );
+
+
+    // ============================================
+    // LOAD FIELD VALUES
+    // ============================================
+
+    const submissionIds =
+        submissionRows.map(
+            row => Number(row.id)
+        );
+
+
+    let fieldValueRows = [];
+
+
+    if (submissionIds.length > 0) {
+
+        const placeholders =
+            submissionIds
+                .map(() => '?')
+                .join(',');
+
+
+        const [rows] =
+            await connection.execute(
+
+                `
+                SELECT
+                    v.submission_id,
+                    v.field_id,
+                    f.field_name,
+                    v.field_value
+                FROM instagram_2fa_submission_field_values v
+                INNER JOIN instagram_2fa_custom_fields f
+                    ON f.id = v.field_id
+                WHERE v.submission_id IN (${placeholders})
+                ORDER BY
+                    f.sort_order ASC,
+                    f.id ASC
+                `,
+
+                submissionIds
+
+            );
+
+
+        fieldValueRows = rows;
+
+    }
+
+
+    // ============================================
+    // GROUP FIELD VALUES
+    // ============================================
+
+    const fieldMap = new Map();
+
+
+    for (const row of fieldValueRows) {
+
+        const submissionId =
+            Number(row.submission_id);
+
+
+        if (!fieldMap.has(submissionId)) {
+
+            fieldMap.set(
+                submissionId,
+                []
+            );
+
+        }
+
+
+        fieldMap
+            .get(submissionId)
+            .push({
+
+                field_id:
+                    Number(row.field_id),
+
+                field_name:
+                    row.field_name,
+
+                value:
+                    row.field_value || ''
+
+            });
+
+    }
+
+
+    return res.json({
+
+        success: true,
+
+        submissions:
+            submissionRows.map(row => ({
+
+                id:
+                    Number(row.id),
+
+                instagram_username:
+                    row.instagram_username,
+
+                password_valid:
+                    Number(row.password_valid) === 1,
+
+                rate_usd:
+                    Number(row.rate_usd || 0),
+
+                credited_usd:
+                    Number(row.credited_usd || 0),
+
+                status:
+                    row.status,
+
+                admin_note:
+                    row.admin_note || '',
+
+                submitted_at:
+                    row.submitted_at,
+
+                checked_at:
+                    row.checked_at,
+
+                reviewed_at:
+                    row.reviewed_at,
+
+                fields:
+                    fieldMap.get(
+                        Number(row.id)
+                    ) || []
+
+            }))
+
+    });
+
+}
+        // ============================================================
+// SECTION 14
+// USER SUBMIT INSTAGRAM 2FA TEST SUBMISSION
+// ============================================================
+
+if (action === 'submit') {
+
+    const user =
+        await instagram2faRequireUser(
+            connection,
+            tgId
+        );
+
+
+    // ============================================
+    // GET CURRENT SETTINGS
+    // ============================================
+
+    const [settingsRows] =
+        await connection.execute(
+
+            `
+            SELECT
+                rate_usd,
+                test_password_hash,
+                enabled
+            FROM instagram_2fa_settings
+            WHERE id = 1
+            LIMIT 1
+            `
+
+        );
+
+
+    if (settingsRows.length === 0) {
+
+        return res.status(503).json({
+
+            success: false,
+
+            message:
+                'Instagram 2FA system is not configured.'
+
+        });
+
+    }
+
+
+    const settings =
+        settingsRows[0];
+
+
+    if (
+        Number(settings.enabled) !== 1
+    ) {
+
+        return res.status(403).json({
+
+            success: false,
+
+            message:
+                'Instagram 2FA submissions are currently disabled.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // USER INPUT
+    // ============================================
+
+    const instagramUsername =
+        instagram2faCleanString(
+            body.instagram_username,
+            255
+        );
+
+
+    const testPassword =
+        String(
+            body.test_password || ''
+        );
+
+
+    const consent =
+        Number(body.consent) === 1 ||
+        body.consent === true ||
+        body.consent === 'true';
+
+
+    const fieldValues =
+        (
+            body.field_values &&
+            typeof body.field_values === 'object'
+        )
+            ? body.field_values
+            : {};
+
+
+    // ============================================
+    // BASIC VALIDATION
+    // ============================================
+
+    if (!instagramUsername) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Instagram username is required.'
+
+        });
+
+    }
+
+
+    if (!testPassword) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Test Password is required.'
+
+        });
+
+    }
+
+
+    if (!consent) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'You must accept the consent checkbox.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // VERIFY TEST PASSWORD
+    // ============================================
+
+    let passwordValid = false;
+
+
+    try {
+
+        const stored =
+            String(
+                settings.test_password_hash || ''
+            );
+
+
+        const parts =
+            stored.split(':');
+
+
+        if (
+            parts.length === 3 &&
+            parts[0] === 'scrypt'
+        ) {
+
+            const salt =
+                parts[1];
+
+            const storedHex =
+                parts[2];
+
+            const cryptoVerify =
+                require('crypto');
+
+
+            const derived =
+                cryptoVerify
+                    .scryptSync(
+                        testPassword,
+                        salt,
+                        64
+                    );
+
+
+            const storedBuffer =
+                Buffer.from(
+                    storedHex,
+                    'hex'
+                );
+
+
+            if (
+                storedBuffer.length ===
+                derived.length
+            ) {
+
+                passwordValid =
+                    cryptoVerify
+                        .timingSafeEqual(
+                            derived,
+                            storedBuffer
+                        );
+
+            }
+
+        }
+
+    } catch (passwordError) {
+
+        passwordValid = false;
+
+    }
+
+
+    if (!passwordValid) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Invalid Test Password.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // LOAD ACTIVE CUSTOM FIELDS
+    // ============================================
+
+    const [fieldRows] =
+        await connection.execute(
+
+            `
+            SELECT
+                id,
+                field_name,
+                required
+            FROM instagram_2fa_custom_fields
+            WHERE enabled = 1
+            ORDER BY
+                sort_order ASC,
+                id ASC
+            `
+
+        );
+
+
+    // ============================================
+    // VALIDATE REQUIRED FIELDS
+    // ============================================
+
+    for (const field of fieldRows) {
+
+        const fieldId =
+            String(field.id);
+
+        const value =
+            fieldValues[fieldId] === undefined ||
+            fieldValues[fieldId] === null
+                ? ''
+                : String(
+                    fieldValues[fieldId]
+                ).trim();
+
+
+        if (
+            Number(field.required) === 1 &&
+            !value
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    `${field.field_name} is required.`
+
+            });
+
+        }
+
+    }
+
+
+    // ============================================
+    // LOCK RATE AT SUBMISSION TIME
+    // ============================================
+
+    const lockedRate =
+        Number(
+            settings.rate_usd || 0
+        );
+
+
+    if (
+        !Number.isFinite(lockedRate) ||
+        lockedRate < 0
+    ) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                'Invalid submission rate configuration.'
+
+        });
+
+    }
+
+
+    // ============================================
+    // TRANSACTION START
+    // ============================================
+
+    await connection.beginTransaction();
+
+
+    try {
+
+        // ========================================
+        // INSERT SUBMISSION
+        // ========================================
+
+        const [submissionResult] =
+            await connection.execute(
+
+                `
+                INSERT INTO instagram_2fa_submissions
+                (
+                    telegram_id,
+                    instagram_username,
+                    password_valid,
+                    rate_usd,
+                    credited_usd,
+                    consent_given,
+                    consent_at,
+                    status,
+                    submitted_at
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    0,
+                    1,
+                    CURRENT_TIMESTAMP,
+                    'pending',
+                    CURRENT_TIMESTAMP
+                )
+                `,
+
+                [
+                    user.telegram_id,
+                    instagramUsername,
+                    passwordValid ? 1 : 0,
+                    lockedRate
+                ]
+
+            );
+
+
+        const submissionId =
+            submissionResult.insertId;
+
+
+        // ========================================
+        // SAVE CUSTOM FIELD VALUES
+        // ========================================
+
+        for (const field of fieldRows) {
+
+            const fieldId =
+                Number(field.id);
+
+
+            const rawValue =
+                fieldValues[
+                    String(fieldId)
+                ];
+
+
+            const value =
+                rawValue === undefined ||
+                rawValue === null
+                    ? ''
+                    : String(rawValue)
+                        .trim()
+                        .slice(0, 10000);
+
+
+            await connection.execute(
+
+                `
+                INSERT INTO
+                instagram_2fa_submission_field_values
+                (
+                    submission_id,
+                    field_id,
+                    field_value
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?
+                )
+                `,
+
+                [
+                    submissionId,
+                    fieldId,
+                    value
+                ]
+
+            );
+
+        }
+
+
+        // ========================================
+        // COMMIT
+        // ========================================
+
+        await connection.commit();
+
+
+        return res.json({
+
+            success: true,
+
+            message:
+                'Instagram 2FA test submission submitted successfully.',
+
+            submission_id:
+                submissionId,
+
+            rate_usd:
+                lockedRate,
+
+            status:
+                'pending'
+
+        });
+
+
+    } catch (error) {
+
+        try {
+
+            await connection.rollback();
+
+        } catch (rollbackError) {}
+
+
+        throw error;
+
+    }
+
+                }
+        // ============================================================
+// SECTION 15
+// ADMIN GET ALL INSTAGRAM 2FA SUBMISSIONS
+// ============================================================
+
+if (action === 'admin_get_submissions') {
+
+    await instagram2faRequireAdmin(
+        connection,
+        tgId
+    );
+
+
+    const [submissionRows] =
+        await connection.execute(
+
+            `
+            SELECT
+                s.id,
+                s.telegram_id,
+                u.username AS user_username,
+                u.first_name,
+                s.instagram_username,
+                s.password_valid,
+                s.rate_usd,
+                s.credited_usd,
+                s.consent_given,
+                s.status,
+                s.admin_telegram_id,
+                s.admin_note,
+                s.submitted_at,
+                s.checked_at,
+                s.reviewed_at,
+                s.created_at
+            FROM instagram_2fa_submissions s
+            LEFT JOIN users u
+                ON u.telegram_id = s.telegram_id
+            ORDER BY
+                s.id DESC
+            LIMIT 500
+            `
+
+        );
+
+
+    // ============================================
+    // LOAD ALL FIELD VALUES
+    // ============================================
+
+    const submissionIds =
+        submissionRows.map(
+            row => Number(row.id)
+        );
+
+
+    let fieldValueRows = [];
+
+
+    if (submissionIds.length > 0) {
+
+        const placeholders =
+            submissionIds
+                .map(() => '?')
+                .join(',');
+
+
+        const [rows] =
+            await connection.execute(
+
+                `
+                SELECT
+                    v.submission_id,
+                    v.field_id,
+                    f.field_name,
+                    v.field_value
+                FROM instagram_2fa_submission_field_values v
+                INNER JOIN instagram_2fa_custom_fields f
+                    ON f.id = v.field_id
+                WHERE v.submission_id IN (${placeholders})
+                ORDER BY
+                    f.sort_order ASC,
+                    f.id ASC
+                `,
+
+                submissionIds
+
+            );
+
+
+        fieldValueRows = rows;
+
+    }
+
+
+    // ============================================
+    // GROUP FIELD VALUES
+    // ============================================
+
+    const fieldMap =
+        new Map();
+
+
+    for (const row of fieldValueRows) {
+
+        const submissionId =
+            Number(row.submission_id);
+
+
+        if (
+            !fieldMap.has(
+                submissionId
+            )
+        ) {
+
+            fieldMap.set(
+                submissionId,
+                []
+            );
+
+        }
+
+
+        fieldMap
+            .get(submissionId)
+            .push({
+
+                field_id:
+                    Number(row.field_id),
+
+                field_name:
+                    row.field_name,
+
+                value:
+                    row.field_value || ''
+
+            });
+
+    }
+
+
+    return res.json({
+
+        success: true,
+
+        submissions:
+            submissionRows.map(row => ({
+
+                id:
+                    Number(row.id),
+
+                telegram_id:
+                    row.telegram_id,
+
+                user_username:
+                    row.user_username || '',
+
+                first_name:
+                    row.first_name || '',
+
+                instagram_username:
+                    row.instagram_username,
+
+                // ==================================
+                // IMPORTANT:
+                // NEVER RETURN THE PASSWORD
+                // ==================================
+
+                password_valid:
+                    Number(
+                        row.password_valid
+                    ) === 1,
+
+                rate_usd:
+                    Number(
+                        row.rate_usd || 0
+                    ),
+
+                credited_usd:
+                    Number(
+                        row.credited_usd || 0
+                    ),
+
+                consent_given:
+                    Number(
+                        row.consent_given
+                    ) === 1,
+
+                status:
+                    row.status,
+
+                admin_telegram_id:
+                    row.admin_telegram_id || '',
+
+                admin_note:
+                    row.admin_note || '',
+
+                submitted_at:
+                    row.submitted_at,
+
+                checked_at:
+                    row.checked_at,
+
+                reviewed_at:
+                    row.reviewed_at,
+
+                fields:
+                    fieldMap.get(
+                        Number(row.id)
+                    ) || []
+
+            }))
+
+    });
+
+}
+// ============================================================
+// SECTION 16
+// ADMIN CHECKING
+// ============================================================
+
+if (action === 'admin_checking') {
+
+    const admin =
+        await instagram2faRequireAdmin(
+            connection,
+            tgId
+        );
+
+    const submissionId =
+        Number(body.submission_id);
+
+
+    if (
+        !Number.isInteger(submissionId) ||
+        submissionId <= 0
+    ) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Valid submission ID is required.'
+
+        });
+
+    }
+
+
+    const [result] =
+        await connection.execute(
+
+            `
+            UPDATE instagram_2fa_submissions
+            SET
+                status = 'checking',
+                checked_at = CURRENT_TIMESTAMP,
+                admin_telegram_id = ?
+            WHERE id = ?
+            AND status = 'pending'
+            `,
+
+            [
+                admin.telegram_id,
+                submissionId
+            ]
+
+        );
+
+
+    if (result.affectedRows === 0) {
+
+        return res.status(409).json({
+
+            success: false,
+
+            message:
+                'Submission not found or already processed.'
+
+        });
+
+    }
+
+
+    return res.json({
+
+        success: true,
+
+        message:
+            'Instagram 2FA submission moved to checking.'
+
+    });
+
+            }
+        // ============================================================
+// SECTION 17
+// ADMIN APPROVE
+// ============================================================
+
+if (action === 'admin_approve') {
+
+    const admin =
+        await instagram2faRequireAdmin(
+            connection,
+            tgId
+        );
+
+    const submissionId =
+        Number(body.submission_id);
+
+    const adminNote =
+        instagram2faCleanString(
+            body.admin_note,
+            2000
+        );
+
+
+    if (
+        !Number.isInteger(submissionId) ||
+        submissionId <= 0
+    ) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Valid submission ID is required.'
+
+        });
+
+    }
+
+
+    await connection.beginTransaction();
+
+
+    try {
+
+        // ============================================
+        // LOCK SUBMISSION
+        // ============================================
+
+        const [submissionRows] =
+            await connection.execute(
+
+                `
+                SELECT *
+                FROM instagram_2fa_submissions
+                WHERE id = ?
+                FOR UPDATE
+                `,
+
+                [submissionId]
+
+            );
+
+
+        if (submissionRows.length === 0) {
+
+            throw new Error(
+                'Instagram 2FA submission not found.'
+            );
+
+        }
+
+
+        const submission =
+            submissionRows[0];
+
+
+        // ============================================
+        // ONLY CHECKING CAN BE APPROVED
+        // ============================================
+
+        if (
+            submission.status !== 'checking'
+        ) {
+
+            throw new Error(
+                `Only checking submissions can be approved. Current status: ${submission.status}`
+            );
+
+        }
+
+
+        // ============================================
+        // PASSWORD VALIDATION FLAG
+        // ============================================
+
+        if (
+            Number(
+                submission.password_valid
+            ) !== 1
+        ) {
+
+            throw new Error(
+                'Test Password validation failed.'
+            );
+
+        }
+
+
+        // ============================================
+        // LOCKED RATE
+        // ============================================
+
+        const creditUsd =
+            Number(
+                submission.rate_usd || 0
+            );
+
+
+        if (
+            !Number.isFinite(creditUsd) ||
+            creditUsd <= 0
+        ) {
+
+            throw new Error(
+                'Invalid Instagram 2FA credit amount.'
+            );
+
+        }
+
+
+        // ============================================
+        // LOCK USER
+        // ============================================
+
+        const [userRows] =
+            await connection.execute(
+
+                `
+                SELECT
+                    telegram_id,
+                    balance
+                FROM users
+                WHERE telegram_id = ?
+                FOR UPDATE
+                `,
+
+                [
+                    submission.telegram_id
+                ]
+
+            );
+
+
+        if (userRows.length === 0) {
+
+            throw new Error(
+                'Submission user not found.'
+            );
+
+        }
+
+
+        const user =
+            userRows[0];
+
+
+        const balanceBefore =
+            Number(
+                user.balance || 0
+            );
+
+
+        const balanceAfter =
+            balanceBefore + creditUsd;
+
+
+        // ============================================
+        // CREDIT USER BALANCE
+        // ============================================
+
+        await connection.execute(
+
+            `
+            UPDATE users
+            SET balance = ?
+            WHERE telegram_id = ?
+            `,
+
+            [
+                balanceAfter,
+                submission.telegram_id
+            ]
+
+        );
+
+
+        // ============================================
+        // MAIN TRANSACTION
+        // ============================================
+
+        const [
+            transactionResult
+        ] =
+            await connection.execute(
+
+                `
+                INSERT INTO transactions
+                (
+                    telegram_id,
+                    transaction_type,
+                    source_id,
+                    source_reference,
+                    amount_usd,
+                    balance_before,
+                    balance_after,
+                    status,
+                    description
+                )
+                VALUES
+                (
+                    ?,
+                    'instagram_2fa',
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    'completed',
+                    ?
+                )
+                `,
+
+                [
+                    submission.telegram_id,
+
+                    submission.id,
+
+                    `INSTAGRAM-2FA-${submission.id}`,
+
+                    creditUsd,
+
+                    balanceBefore,
+
+                    balanceAfter,
+
+                    `Instagram 2FA Test #${submission.id} approved`
+
+                ]
+
+            );
+
+
+        const sourceTransactionId =
+            transactionResult.insertId;
+
+
+        // ============================================
+        // EXISTING REFERRAL SYSTEM
+        // ============================================
+
+        let referralCommission = 0;
+
+        let referrerTelegramId = null;
+
+
+        const [referrerRows] =
+            await connection.execute(
+
+                `
+                SELECT referred_by
+                FROM users
+                WHERE telegram_id = ?
+                LIMIT 1
+                `,
+
+                [
+                    submission.telegram_id
+                ]
+
+            );
+
+
+        if (
+            referrerRows.length > 0 &&
+            referrerRows[0].referred_by
+        ) {
+
+            const referralCode =
+                String(
+                    referrerRows[0].referred_by
+                ).trim();
+
+
+            const [
+                referrerUserRows
+            ] =
+                await connection.execute(
+
+                    `
+                    SELECT telegram_id
+                    FROM users
+                    WHERE referral_code = ?
+                    LIMIT 1
+                    `,
+
+                    [
+                        referralCode
+                    ]
+
+                );
+
+
+            if (
+                referrerUserRows.length > 0
+            ) {
+
+                referrerTelegramId =
+                    String(
+                        referrerUserRows[0]
+                            .telegram_id
+                    );
+
+            }
+
+        }
+
+
+        // ============================================
+        // GET EXISTING REFERRAL PERCENTAGE
+        // ============================================
+
+        const referralPercent =
+            await instagramGetReferralPercent(
+                connection
+            );
+
+
+        // ============================================
+        // REFERRAL COMMISSION
+        // ============================================
+
+        if (
+            referrerTelegramId &&
+            referrerTelegramId !==
+                String(
+                    submission.telegram_id
+                ) &&
+            referralPercent > 0
+        ) {
+
+            referralCommission =
+                creditUsd *
+                referralPercent /
+                100;
+
+
+            if (
+                Number.isFinite(
+                    referralCommission
+                ) &&
+                referralCommission > 0
+            ) {
+
+                // ========================================
+                // LOCK REFERRER BALANCE
+                // ========================================
+
+                const [
+                    referrerBalanceRows
+                ] =
+                    await connection.execute(
+
+                        `
+                        SELECT balance
+                        FROM users
+                        WHERE telegram_id = ?
+                        FOR UPDATE
+                        `,
+
+                        [
+                            referrerTelegramId
+                        ]
+
+                    );
+
+
+                if (
+                    referrerBalanceRows.length > 0
+                ) {
+
+                    const referrerBefore =
+                        Number(
+                            referrerBalanceRows[0]
+                                .balance || 0
+                        );
+
+
+                    const referrerAfter =
+                        referrerBefore +
+                        referralCommission;
+
+
+                    // ====================================
+                    // DUPLICATE COMMISSION PROTECTION
+                    // ====================================
+
+                    const [
+                        existingCommissionRows
+                    ] =
+                        await connection.execute(
+
+                            `
+                            SELECT id
+                            FROM referral_commissions
+                            WHERE source_transaction_id = ?
+                            AND referrer_telegram_id = ?
+                            LIMIT 1
+                            `,
+
+                            [
+                                sourceTransactionId,
+                                referrerTelegramId
+                            ]
+
+                        );
+
+
+                    if (
+                        existingCommissionRows.length === 0
+                    ) {
+
+                        // ==================================
+                        // INSERT REFERRAL COMMISSION
+                        // ==================================
+
+                        const [
+                            commissionInsert
+                        ] =
+                            await connection.execute(
+
+                                `
+                                INSERT INTO referral_commissions
+                                (
+                                    source_transaction_id,
+                                    referrer_telegram_id,
+                                    referred_telegram_id,
+                                    commission_percent,
+                                    source_amount_usd,
+                                    commission_amount_usd,
+                                    status
+                                )
+                                VALUES
+                                (
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    'completed'
+                                )
+                                `,
+
+                                [
+                                    sourceTransactionId,
+
+                                    referrerTelegramId,
+
+                                    submission.telegram_id,
+
+                                    referralPercent,
+
+                                    creditUsd,
+
+                                    referralCommission
+                                ]
+
+                            );
+
+
+                        // ==================================
+                        // CREDIT REFERRER
+                        // ==================================
+
+                        await connection.execute(
+
+                            `
+                            UPDATE users
+                            SET balance = ?
+                            WHERE telegram_id = ?
+                            `,
+
+                            [
+                                referrerAfter,
+                                referrerTelegramId
+                            ]
+
+                        );
+
+
+                        // ==================================
+                        // REFERRAL TRANSACTION
+                        // ==================================
+
+                        const [
+                            commissionTransaction
+                        ] =
+                            await connection.execute(
+
+                                `
+                                INSERT INTO transactions
+                                (
+                                    telegram_id,
+                                    transaction_type,
+                                    source_id,
+                                    source_reference,
+                                    amount_usd,
+                                    balance_before,
+                                    balance_after,
+                                    status,
+                                    description
+                                )
+                                VALUES
+                                (
+                                    ?,
+                                    'referral_commission',
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    'completed',
+                                    ?
+                                )
+                                `,
+
+                                [
+                                    referrerTelegramId,
+
+                                    sourceTransactionId,
+
+                                    `INSTAGRAM-2FA-${submission.id}`,
+
+                                    referralCommission,
+
+                                    referrerBefore,
+
+                                    referrerAfter,
+
+                                    `Direct referral commission from Instagram 2FA submission #${submission.id}`
+
+                                ]
+
+                            );
+
+
+                        // ==================================
+                        // LINK COMMISSION TRANSACTION
+                        // ==================================
+
+                        await connection.execute(
+
+                            `
+                            UPDATE referral_commissions
+                            SET commission_transaction_id = ?
+                            WHERE id = ?
+                            `,
+
+                            [
+                                commissionTransaction
+                                    .insertId,
+
+                                commissionInsert
+                                    .insertId
+
+                            ]
+
+                        );
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        // ============================================
+        // MARK SUBMISSION APPROVED
+        // ============================================
+
+        await connection.execute(
+
+            `
+            UPDATE instagram_2fa_submissions
+            SET
+                status = 'approved',
+                credited_usd = ?,
+                admin_telegram_id = ?,
+                admin_note = ?,
+                reviewed_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND status = 'checking'
+            `,
+
+            [
+                creditUsd,
+
+                admin.telegram_id,
+
+                adminNote || null,
+
+                submissionId
+
+            ]
+
+        );
+
+
+        // ============================================
+        // COMMIT EVERYTHING
+        // ============================================
+
+        await connection.commit();
+
+
+        return res.json({
+
+            success: true,
+
+            message:
+                'Instagram 2FA submission approved and balance credited.',
+
+            submission_id:
+                submissionId,
+
+            credited_usd:
+                creditUsd,
+
+            referral_commission_usd:
+                referralCommission
+
+        });
+
+
+    } catch (error) {
+
+        try {
+
+            await connection.rollback();
+
+        } catch (rollbackError) {}
+
+
+        throw error;
+
+    }
+
+                    }
+        // ============================================================
+// SECTION 18
+// ADMIN REJECT
+// ============================================================
+
+if (action === 'admin_reject') {
+
+    const admin =
+        await instagram2faRequireAdmin(
+            connection,
+            tgId
+        );
+
+    const submissionId =
+        Number(body.submission_id);
+
+    const adminNote =
+        instagram2faCleanString(
+            body.admin_note,
+            2000
+        );
+
+
+    if (
+        !Number.isInteger(submissionId) ||
+        submissionId <= 0
+    ) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message:
+                'Valid submission ID is required.'
+
+        });
+
+    }
+
+
+    await connection.beginTransaction();
+
+
+    try {
+
+        // ============================================
+        // LOCK SUBMISSION
+        // ============================================
+
+        const [rows] =
+            await connection.execute(
+
+                `
+                SELECT
+                    id,
+                    status
+                FROM instagram_2fa_submissions
+                WHERE id = ?
+                FOR UPDATE
+                `,
+
+                [submissionId]
+
+            );
+
+
+        if (rows.length === 0) {
+
+            throw new Error(
+                'Instagram 2FA submission not found.'
+            );
+
+        }
+
+
+        const submission =
+            rows[0];
+
+
+        if (
+            submission.status !== 'checking'
+        ) {
+
+            throw new Error(
+                `Only checking submissions can be rejected. Current status: ${submission.status}`
+            );
+
+        }
+
+
+        // ============================================
+        // REJECT
+        // ============================================
+
+        await connection.execute(
+
+            `
+            UPDATE instagram_2fa_submissions
+            SET
+                status = 'rejected',
+                credited_usd = 0,
+                admin_telegram_id = ?,
+                admin_note = ?,
+                reviewed_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND status = 'checking'
+            `,
+
+            [
+                admin.telegram_id,
+
+                adminNote || null,
+
+                submissionId
+
+            ]
+
+        );
+
+
+        await connection.commit();
+
+
+        return res.json({
+
+            success: true,
+
+            message:
+                'Instagram 2FA submission rejected successfully.'
+
+        });
+
+
+    } catch (error) {
+
+        try {
+
+            await connection.rollback();
+
+        } catch (rollbackError) {}
+
+
+        throw error;
+
+    }
+
+            }
+        // ============================================================
+// SECTION 19
+// ADMIN DASHBOARD STATS
+// ============================================================
+
+if (action === 'admin_stats') {
+
+    await instagram2faRequireAdmin(
+        connection,
+        tgId
+    );
+
+
+    const [submissionStats] =
+        await connection.execute(
+
+            `
+            SELECT
+                COUNT(*) AS total,
+
+                COALESCE(
+                    SUM(status = 'pending'),
+                    0
+                ) AS pending,
+
+                COALESCE(
+                    SUM(status = 'checking'),
+                    0
+                ) AS checking,
+
+                COALESCE(
+                    SUM(status = 'approved'),
+                    0
+                ) AS approved,
+
+                COALESCE(
+                    SUM(status = 'rejected'),
+                    0
+                ) AS rejected,
+
+                COALESCE(
+                    SUM(credited_usd),
+                    0
+                ) AS total_paid
+
+            FROM instagram_2fa_submissions
+            `
+
+        );
+
+
+    const stats =
+        submissionStats[0] || {};
+
+
+    return res.json({
+
+        success: true,
+
+        stats: {
+
+            total:
+                Number(
+                    stats.total || 0
+                ),
+
+            pending:
+                Number(
+                    stats.pending || 0
+                ),
+
+            checking:
+                Number(
+                    stats.checking || 0
+                ),
+
+            approved:
+                Number(
+                    stats.approved || 0
+                ),
+
+            rejected:
+                Number(
+                    stats.rejected || 0
+                ),
+
+            total_paid:
+                Number(
+                    stats.total_paid || 0
+                )
+
+        }
+
+    });
+
+}
+        
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid Instagram 2FA action.'
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Instagram 2FA API Error:',
+            error
+        );
+
+        return res.status(
+            error.statusCode || 500
+        ).json({
+            success: false,
+            message:
+                error.message ||
+                'Internal Server Error'
+        });
+
+    } finally {
+
+        if (connection) {
+
+            try {
+                await connection.end();
+            } catch (e) {}
+
+        }
+    }
+});
 
 
              // ============================================================
