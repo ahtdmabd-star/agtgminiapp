@@ -4399,6 +4399,109 @@ function instagram2faError(message, statusCode = 400) {
     return error;
 }
 // ============================================================
+// INSTAGRAM 2FA TEST PASSWORD DISPLAY ENCRYPTION
+// ============================================================
+
+const INSTAGRAM_2FA_DISPLAY_KEY = crypto
+    .createHash('sha256')
+    .update(
+        process.env.INSTAGRAM_2FA_DISPLAY_KEY ||
+        'CHANGE_THIS_INSTAGRAM_2FA_DISPLAY_KEY'
+    )
+    .digest();
+
+function instagram2faEncryptDisplayPassword(value) {
+
+    const iv =
+        crypto.randomBytes(12);
+
+    const cipher =
+        crypto.createCipheriv(
+            'aes-256-gcm',
+            INSTAGRAM_2FA_DISPLAY_KEY,
+            iv
+        );
+
+    const encrypted =
+        Buffer.concat([
+            cipher.update(
+                String(value),
+                'utf8'
+            ),
+            cipher.final()
+        ]);
+
+    const authTag =
+        cipher.getAuthTag();
+
+    return [
+        iv.toString('base64'),
+        authTag.toString('base64'),
+        encrypted.toString('base64')
+    ].join('.');
+}
+
+function instagram2faDecryptDisplayPassword(value) {
+
+    if (!value) {
+        return '';
+    }
+
+    try {
+
+        const parts =
+            String(value).split('.');
+
+        if (parts.length !== 3) {
+            return '';
+        }
+
+        const iv =
+            Buffer.from(
+                parts[0],
+                'base64'
+            );
+
+        const authTag =
+            Buffer.from(
+                parts[1],
+                'base64'
+            );
+
+        const encrypted =
+            Buffer.from(
+                parts[2],
+                'base64'
+            );
+
+        const decipher =
+            crypto.createDecipheriv(
+                'aes-256-gcm',
+                INSTAGRAM_2FA_DISPLAY_KEY,
+                iv
+            );
+
+        decipher.setAuthTag(
+            authTag
+        );
+
+        return Buffer.concat([
+            decipher.update(encrypted),
+            decipher.final()
+        ]).toString('utf8');
+
+    } catch (error) {
+
+        console.error(
+            'Instagram 2FA display password decrypt error:',
+            error
+        );
+
+        return '';
+    }
+}
+
+// ============================================================
 // INSTAGRAM 2FA API - SECTION 2
 // User + Admin Authentication
 // ============================================================
@@ -4483,18 +4586,19 @@ async function instagram2faGetSettings(connection) {
     const [rows] = await connection.execute(
         `
         SELECT
-            id,
-            rate_usd,
-            tutorial_url,
-            instructions,
-            test_password_hash,
-            enabled,
-            updated_by,
-            created_at,
-            updated_at
-        FROM instagram_2fa_settings
-        WHERE id = 1
-        LIMIT 1
+    id,
+    rate_usd,
+    tutorial_url,
+    instructions,
+    test_password_hash,
+    test_password_encrypted,
+    enabled,
+    updated_by,
+    created_at,
+    updated_at
+FROM instagram_2fa_settings
+WHERE id = 1
+LIMIT 1
         `
     );
 
@@ -4506,6 +4610,7 @@ async function instagram2faGetSettings(connection) {
             tutorial_url: '',
             instructions: '',
             test_password_hash: '',
+            test_password_encrypted: '',
             enabled: 1
         };
     }
@@ -4622,6 +4727,11 @@ if (action === 'get_settings') {
             instructions:
                 settings.instructions || '',
 
+            test_password:
+    instagram2faDecryptDisplayPassword(
+        settings.test_password_encrypted
+    ),
+
             enabled:
                 Number(settings.enabled) === 1
         }
@@ -4713,6 +4823,11 @@ if (action === 'admin_update_settings') {
     const passwordHash =
         `scrypt:${salt}:${hash}`;
 
+    const passwordEncrypted =
+    instagram2faEncryptDisplayPassword(
+        testPassword
+    );
+
     await connection.execute(
         `
         INSERT INTO instagram_2fa_settings
@@ -4733,6 +4848,7 @@ if (action === 'admin_update_settings') {
             ?,
             ?,
             ?,
+            ?,
             ?
         )
         ON DUPLICATE KEY UPDATE
@@ -4741,17 +4857,20 @@ if (action === 'admin_update_settings') {
             instructions = VALUES(instructions),
             test_password_hash =
                 VALUES(test_password_hash),
+                test_password_encrypted =
+    VALUES(test_password_encrypted),
             enabled = VALUES(enabled),
             updated_by = VALUES(updated_by)
-        `,
+        `, 
         [
-            rateUsd,
-            tutorialUrl,
-            instructions,
-            passwordHash,
-            enabled,
-            admin.telegram_id
-        ]
+    rateUsd,
+    tutorialUrl,
+    instructions,
+    passwordHash,
+    passwordEncrypted,
+    enabled,
+    admin.telegram_id
+]
     );
 
     return res.json({
@@ -5312,6 +5431,41 @@ if (action === 'admin_delete_field') {
 
 if (action === 'get_history') {
 
+    const [submissionRows] =
+    await connection.execute(
+        `
+        SELECT
+            ...
+        FROM instagram_2fa_submissions
+        WHERE telegram_id = ?
+        ORDER BY id DESC
+        LIMIT 100
+        `,
+        [user.telegram_id]
+    );
+    // ============================================
+// SUBMISSIONS COUNT - LAST 24 HOURS
+// ============================================
+
+const [submission24hRows] =
+    await connection.execute(
+        `
+        SELECT COUNT(*) AS submissions_24h
+        FROM instagram_2fa_submissions
+        WHERE telegram_id = ?
+        AND submitted_at >=
+            (CURRENT_TIMESTAMP - INTERVAL 24 HOUR)
+        `,
+        [
+            user.telegram_id
+        ]
+    );
+
+const submissions24h =
+    Number(
+        submission24hRows[0]?.submissions_24h || 0
+    );
+    
     const user =
         await instagram2faRequireUser(
             connection,
@@ -5439,10 +5593,13 @@ if (action === 'get_history') {
 
     return res.json({
 
-        success: true,
+    success: true,
 
-        submissions:
-            submissionRows.map(row => ({
+    submissions_24h:
+        submissions24h,
+
+    submissions:
+        submissionRows.map(row => ({
 
                 id:
                     Number(row.id),
