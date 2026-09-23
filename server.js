@@ -4755,23 +4755,20 @@ app.all('/api/instagram-2fa', async (req, res) => {
 
 
             // User must confirm that 2FA has been enabled.
-            const twoFactorEnabled =
-                body.two_factor_enabled === true ||
-                body.two_factor_enabled === 'true' ||
-                body.two_factor_enabled === '1' ||
-                Number(body.two_factor_enabled) === 1;
+            const fullName =
+    instagram2FAClean(
+        body.full_name,
+        255
+    );
 
+if (!fullName) {
 
-            if (!twoFactorEnabled) {
+    throw instagram2FAError(
+        'Instagram full name is required.',
+        400
+    );
 
-                throw instagram2FAError(
-                    'Please enable two-factor authentication before submitting.',
-                    400
-                );
-
-            }
-
-
+}
             // ------------------------------------------------
             // Prevent duplicate pending/checking submissions
             // for the same username.
@@ -4835,30 +4832,33 @@ app.all('/api/instagram-2fa', async (req, res) => {
             const [insertResult] =
                 await connection.execute(
                     `
-                    INSERT INTO instagram_2fa_submissions
-                    (
-                        telegram_id,
-                        instagram_username,
-                        rate_usd,
-                        status,
-                        two_factor_enabled,
-                        credited_usd
-                    )
-                    VALUES
-                    (
-                        ?,
-                        ?,
-                        ?,
-                        'pending',
-                        1,
-                        0
-                    )
+                INSERT INTO instagram_2fa_submissions
+(
+    telegram_id,
+    instagram_username,
+    full_name,
+    rate_usd,
+    status,
+    two_factor_enabled,
+    credited_usd
+)
+VALUES
+(
+    ?,
+    ?,
+    ?,
+    ?,
+    'pending',
+    1,
+    0
+)
                     `,
-                    [
-                        tgId,
-                        username,
-                        rate
-                    ]
+                   [
+    tgId,
+    username,
+    fullName,
+    rate
+]
                 );
 
 
