@@ -4405,8 +4405,7 @@ function instagram2faError(message, statusCode = 400) {
 const INSTAGRAM_2FA_DISPLAY_KEY = crypto
     .createHash('sha256')
     .update(
-        process.env.INSTAGRAM_2FA_DISPLAY_KEY ||
-        'CHANGE_THIS_INSTAGRAM_2FA_DISPLAY_KEY'
+        'AHTG_INSTAGRAM_2FA_DISPLAY_KEY_2026_9f7Kx2Qm8Vp4Rt6Yz3Nc5Hd1Ls0Bw7'
     )
     .digest();
 
@@ -4831,15 +4830,16 @@ if (action === 'admin_update_settings') {
     await connection.execute(
         `
         INSERT INTO instagram_2fa_settings
-        (
-            id,
-            rate_usd,
-            tutorial_url,
-            instructions,
-            test_password_hash,
-            enabled,
-            updated_by
-        )
+(
+    id,
+    rate_usd,
+    tutorial_url,
+    instructions,
+    test_password_hash,
+    test_password_encrypted,
+    enabled,
+    updated_by
+)
         VALUES
         (
             1,
@@ -5431,40 +5431,69 @@ if (action === 'admin_delete_field') {
 
 if (action === 'get_history') {
 
+    const user =
+        await instagram2faRequireUser(
+            connection,
+            tgId
+        );
+
+
     const [submissionRows] =
-    await connection.execute(
-        `
-        SELECT
-            ...
-        FROM instagram_2fa_submissions
-        WHERE telegram_id = ?
-        ORDER BY id DESC
-        LIMIT 100
-        `,
-        [user.telegram_id]
-    );
+        await connection.execute(
+
+            `
+            SELECT
+                id,
+                instagram_username,
+                password_valid,
+                rate_usd,
+                credited_usd,
+                consent_given,
+                status,
+                admin_note,
+                submitted_at,
+                checked_at,
+                reviewed_at,
+                created_at
+            FROM instagram_2fa_submissions
+            WHERE telegram_id = ?
+            ORDER BY id DESC
+            LIMIT 100
+            `,
+
+            [user.telegram_id]
+
+        );
+
+
     // ============================================
-// SUBMISSIONS COUNT - LAST 24 HOURS
-// ============================================
+    // SUBMISSIONS COUNT - LAST 24 HOURS
+    // ============================================
 
-const [submission24hRows] =
-    await connection.execute(
-        `
-        SELECT COUNT(*) AS submissions_24h
-        FROM instagram_2fa_submissions
-        WHERE telegram_id = ?
-        AND submitted_at >=
-            (CURRENT_TIMESTAMP - INTERVAL 24 HOUR)
-        `,
-        [
-            user.telegram_id
-        ]
-    );
+    const [submission24hRows] =
+        await connection.execute(
 
-const submissions24h =
-    Number(
-        submission24hRows[0]?.submissions_24h || 0
-    );
+            `
+            SELECT
+                COUNT(*) AS submissions_24h
+            FROM instagram_2fa_submissions
+            WHERE telegram_id = ?
+            AND submitted_at >=
+                (
+                    CURRENT_TIMESTAMP
+                    - INTERVAL 24 HOUR
+                )
+            `,
+
+            [user.telegram_id]
+
+        );
+
+
+    const submissions24h =
+        Number(
+            submission24hRows[0]?.submissions_24h || 0
+        );
     
     const user =
         await instagram2faRequireUser(
