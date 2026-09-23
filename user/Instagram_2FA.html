@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-HUDA TECH GLOBAL - Instagram 2FA</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#eaf2ff;font-family:Arial,sans-serif}
+.container{max-width:520px;margin:auto;padding:18px}
+.card{background:#0d1b2e;border:1px solid #1b3554;border-radius:16px;padding:18px;margin-bottom:14px}
+h1{font-size:22px;margin:0 0 6px} h2{font-size:17px;margin:0 0 12px}
+.muted{color:#8fa6c1;font-size:13px;line-height:1.6}
+label{display:block;font-size:13px;margin:14px 0 7px;color:#cbd9ea}
+input{width:100%;border:1px solid #294766;background:#081523;color:#fff;border-radius:10px;padding:12px;font-size:14px;outline:none}
+input:focus{border-color:#4b8bd8}
+button{width:100%;border:0;border-radius:10px;padding:13px;background:#1769aa;color:white;font-weight:700;font-size:14px;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+.secondary{background:#142b45;margin-top:9px}
+.info{background:#0a2035;border-left:3px solid #2c82c9;padding:12px;border-radius:8px;font-size:13px;line-height:1.6;color:#c9d9e9}
+.rate{font-size:25px;font-weight:700;color:#69b7ff}
+.status{padding:11px;border-radius:9px;background:#081523;margin-top:12px;font-size:13px}
+.history-item{border-top:1px solid #1b3554;padding:12px 0}
+.history-item:first-child{border-top:0}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#17324d;font-size:11px}
+.error{color:#ff9b9b}.success{color:#83e1ad}.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="card">
+<h1>Instagram 2FA</h1>
+<div class="muted">Submit your Instagram account after completing the required setup.</div>
+</div>
+
+<div class="card">
+<h2>Current Rate</h2>
+<div id="rate" class="rate">$0.000</div>
+<div id="enabledText" class="muted">Checking availability...</div>
+</div>
+
+<div class="card">
+<h2>Instructions</h2>
+<div id="instructions" class="info">Loading instructions...</div>
+<button id="tutorialBtn" class="secondary hidden" type="button">Open Tutorial</button>
+</div>
+
+<div class="card">
+<h2>Submit Instagram Account</h2>
+<form id="submissionForm">
+<label for="instagramUsername">Instagram Username</label>
+<input id="instagramUsername" name="instagram_username" type="text" maxlength="255" autocomplete="off" required placeholder="Enter Instagram username">
+
+<label for="fullName">Instagram Full Name</label>
+<input id="fullName" name="full_name" type="text" maxlength="255" autocomplete="off" required placeholder="Enter the full name used on Instagram">
+
+<div class="info" style="margin-top:14px">Make sure the Instagram account has completed the required 2FA setup before submitting.</div>
+<button id="submitBtn" type="submit" style="margin-top:14px">Submit Account</button>
+</form>
+<div id="status" class="status hidden"></div>
+</div>
+
+<div class="card">
+<h2>Submission History</h2>
+<div id="history" class="muted">Loading...</div>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const API_URL='/api/instagram-2fa';
+const tg=window.Telegram&&window.Telegram.WebApp?window.Telegram.WebApp:null;
+
+if(tg){
+ tg.ready(); tg.expand();
+ if(tg.BackButton){
+  tg.BackButton.show();
+  tg.BackButton.onClick(function(){
+   if(window.history.length>1) window.history.back();
+   else if(tg.close) tg.close();
+  });
+ }
+}
+
+function getTelegramId(){
+ if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user) return String(tg.initDataUnsafe.user.id);
+ return new URLSearchParams(location.search).get('tg_id')||'';
+}
+
+const tgId=getTelegramId();
+const rateEl=document.getElementById('rate');
+const enabledText=document.getElementById('enabledText');
+const instructionsEl=document.getElementById('instructions');
+const tutorialBtn=document.getElementById('tutorialBtn');
+const form=document.getElementById('submissionForm');
+const submitBtn=document.getElementById('submitBtn');
+const statusEl=document.getElementById('status');
+const historyEl=document.getElementById('history');
+
+function showStatus(message,type){
+ statusEl.textContent=message;
+ statusEl.className='status '+(type||'');
+ statusEl.classList.remove('hidden');
+}
+
+function money(value){
+ const n=Number(value);
+ return Number.isFinite(n)?'$'+n.toFixed(3):'$0.000';
+}
+
+async function api(action,extra){
+ const body=Object.assign({action:action,tg_id:tgId},extra||{});
+ const response=await fetch(API_URL,{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify(body)
+ });
+ const data=await response.json().catch(function(){return{success:false,message:'Invalid server response.'};});
+ if(!response.ok||data.success===false) throw new Error(data.message||'Request failed.');
+ return data;
+}
+
+async function loadSettings(){
+ if(!tgId){
+  enabledText.textContent='Telegram user information is unavailable.';
+  instructionsEl.textContent='Please open this page from the Telegram Mini App.';
+  return;
+ }
+ try{
+  const data=await api('get_settings');
+  const settings=data.settings||{};
+  rateEl.textContent=money(settings.rate_usd);
+  if(settings.enabled){
+   enabledText.textContent='Instagram 2FA submissions are currently available.';
+   submitBtn.disabled=false;
+  }else{
+   enabledText.textContent='Instagram 2FA submissions are currently disabled.';
+   submitBtn.disabled=true;
+  }
+  instructionsEl.textContent=settings.instructions||'Follow the instructions provided by the administrator.';
+  if(settings.tutorial_url){
+   tutorialBtn.classList.remove('hidden');
+   tutorialBtn.onclick=function(){window.open(settings.tutorial_url,'_blank','noopener,noreferrer');};
+  }
+  renderHistory(data.history||data.submissions||[]);
+ }catch(error){
+  enabledText.textContent='Unable to load settings.';
+  instructionsEl.textContent=error.message;
+  showStatus(error.message,'error');
+ }
+}
+
+function renderHistory(items){
+ if(!Array.isArray(items)||items.length===0){
+  historyEl.textContent='No submissions found.';
+  return;
+ }
+ historyEl.innerHTML='';
+ items.forEach(function(item){
+  const wrapper=document.createElement('div');
+  wrapper.className='history-item';
+  const username=document.createElement('div');
+  username.textContent='@'+(item.instagram_username||'');
+  const fullName=document.createElement('div');
+  fullName.className='muted';
+  fullName.textContent=item.full_name||'';
+  const meta=document.createElement('div');
+  meta.className='muted';
+  meta.style.marginTop='5px';
+  const badge=document.createElement('span');
+  badge.className='badge';
+  badge.textContent=item.status||'pending';
+  meta.appendChild(badge);
+  if(item.credited_usd!==undefined&&Number(item.credited_usd)>0){
+   const amount=document.createElement('span');
+   amount.style.marginLeft='8px';
+   amount.textContent=money(item.credited_usd);
+   meta.appendChild(amount);
+  }
+  wrapper.appendChild(username);
+  wrapper.appendChild(fullName);
+  wrapper.appendChild(meta);
+  historyEl.appendChild(wrapper);
+ });
+}
+
+form.addEventListener('submit',async function(event){
+ event.preventDefault();
+ const username=document.getElementById('instagramUsername').value.trim();
+ const fullName=document.getElementById('fullName').value.trim();
+
+ if(!username){showStatus('Instagram username is required.','error');return;}
+ if(!fullName){showStatus('Instagram full name is required.','error');return;}
+
+ submitBtn.disabled=true;
+ submitBtn.textContent='Submitting...';
+ showStatus('Submitting your account','');
+
+ try{
+  await api('submit_task',{instagram_username:username,full_name:fullName});
+  showStatus('Your Instagram account has been submitted successfully.','success');
+  form.reset();
+  await loadSettings();
+ }catch(error){
+  showStatus(error.message,'error');
+ }finally{
+  submitBtn.disabled=false;
+  submitBtn.textContent='Submit Account';
+ }
+});
+
+loadSettings();
+})();
+</script>
+</body>
+</html>
