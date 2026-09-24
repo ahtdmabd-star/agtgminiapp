@@ -10,22 +10,14 @@
 :root{--bg:#070b12;--card:#0f1622;--card2:#121c2a;--text:#f5f7fb;--muted:#91a0b5;--line:#223047;--accent:#7c5cff;--accent2:#6241e8;--ok:#28c76f;--bad:#ff5d73;--warn:#ffb020}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#111a2b 0,#070b12 48%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}.app{max-width:900px;margin:auto;padding:14px 14px 48px}
 .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px;background:linear-gradient(180deg,var(--bg) 76%,transparent)}.top-left{display:flex;align-items:center;gap:12px}.back{border:1px solid var(--line);background:var(--card);color:#fff;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}.title{min-width:0}.title h1{font-size:21px;margin:0}.title p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.settings-btn{border:1px solid var(--line);background:var(--card);color:#fff;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;transition:0.2s}.settings-btn:hover{border-color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 12px}.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}.stat b{font-size:22px;display:block}.stat span{font-size:11px;color:var(--muted)}
-.card{background:rgba(15,22,34,.96);border:1px solid var(--line);border-radius:18px;padding:17px;margin-top:12px;box-shadow:0 14px 38px #0004}.card h2{font-size:16px;margin:0 0 14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{margin-bottom:12px}.field label{display:block;color:#cbd5e1;font-size:12px;font-weight:800;margin:0 0 7px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);background:#0a111c;color:#fff;border-radius:12px;padding:11px 12px;outline:none}.field textarea{min-height:105px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}.check{display:flex;align-items:center;gap:9px;color:#cbd5e1;font-size:13px}.check input{width:18px;height:18px}
+.card{background:rgba(15,22,34,.96);border:1px solid var(--line);border-radius:18px;padding:17px;margin-top:12px;box-shadow:0 14px 38px #0004}.card h2{font-size:16px;margin:0 0 14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{margin-bottom:12px}.field label{display:block;color:#cbd5e1;font-size:12px;font-weight:800;margin:0 0 7px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);background:#0a111c;color:#fff;border-radius:12px;padding:11px 12px;outline:none}.field textarea{min-height:105px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}.check{display:flex;align-items:center;gap:9px;color:#cbd5e1;font-size:13px;cursor:pointer}.check input{width:18px;height:18px;accent-color:var(--accent)}
 button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px;padding:10px 13px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));width:100%;font-size:14px}.small{background:#182337;border:1px solid var(--line)!important}.danger{background:#6e2635}.actions{display:flex;gap:8px;flex-wrap:wrap}.notice{padding:11px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);color:#cbd5e1;font-size:12px;line-height:1.5}.muted{color:var(--muted)}.hidden{display:none!important}
-.field-list,.submission-list{display:grid;gap:10px}.item{border:1px solid var(--line);background:#0b121e;border-radius:14px;padding:13px}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.item strong{font-size:14px}.meta{color:var(--muted);font-size:11px;line-height:1.5}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase}.pending{background:#493a16;color:#ffd66b}.checking{background:#153b57;color:#7dd3fc}.approved{background:#123b28;color:#6ee7a2}.rejected{background:#4a1c27;color:#ff8fa0}.value{margin-top:8px;padding:9px;background:#101a28;border-radius:10px;font-size:12px;white-space:pre-wrap;word-break:break-word}.subgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.mini{background:#111b2a;border:1px solid var(--line);border-radius:10px;padding:9px}.mini span{display:block;color:var(--muted);font-size:10px}.mini b{font-size:13px}.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.search{flex:1;min-width:180px;border:1px solid var(--line);background:#0a111c;color:#fff;border-radius:11px;padding:10px 12px}.toast{position:fixed;left:14px;right:14px;bottom:18px;z-index:50;max-width:560px;margin:auto;background:#121c2a;border:1px solid var(--line);border-radius:13px;padding:12px 14px;box-shadow:0 15px 45px #0008}.toast.ok{border-color:#246b48}.toast.bad{border-color:#713040}
+.field-list,.submission-list{display:grid;gap:10px}.item{border:1px solid var(--line);background:#0b121e;border-radius:14px;padding:13px}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.item strong{font-size:14px}.meta{color:var(--muted);font-size:11px;line-height:1.5}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase}.pending{background:#493a16;color:#ffd66b}.checking{background:#153b57;color:#7dd3fc}.approved{background:#123b28;color:#6ee7a2}.rejected{background:#4a1c27;color:#ff8fa0}.value{margin-top:8px;padding:9px;background:#101a28;border-radius:10px;font-size:12px;white-space:pre-wrap;word-break:break-word}.subgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.mini{background:#111b2a;border:1px solid var(--line);border-radius:10px;padding:9px}.mini span{display:block;color:var(--muted);font-size:10px}.mini b{font-size:13px}.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.search{flex:1;min-width:180px;border:1px solid var(--line);background:#0a111c;color:#fff;border-radius:11px;padding:10px 12px}.toast{position:fixed;left:14px;right:14px;bottom:18px;z-index:50;max-width:560px;margin:auto;background:#121c2a;border:1px solid var(--line);border-radius:13px;padding:12px 14px;box-shadow:0 15px 45px #0008}.toast.ok{border-color:#246b48}.toast.bad{border-color:#713040}.loading{position:fixed;inset:0;background:#050810aa;backdrop-filter:blur(3px);z-index:60;display:grid;place-items:center}.loader{background:var(--card);border:1px solid var(--line);padding:18px 22px;border-radius:15px;font-weight:800}
 
-/* Loading & Modal Styles */
-.loading{position:fixed;inset:0;background:rgba(5,8,16,0.85);backdrop-filter:blur(4px);z-index:200;display:grid;place-items:center}
-.loader{background:var(--card);border:1px solid var(--line);padding:20px 25px;border-radius:16px;font-weight:800;display:flex;align-items:center;gap:12px;box-shadow:0 15px 40px #000c;font-size:14px}
-.spinner{border:3px solid var(--line);border-top:3px solid var(--accent);border-radius:50%;width:22px;height:22px;animation:spin 1s linear infinite}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.modal-overlay{position:fixed;inset:0;background:rgba(5,8,16,0.8);backdrop-filter:blur(4px);z-index:150;display:grid;place-items:center;padding:14px}
-.modal-content{background:var(--card);border:1px solid var(--line);border-radius:20px;width:100%;max-width:650px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 20px 50px #000c}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
-.modal-header h2{margin:0;font-size:18px}
-.close-modal{background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer;font-weight:bold}
+/* Modal / Collapsible Settings Styles */
+.settings-modal {position:fixed;inset:0;background:#050810cc;backdrop-filter:blur(4px);z-index:100;display:grid;place-items:center;padding:16px;opacity:0;pointer-events:none;transition:0.25s ease}.settings-modal.active{opacity:1;pointer-events:auto}.settings-content{background:var(--card);border:1px solid var(--line);border-radius:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 20px 50px #000a;transform:translateY(15px);transition:0.25s ease}.settings-modal.active .settings-content{transform:translateY(0)}.settings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.settings-header h2{margin:0;font-size:18px}.close-modal{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:4px}.close-modal:hover{color:#fff}
 
 @media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr}.subgrid{grid-template-columns:1fr 1fr}.app{padding-bottom:70px}}
 </style>
@@ -37,7 +29,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
       <button class="back" id="backBtn">← Back</button>
       <div class="title"><h1>Instagram 2FA Admin</h1><p id="adminId">Checking admin access…</p></div>
     </div>
-    <button class="primary" id="openSettingsModal" style="width:auto;padding:9px 14px;font-size:13px;">⚙️ Settings & Fields</button>
+    <button class="settings-btn" id="openSettingsBtn">⚙️ Settings</button>
   </div>
 
   <div class="grid">
@@ -48,43 +40,31 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
     <div class="stat"><b id="stPaid">$0.000</b><span>Total paid</span></div>
   </div>
 
+  <!-- Settings Modal Popup -->
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2>2FA Test Settings</h2>
+        <button class="close-modal" id="closeSettingsBtn">&times;</button>
+      </div>
+      <div class="row">
+        <div class="field"><label>Rate (USD)</label><input id="rate" type="number" min="0" step="0.000001"></div>
+        <div class="field"><label>Test Password</label><input id="testPassword" type="text" autocomplete="off" placeholder="Set the test password"></div>
+      </div>
+      <div class="field"><label>Tutorial URL</label><input id="tutorialUrl" type="url" placeholder="https://…"></div>
+      <div class="field"><label>Instructions</label><textarea id="instructions" placeholder="Instructions shown to users"></textarea></div>
+      <label class="check" style="margin-bottom:12px"><input id="enabled" type="checkbox"> Instagram 2FA test workflow enabled</label>
+      <div class="notice" style="margin-bottom:14px">The password here is the configured <b>Test Password</b> for this synthetic workflow. Do not use a real Instagram password or 2FA secret.</div>
+      <button class="primary" id="saveSettings">Save Settings</button>
+    </div>
+  </div>
+
   <section class="card">
-    <div class="toolbar"><h2 style="margin:0">Submissions</h2><button class="small" id="reloadSubs">Refresh</button></div>
-    <input class="search" id="search" placeholder="Search ID, Telegram ID, username or status…">
-    <div id="submissionList" class="submission-list" style="margin-top:12px"></div>
-    <div class="notice" id="noSubs">No submissions found.</div>
-  </section>
-</div>
-
-<!-- Settings & Custom Fields Modal Popup -->
-<div id="settingsModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Settings & Custom Fields</h2>
-      <button class="close-modal" id="closeSettingsModal">&times;</button>
-    </div>
-
-    <!-- 2FA Test Settings Section inside Modal -->
-    <h3 style="font-size:15px;margin:0 0 10px;color:var(--accent);">2FA Test Settings</h3>
-    <div class="row">
-      <div class="field"><label>Rate (USD)</label><input id="rate" type="number" min="0" step="0.000001"></div>
-      <div class="field"><label>Test Password</label><input id="testPassword" type="text" autocomplete="off" placeholder="Set the test password"></div>
-    </div>
-    <div class="field"><label>Tutorial URL</label><input id="tutorialUrl" type="url" placeholder="https://…"></div>
-    <div class="field"><label>Instructions</label><textarea id="instructions" placeholder="Instructions shown to users"></textarea></div>
-    <label class="check"><input id="enabled" type="checkbox"> Instagram 2FA test workflow enabled</label>
-    <div class="notice" style="margin:10px 0 15px">The password here is the configured <b>Test Password</b> for this synthetic workflow. Do not use a real Instagram password or 2FA secret.</div>
-    <button class="primary" id="saveSettings">Save Settings</button>
-
-    <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-
-    <!-- Custom Fields Section inside Modal -->
-    <div class="toolbar"><h3 style="margin:0;font-size:15px;color:var(--accent);">Custom Fields</h3><button class="small" id="reloadFields">Refresh Fields</button></div>
-    <div id="fieldList" class="field-list" style="margin-top:10px"></div>
+    <div class="toolbar"><h2 style="margin:0">Custom Fields</h2><button class="small" id="reloadFields">Refresh</button></div>
+    <div id="fieldList" class="field-list"></div>
     <div class="notice" id="noFields">No custom fields configured.</div>
-
-    <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-    <h3 style="font-size:15px;margin:0 0 10px;color:var(--accent);">Add Custom Field</h3>
+    <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+    <h2>Add Custom Field</h2>
     <div class="row">
       <div class="field"><label>Field Name</label><input id="newName" maxlength="255"></div>
       <div class="field"><label>Placeholder</label><input id="newPlaceholder" maxlength="500"></div>
@@ -95,11 +75,18 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
     </div>
     <label class="check"><input id="newRequired" type="checkbox"> Required</label>
     <button class="primary" style="margin-top:12px" id="addField">Add Field</button>
-  </div>
+  </section>
+
+  <section class="card">
+    <div class="toolbar"><h2 style="margin:0">Submissions</h2><button class="small" id="reloadSubs">Refresh</button></div>
+    <input class="search" id="search" placeholder="Search ID, Telegram ID, username or status…">
+    <div id="submissionList" class="submission-list" style="margin-top:12px"></div>
+    <div class="notice" id="noSubs">No submissions found.</div>
+  </section>
 </div>
 
 <div id="toast" class="toast hidden"></div>
-<div id="loading" class="loading"><div class="loader"><div class="spinner"></div><span id="loadingText">Checking admin account...</span></div></div>
+<div id="loading" class="loading hidden"><div class="loader">Working…</div></div>
 
 <script>
 (() => {
@@ -113,22 +100,19 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   let fields = [];
   let submissions = [];
 
+  // Modal handlers
+  const modal = $('settingsModal');
+  $('openSettingsBtn').onclick = () => modal.classList.add('active');$('closeSettingsBtn').onclick = () => modal.classList.remove('active');
+  modal.onclick = (e) => { if(e.target === modal) modal.classList.remove('active'); };
+
   function toast(message, ok=true) {
     const el=$('toast'); el.textContent=message; el.className='toast '+(ok?'ok':'bad');
     clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.className='toast hidden',3500);
   }
-  
-  function busy(on, text="Checking admin account...") { 
-    $('loadingText').textContent = text;
-    $('loading').classList.toggle('hidden', !on); 
-  }
-
+  function busy(on){ $('loading').classList.toggle('hidden',!on); }
   function money(v){ return '$'+Number(v||0).toFixed(3); }
   function esc(v){ const d=document.createElement('div'); d.textContent=v==null?'':String(v); return d.innerHTML; }
   function fmt(v){ if(!v)return '—'; const d=new Date(v); return Number.isNaN(d.getTime())?String(v):d.toLocaleString(); }
-
-  // Modal Control
-  $('openSettingsModal').onclick = () => $('settingsModal').classList.remove('hidden');$('closeSettingsModal').onclick = () => $('settingsModal').classList.add('hidden');$('settingsModal').onclick = (e) => { if(e.target === $('settingsModal'))$('settingsModal').classList.add('hidden'); };
 
   async function api(action, extra={}) {
     if(!tgId) throw new Error('Open this admin panel inside the Telegram Mini App so your admin Telegram ID can be verified.');
@@ -149,7 +133,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   async function saveSettings(){
     const password=$('testPassword').value.trim();
     if(!password){toast('Test Password is required.',false);return;}
-    busy(true, "Saving settings...");
+    busy(true);
     try{
       await api('admin_update_settings',{
         rate_usd:Number($('rate').value||0),
@@ -159,6 +143,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
         enabled:$('enabled').checked?1:0
       });
       toast('Instagram 2FA settings saved.');
+      modal.classList.remove('active');
       await loadSettings();
     }catch(e){toast(e.message,false)}finally{busy(false)}
   }
@@ -185,7 +170,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
           <button class="danger" data-action="disable">Disable</button>
         </div>`;
       item.querySelector('[data-action="update"]').onclick=async()=>{
-        busy(true, "Updating field...");
+        busy(true);
         try{
           await api('admin_update_field',{
             field_id:Number(f.id),
@@ -201,7 +186,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
       };
       item.querySelector('[data-action="disable"]').onclick=async()=>{
         if(!confirm('Disable this custom field? Existing submission values are preserved.'))return;
-        busy(true, "Disabling field..."); try{await api('admin_delete_field',{field_id:Number(f.id)});toast('Custom field disabled.');await loadFields()}catch(e){toast(e.message,false)}finally{busy(false)}
+        busy(true); try{await api('admin_delete_field',{field_id:Number(f.id)});toast('Custom field disabled.');await loadFields()}catch(e){toast(e.message,false)}finally{busy(false)}
       };
       box.appendChild(item);
     }
@@ -212,7 +197,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   async function addField(){
     const name=$('newName').value.trim();
     if(!name){toast('Field name is required.',false);return}
-    busy(true, "Adding field...");
+    busy(true);
     try{
       await api('admin_add_field',{
         field_name:name,
@@ -255,7 +240,7 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
       const act=async(type)=>{
         let note='';
         if(type==='approve'||type==='reject'){note=prompt(type==='approve'?'Optional admin note:':'Reason / admin note:','')??''}
-        busy(true, "Processing submission...");
+        busy(true);
         try{
           const action=type==='checking'?'admin_checking':type==='approve'?'admin_approve':'admin_reject';
           await api(action,{submission_id:Number(s.id),admin_note:note});
@@ -271,41 +256,17 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   async function loadSubs(){ const data=await api('admin_get_submissions'); submissions=data.submissions||[]; renderSubs(); }
 
   async function refreshAll(){
-    busy(true, "Checking admin account...");
-    try{
-      await Promise.all([loadSettings(),loadFields(),loadStats(),loadSubs()]);
-    }catch(e){
-      toast(e.message,false);
-    }finally{
-      busy(false);
-    }
+    busy(true);
+    try{await Promise.all([loadSettings(),loadFields(),loadStats(),loadSubs()]);toast('Admin panel refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}
   }
 
   $('saveSettings').onclick=saveSettings;
   $('addField').onclick=addField;
-  $('reloadFields').onclick=async()=>{busy(true, "Refreshing fields...");try{await loadFields();toast('Fields refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}};
-  $('reloadSubs').onclick=async()=>{busy(true, "Refreshing submissions...");try{await Promise.all([loadStats(),loadSubs()]);toast('Submissions refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}};
-  $('search').oninput=renderSubs;
-  
-  // Safe back button handler
-  $('backBtn').onclick = () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else if (tg?.close) {
-      tg.close();
-    } else {
-      window.location.href = '/';
-    }
-  };
+  $('reloadFields').onclick=async()=>{busy(true);try{await loadFields();toast('Fields refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}};
+  $('reloadSubs').onclick=async()=>{busy(true);try{await Promise.all([loadStats(),loadSubs()]);toast('Submissions refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}};$('search').oninput=renderSubs;
+  $('backBtn').onclick=()=>{if(tg?.close)tg.close();else history.back()};$('adminId').textContent=tgId?'Admin Telegram ID: '+tgId:'Open inside Telegram to verify admin access';
 
-  $('adminId').textContent=tgId?'Admin Telegram ID: '+tgId:'Open inside Telegram to verify admin access';
-
-  if(!tgId){
-    busy(false);
-    toast('Telegram Mini App user ID is unavailable.',false);
-    return;
-  }
-  
+  if(!tgId){toast('Telegram Mini App user ID is unavailable.',false);return}
   refreshAll();
   setInterval(()=>{if(document.visibilityState==='visible')Promise.allSettled([loadStats(),loadSubs()])},15000);
 })();
