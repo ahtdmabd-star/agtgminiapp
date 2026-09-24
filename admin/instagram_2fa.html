@@ -22,13 +22,17 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
 </head>
 <body>
 <div class="app">
-    <div class="top">
+        <div class="top">
     <div class="top-left" style="display:flex;align-items:center;gap:12px;">
       <button class="back" id="backBtn">← Back</button>
       <div class="title"><h1>Instagram 2FA Admin</h1><p id="adminId">Checking admin access…</p></div>
     </div>
-    <button class="settings-btn" id="openSettingsBtn">⚙️ Settings</button>
+    <div style="display:flex;gap:8px;">
+      <button class="settings-btn" id="openFieldsBtn">⚙️ Fields</button>
+      <button class="settings-btn" id="openSettingsBtn">⚙️ Settings</button>
     </div>
+        </div>
+  
   
   <div class="grid">
     <div class="stat"><b id="stTotal">—</b><span>Total</span></div>
@@ -56,23 +60,31 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
     </div>
   </div>
   
-  <section class="card">
-    <div class="toolbar"><h2 style="margin:0">Custom Fields</h2><button class="small" id="reloadFields">Refresh</button></div>
-    <div id="fieldList" class="field-list"></div>
-    <div class="notice" id="noFields">No custom fields configured.</div>
-    <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-    <h2>Add Custom Field</h2>
-    <div class="row">
-      <div class="field"><label>Field Name</label><input id="newName" maxlength="255"></div>
-      <div class="field"><label>Placeholder</label><input id="newPlaceholder" maxlength="500"></div>
+    <!-- Fields Modal Popup -->
+  <div class="settings-modal" id="fieldsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2>Manage Custom Fields</h2>
+        <button class="close-modal" id="closeFieldsBtn">&times;</button>
+      </div>
+      <div class="toolbar"><h3 style="margin:0;font-size:15px">Custom Fields</h3><button class="small" id="reloadFields">Refresh</button></div>
+      <div id="fieldList" class="field-list" style="margin-top:10px"></div>
+      <div class="notice" id="noFields">No custom fields configured.</div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+      <h3 style="margin:0 0 10px;font-size:15px">Add Custom Field</h3>
+      <div class="row">
+        <div class="field"><label>Field Name</label><input id="newName" maxlength="255"></div>
+        <div class="field"><label>Placeholder</label><input id="newPlaceholder" maxlength="500"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Type</label><select id="newType"><option value="text">Text</option><option value="textarea">Textarea</option></select></div>
+        <div class="field"><label>Sort Order</label><input id="newSort" type="number" min="0" value="0"></div>
+      </div>
+      <label class="check" style="margin-bottom:12px"><input id="newRequired" type="checkbox"> Required</label>
+      <button class="primary" id="addField">Add Field</button>
     </div>
-    <div class="row">
-      <div class="field"><label>Type</label><select id="newType"><option value="text">Text</option><option value="textarea">Textarea</option></select></div>
-      <div class="field"><label>Sort Order</label><input id="newSort" type="number" min="0" value="0"></div>
-    </div>
-    <label class="check"><input id="newRequired" type="checkbox"> Required</label>
-    <button class="primary" style="margin-top:12px" id="addField">Add Field</button>
-  </section>
+  </div>
+  
 
   <section class="card">
     <div class="toolbar"><h2 style="margin:0">Submissions</h2><button class="small" id="reloadSubs">Refresh</button></div>
@@ -96,11 +108,17 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   const $ = id => document.getElementById(id);
   let fields = [];
   let submissions = [];
-    // Modal handlers
+      // Modal handlers (Settings & Fields)
   const modal = $('settingsModal');
   $('openSettingsBtn').onclick = () => modal.classList.add('active');
   $('closeSettingsBtn').onclick = () => modal.classList.remove('active');
   modal.onclick = (e) => { if(e.target === modal) modal.classList.remove('active'); };
+
+  const fModal = $('fieldsModal');
+  $('openFieldsBtn').onclick = () => fModal.classList.add('active');
+  $('closeFieldsBtn').onclick = () => fModal.classList.remove('active');
+  fModal.onclick = (e) => { if(e.target === fModal) fModal.classList.remove('active'); };
+  
  
 
   function toast(message, ok=true) {
