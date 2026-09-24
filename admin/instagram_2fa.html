@@ -4,102 +4,435 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>Instagram 2FA Admin</title>
+<title>Instagram 2FA Admin Panel</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#070b12;--card:#0f1622;--card2:#121c2a;--text:#f5f7fb;--muted:#91a0b5;--line:#223047;--accent:#7c5cff;--accent2:#6241e8;--ok:#28c76f;--bad:#ff5d73;--warn:#ffb020}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#111a2b 0,#070b12 48%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}.app{max-width:900px;margin:auto;padding:14px 14px 48px}
-.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 12px;background:linear-gradient(180deg,var(--bg) 76%,transparent)}
-.top-left{display:flex;align-items:center;gap:10px}
-.back{border:1px solid var(--line);background:var(--card);color:#fff;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}
-.settings-btn{border:1px solid var(--accent);background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:12px;padding:10px 15px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(124,92,255,0.4)}
-.title{min-width:0}.title h1{font-size:21px;margin:0}.title p{margin:3px 0 0;color:var(--muted);font-size:12px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:8px 0 12px}.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}.stat b{font-size:22px;display:block}.stat span{font-size:11px;color:var(--muted)}
-.card{background:rgba(15,22,34,.96);border:1px solid var(--line);border-radius:18px;padding:17px;margin-top:12px;box-shadow:0 14px 38px #0004}.card h2{font-size:16px;margin:0 0 14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{margin-bottom:12px}.field label{display:block;color:#cbd5e1;font-size:12px;font-weight:800;margin:0 0 7px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);background:#0a111c;color:#fff;border-radius:12px;padding:11px 12px;outline:none}.field textarea{min-height:105px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}.check{display:flex;align-items:center;gap:9px;color:#cbd5e1;font-size:13px}.check input{width:18px;height:18px}
-button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px;padding:10px 13px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));width:100%;font-size:14px}.small{background:#182337;border:1px solid var(--line)!important}.danger{background:#6e2635}.actions{display:flex;gap:8px;flex-wrap:wrap}.notice{padding:11px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);color:#cbd5e1;font-size:12px;line-height:1.5}.muted{color:var(--muted)}.hidden{display:none!important}
-.field-list,.submission-list{display:grid;gap:10px}.item{border:1px solid var(--line);background:#0b121e;border-radius:14px;padding:13px}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.item strong{font-size:14px}.meta{color:var(--muted);font-size:11px;line-height:1.5}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase}.pending{background:#493a16;color:#ffd66b}.checking{background:#153b57;color:#7dd3fc}.approved{background:#123b28;color:#6ee7a2}.rejected{background:#4a1c27;color:#ff8fa0}.value{margin-top:8px;padding:9px;background:#101a28;border-radius:10px;font-size:12px;white-space:pre-wrap;word-break:break-word}.subgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.mini{background:#111b2a;border:1px solid var(--line);border-radius:10px;padding:9px}.mini span{display:block;color:var(--muted);font-size:10px}.mini b{font-size:13px}.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.search{flex:1;min-width:180px;border:1px solid var(--line);background:#0a111c;color:#fff;border-radius:11px;padding:10px 12px}.toast{position:fixed;left:14px;right:14px;bottom:18px;z-index:50;max-width:560px;margin:auto;background:#121c2a;border:1px solid var(--line);border-radius:13px;padding:12px 14px;box-shadow:0 15px 45px #0008}.toast.ok{border-color:#246b48}.toast.bad{border-color:#713040}.loading{position:fixed;inset:0;background:#050810aa;backdrop-filter:blur(3px);z-index:60;display:grid;place-items:center}.loader{background:var(--card);border:1px solid var(--line);padding:18px 22px;border-radius:15px;font-weight:800}
+:root{
+  --bg-primary: #030712;
+  --bg-secondary: #0b1329;
+  --card-bg: rgba(15, 23, 42, 0.85);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-grad: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --accent-color: #6366f1;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-primary) 60%);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+}
+.app{max-width:960px;margin:0 auto;padding:16px 16px 60px}
 
-/* Modal Popup Styles */
-.modal-overlay{position:fixed;inset:0;background:rgba(3,7,13,0.8);backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity 0.25s ease}
+/* Top Navigation Bar */
+.top-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 16px;
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+}
+.top-left{display:flex;align-items:center;gap:12px;min-width:0}
+.btn-back{
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-back:hover{background: rgba(255,255,255,0.1)}
+.title-box{min-width:0}
+.title-box h1{font-size:18px;margin:0;font-weight:800;letter-spacing:-0.3px}
+.title-box p{margin:2px 0 0;color:var(--text-muted);font-size:11px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+
+.btn-settings{
+  border: none;
+  background: var(--accent-grad);
+  color: #fff;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  transition: transform 0.2s;
+  white-space: nowrap;
+}
+.btn-settings:active{transform:scale(0.96)}
+
+/* Dashboard Statistics Grid */
+.stats-grid{
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card{
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px 12px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+.stat-card b{font-size:20px;display:block;margin-bottom:4px;color:#fff}
+.stat-card span{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+
+/* Content Container Cards */
+.card{
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.card-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+.card-header h2{font-size:16px;margin:0;font-weight:700}
+
+/* Form Elements & Inputs */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-group{margin-bottom:14px}
+.field-group label{display:block;color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;text-transform:uppercase}
+.field-group input, .field-group textarea, .field-group select{
+  width:100%;
+  border: 1px solid var(--border-color);
+  background: rgba(3, 7, 18, 0.6);
+  color: #fff;
+  border-radius: 12px;
+  padding: 11px 14px;
+  outline: none;
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+.field-group textarea{min-height:90px;resize:vertical}
+.field-group input:focus, .field-group textarea:focus, .field-group select:focus{border-color: var(--accent-color)}
+
+.checkbox-label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 10px 0;
+}
+.checkbox-label input{width:18px;height:18px;accent-color: var(--accent-color);cursor:pointer}
+
+/* Buttons */
+button.btn-primary{
+  border: none;
+  background: var(--accent-grad);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+button.btn-small{
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+button.btn-danger{
+  border: none;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.search-input{
+  width:100%;
+  border: 1px solid var(--border-color);
+  background: rgba(3, 7, 18, 0.6);
+  color: #fff;
+  border-radius: 12px;
+  padding: 11px 14px;
+  outline: none;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+/* Submission & Field Items */
+.list-container{display:grid;gap:12px}
+.item-box{
+  border: 1px solid var(--border-color);
+  background: rgba(3, 7, 18, 0.4);
+  border-radius: 14px;
+  padding: 14px;
+  transition: border-color 0.2s;
+}
+.item-box:hover{border-color: rgba(255,255,255,0.15)}
+.item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item-meta{color:var(--text-muted);font-size:11px;margin-top:3px;line-height:1.4}
+
+.pill{
+  display:inline-flex;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.pill.pending{background:rgba(245, 158, 11, 0.15);color:#fbbf24}
+.pill.checking{background:rgba(59, 130, 246, 0.15);color:#60a5fa}
+.pill.approved{background:rgba(16, 185, 129, 0.15);color:#34d399}
+.pill.rejected{background:rgba(239, 68, 68, 0.15);color:#f87171}
+
+.subgrid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.mini-card{
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.mini-card span{display:block;color:var(--text-muted);font-size:10px;text-transform:uppercase}
+.mini-card b{font-size:12px;color:#fff}
+
+.value-box{
+  margin-top:8px;
+  padding:10px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.notice-box{
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Modal Styling */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 16px;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 0.2s ease;
+}
 .modal-overlay.active{opacity:1;pointer-events:auto}
-.modal-container{background:#0d1420;border:1px solid var(--line);border-radius:20px;width:100%;max-width:750px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.6);transform:translateY(15px);transition:transform 0.25s ease}
-.modal-overlay.active .modal-container{transform:translateY(0)}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:10px}
-.modal-header h2{margin:0;font-size:18px}
-.close-modal{background:var(--card2);border:1px solid var(--line);color:#fff;border-radius:10px;width:32px;height:32px;font-weight:bold;cursor:pointer}
+.modal-container{
+  background: #0b1329;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+  transform: translateY(10px);
+  transition: transform 0.2s ease;
+}
+.modal-overlay.active .modal-container{transform: translateY(0)}
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+.modal-header h2{margin:0;font-size:18px;font-weight:700}
+.btn-close{
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr}.subgrid{grid-template-columns:1fr 1fr}.app{padding-bottom:70px}}
+/* Toast & Loading Overlays */
+.toast{
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  z-index: 200;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #0f172a;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-size: 13px;
+  text-align: center;
+  font-weight: 500;
+}
+.toast.ok{border-color: var(--success); color: #34d399}
+.toast.bad{border-color: var(--danger); color: #f87171}
+.loading-overlay{
+  position:fixed;
+  inset:0;
+  background: rgba(3, 7, 18, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  display:grid;
+  place-items:center;
+}
+.loader-box{
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.hidden{display:none!important}
+
+@media(max-width:768px){
+  .stats-grid{grid-template-columns: repeat(2, 1fr)}
+  .form-row{grid-template-columns: 1fr}
+  .subgrid{grid-template-columns: 1fr 1fr}
+}
 </style>
 </head>
 <body>
+
 <div class="app">
-  <div class="top">
+  <div class="top-bar">
     <div class="top-left">
-      <button class="back" id="backBtn">← Back</button>
-      <div class="title"><h1>Instagram 2FA Admin</h1><p id="adminId">Checking admin access…</p></div>
+      <button class="btn-back" id="backBtn">← Back</button>
+      <div class="title-box">
+        <h1>Instagram 2FA Admin</h1>
+        <p id="adminId">Checking admin access…</p>
+      </div>
     </div>
-    <button class="settings-btn" id="openSettingsModal">⚙️ Settings</button>
+    <button class="btn-settings" id="openSettingsModal">⚙️ Settings</button>
   </div>
 
-  <div class="grid">
-    <div class="stat"><b id="stTotal">—</b><span>Total</span></div>
-    <div class="stat"><b id="stPending">—</b><span>Pending</span></div>
-    <div class="stat"><b id="stChecking">—</b><span>Checking</span></div>
-    <div class="stat"><b id="stApproved">—</b><span>Approved</span></div>
-    <div class="stat"><b id="stPaid">$0.000</b><span>Total paid</span></div>
+  <div class="stats-grid">
+    <div class="stat-card"><b id="stTotal">—</b><span>Total</span></div>
+    <div class="stat-card"><b id="stPending">—</b><span>Pending</span></div>
+    <div class="stat-card"><b id="stChecking">—</b><span>Checking</span></div>
+    <div class="stat-card"><b id="stApproved">—</b><span>Approved</span></div>
+    <div class="stat-card"><b id="stPaid">$0.000</b><span>Total paid</span></div>
   </div>
 
   <section class="card">
-    <div class="toolbar"><h2 style="margin:0">Submissions</h2><button class="small" id="reloadSubs">Refresh</button></div>
-    <input class="search" id="search" placeholder="Search ID, Telegram ID, username or status…">
-    <div id="submissionList" class="submission-list" style="margin-top:12px"></div>
-    <div class="notice" id="noSubs">No submissions found.</div>
+    <div class="card-header">
+      <h2>Submissions Management</h2>
+      <button class="btn-small" id="reloadSubs">Refresh</button>
+    </div>
+    <input class="search-input" id="search" placeholder="Search by ID, Telegram ID, username or status…">
+    <div id="submissionList" class="list-container" style="margin-top:12px"></div>
+    <div class="notice-box" id="noSubs" style="margin-top:12px">No submissions found.</div>
   </section>
 </div>
 
-<!-- Settings & Custom Fields Modal Popup -->
+<!-- Settings & Custom Fields Modal -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-container">
     <div class="modal-header">
-      <h2>Admin Settings & Fields</h2>
-      <button class="close-modal" id="closeSettingsModal">✕</button>
+      <h2>Admin Settings & Custom Fields</h2>
+      <button class="btn-close" id="closeSettingsModal">✕</button>
     </div>
 
-    <div class="card" style="margin-top:0">
-      <h2>2FA Test Settings</h2>
-      <div class="row">
-        <div class="field"><label>Rate (USD)</label><input id="rate" type="number" min="0" step="0.000001"></div>
-        <div class="field"><label>Test Password</label><input id="testPassword" type="text" autocomplete="off" placeholder="Set the test password"></div>
+    <div class="card" style="margin-top:0; margin-bottom:16px;">
+      <h2 style="font-size:15px;margin-bottom:14px">2FA System Configurations</h2>
+      <div class="form-row">
+        <div class="field-group"><label>Rate (USD)</label><input id="rate" type="number" min="0" step="0.000001"></div>
+        <div class="field-group"><label>Test Password</label><input id="testPassword" type="text" autocomplete="off" placeholder="Test Password"></div>
       </div>
-      <div class="field"><label>Tutorial URL</label><input id="tutorialUrl" type="url" placeholder="https://…"></div>
-      <div class="field"><label>Instructions</label><textarea id="instructions" placeholder="Instructions shown to users"></textarea></div>
-      <label class="check"><input id="enabled" type="checkbox"> Instagram 2FA test workflow enabled</label>
-      <div class="notice" style="margin:12px 0">The password here is the configured <b>Test Password</b> for this synthetic workflow. Do not use a real Instagram password or 2FA secret.</div>
-      <button class="primary" id="saveSettings">Save Settings</button>
+      <div class="field-group"><label>Tutorial URL</label><input id="tutorialUrl" type="url" placeholder="https://…"></div>
+      <div class="field-group"><label>Instructions</label><textarea id="instructions" placeholder="Instructions for users"></textarea></div>
+      <label class="checkbox-label"><input id="enabled" type="checkbox"> Instagram 2FA workflow enabled</label>
+      <div class="notice-box" style="margin:12px 0">Do not use real personal passwords here. This is the designated test workflow setup.</div>
+      <button class="btn-primary" id="saveSettings">Save Settings</button>
     </div>
 
-    <div class="card">
-      <div class="toolbar"><h2 style="margin:0">Custom Fields</h2><button class="small" id="reloadFields">Refresh</button></div>
-      <div id="fieldList" class="field-list"></div>
-      <div class="notice" id="noFields">No custom fields configured.</div>
-      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-      <h2>Add Custom Field</h2>
-      <div class="row">
-        <div class="field"><label>Field Name</label><input id="newName" maxlength="255"></div>
-        <div class="field"><label>Placeholder</label><input id="newPlaceholder" maxlength="500"></div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header">
+        <h2 style="font-size:15px">Custom Fields</h2>
+        <button class="btn-small" id="reloadFields">Refresh</button>
       </div>
-      <div class="row">
-        <div class="field"><label>Type</label><select id="newType"><option value="text">Text</option><option value="textarea">Textarea</option></select></div>
-        <div class="field"><label>Sort Order</label><input id="newSort" type="number" min="0" value="0"></div>
+      <div id="fieldList" class="list-container"></div>
+      <div class="notice-box" id="noFields" style="margin-top:12px">No custom fields configured.</div>
+      
+      <hr style="border:0;border-top:1px solid var(--border-color);margin:18px 0">
+      <h2 style="font-size:15px;margin-bottom:14px">Add New Custom Field</h2>
+      <div class="form-row">
+        <div class="field-group"><label>Field Name</label><input id="newName" maxlength="255"></div>
+        <div class="field-group"><label>Placeholder</label><input id="newPlaceholder" maxlength="500"></div>
       </div>
-      <label class="check"><input id="newRequired" type="checkbox"> Required</label>
-      <button class="primary" style="margin-top:12px" id="addField">Add Field</button>
+      <div class="form-row">
+        <div class="field-group"><label>Type</label><select id="newType"><option value="text">Text</option><option value="textarea">Textarea</option></select></div>
+        <div class="field-group"><label>Sort Order</label><input id="newSort" type="number" min="0" value="0"></div>
+      </div>
+      <label class="checkbox-label"><input id="newRequired" type="checkbox"> Required Field</label>
+      <button class="btn-primary" style="margin-top:12px" id="addField">Add Field</button>
     </div>
   </div>
 </div>
 
 <div id="toast" class="toast hidden"></div>
-<div id="loading" class="loading hidden"><div class="loader">Working…</div></div>
+<div id="loading" class="loading-overlay hidden"><div class="loader-box">Processing request…</div></div>
 
 <script>
 (() => {
@@ -122,25 +455,31 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   function esc(v){ const d=document.createElement('div'); d.textContent=v==null?'':String(v); return d.innerHTML; }
   function fmt(v){ if(!v)return '—'; const d=new Date(v); return Number.isNaN(d.getTime())?String(v):d.toLocaleString(); }
 
-  // Modal Controls with smooth fast toggle
+  // Modal handlers
   $('openSettingsModal').onclick = () => $('settingsModal').classList.add('active');$('closeSettingsModal').onclick = () => $('settingsModal').classList.remove('active');$('settingsModal').onclick = (e) => { if(e.target === $('settingsModal'))$('settingsModal').classList.remove('active'); };
 
   async function api(action, extra={}) {
-    if(!tgId) throw new Error('Open this admin panel inside the Telegram Mini App so your admin Telegram ID can be verified.');
-    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',cache:'no-store',body:JSON.stringify({action,tg_id:tgId,...extra})});
-    let data={}; try{data=await res.json()}catch{}
-    if(!res.ok || !data.success) throw new Error(data.message||'Request failed.');
+    if(!tgId) throw new Error('Open this mini app inside Telegram so your admin user ID can be verified.');
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      cache: 'no-store',
+      body: JSON.stringify({action, tg_id: tgId, ...extra})
+    });
+    let data = {}; try{ data = await res.json(); }catch{}
+    if(!res.ok || !data.success) throw new Error(data.message || 'API request failed.');
     return data;
   }
 
-  // Super-fast parallel loading for all admin dashboard content
+  // Fast Parallel Data Loading Loader
   async function refreshAll(){
     if (!tgId) {
-      $('adminId').textContent = 'Telegram Mini App user ID is unavailable.';
-      toast('Telegram Mini App user ID is unavailable.', false);
+      $('adminId').textContent = 'Telegram user ID not found.';
+      toast('Telegram User ID is missing.', false);
       return;
     }
-    $('adminId').textContent = 'Admin Telegram ID: ' + tgId;
+    $('adminId').textContent = 'Admin ID: ' + tgId;
     busy(true);
     try {
       const [settingsRes, fieldsRes, statsRes, subsRes] = await Promise.all([
@@ -150,17 +489,14 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
         api('admin_get_submissions').catch(() => ({}))
       ]);
 
-      // 1. Settings
       const s = settingsRes.settings || {};
       $('rate').value = Number(s.rate_usd \vert{}\vert{} 0);$('tutorialUrl').value = s.tutorial_url || '';
       $('instructions').value = s.instructions \vert{}\vert{} '';$('enabled').checked = !!s.enabled;
       $('testPassword').value = s.test_password || '';
 
-      // 2. Fields
       fields = fieldsRes.fields || [];
       renderFields();
 
-      // 3. Stats
       const st = statsRes.stats || {};
       $('stTotal').textContent = st.total ?? 0;
       $('stPending').textContent = st.pending ?? 0;
@@ -168,10 +504,8 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
       $('stApproved').textContent = st.approved ?? 0;
       $('stPaid').textContent = money(st.total_paid);
 
-      // 4. Submissions
       submissions = subsRes.submissions || [];
       renderSubs();
-
     } catch (e) {
       toast(e.message, false);
     } finally {
@@ -180,113 +514,144 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
   }
 
   async function saveSettings(){
-    const password=$('testPassword').value.trim();
-    if(!password){toast('Test Password is required.',false);return;}
+    const password = $('testPassword').value.trim();
+    if(!password){ toast('Test Password is required.', false); return; }
     busy(true);
     try{
-      await api('admin_update_settings',{
-        rate_usd:Number($('rate').value||0),
-        tutorial_url:$('tutorialUrl').value.trim(),
-        instructions:$('instructions').value,
-        test_password:password,
-        enabled:$('enabled').checked?1:0
+      await api('admin_update_settings', {
+        rate_usd: Number($('rate').value || 0),
+        tutorial_url: $('tutorialUrl').value.trim(),
+        instructions: $('instructions').value,
+        test_password: password,
+        enabled: $('enabled').checked ? 1 : 0
       });
-      toast('Instagram 2FA settings saved.');
-    }catch(e){toast(e.message,false)}finally{busy(false)}
+      toast('Settings saved successfully.');
+    } catch(e) {
+      toast(e.message, false);
+    } finally {
+      busy(false);
+    }
   }
 
   function renderFields(){
-    const box=$('fieldList'); box.innerHTML='';$('noFields').classList.toggle('hidden',fields.length>0);
+    const box = $('fieldList'); box.innerHTML = '';$('noFields').classList.toggle('hidden', fields.length > 0);
     for(const f of fields){
-      const item=document.createElement('div'); item.className='item';
-      item.innerHTML=`
-        <div class="itemtop"><div><strong>${esc(f.field_name)}</strong><div class="meta">ID ${esc(f.id)} · ${esc(f.field_type)} · order ${esc(f.sort_order)}</div></div>
-        <span class="pill ${f.enabled?'approved':'rejected'}">${f.enabled?'enabled':'disabled'}</span></div>
-        <div class="row" style="margin-top:10px">
-          <div class="field"><label>Name</label><input data-k="name" value="${esc(f.field_name)}"></div>
-          <div class="field"><label>Placeholder</label><input data-k="placeholder" value="${esc(f.placeholder||'')}"></div>
+      const item = document.createElement('div'); item.className = 'item-box';
+      item.innerHTML = `
+        <div class="item-top">
+          <div>
+            <strong>${esc(f.field_name)}</strong>
+            <div class="item-meta">ID ${esc(f.id)} · Type: ${esc(f.field_type)} · Order: ${esc(f.sort_order)}</div>
+          </div>
+          <span class="pill ${f.enabled ? 'approved' : 'rejected'}">${f.enabled ? 'enabled' : 'disabled'}</span>
         </div>
-        <div class="row">
-          <div class="field"><label>Type</label><select data-k="type"><option value="text" ${f.field_type==='text'?'selected':''}>Text</option><option value="textarea" ${f.field_type==='textarea'?'selected':''}>Textarea</option></select></div>
-          <div class="field"><label>Sort Order</label><input data-k="sort" type="number" min="0" value="${Number(f.sort_order||0)}"></div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="field-group"><label>Name</label><input data-k="name" value="${esc(f.field_name)}"></div>
+          <div class="field-group"><label>Placeholder</label><input data-k="placeholder" value="${esc(f.placeholder || '')}"></div>
         </div>
-        <div class="actions">
-          <label class="check"><input data-k="required" type="checkbox" ${f.required?'checked':''}> Required</label>
-          <label class="check"><input data-k="enabled" type="checkbox" ${f.enabled?'checked':''}> Enabled</label>
-          <button class="small" data-action="update">Save</button>
-          <button class="danger" data-action="disable">Disable</button>
+        <div class="form-row">
+          <div class="field-group"><label>Type</label><select data-k="type"><option value="text" ${f.field_type==='text'?'selected':''}>Text</option><option value="textarea" ${f.field_type==='textarea'?'selected':''}>Textarea</option></select></div>
+          <div class="field-group"><label>Sort Order</label><input data-k="sort" type="number" min="0" value="${Number(f.sort_order||0)}"></div>
+        </div>
+        <div class="action-row">
+          <label class="checkbox-label"><input data-k="required" type="checkbox" ${f.required?'checked':''}> Required</label>
+          <label class="checkbox-label"><input data-k="enabled" type="checkbox" ${f.enabled?'checked':''}> Enabled</label>
+          <button class="btn-small" data-action="update">Save</button>
+          <button class="btn-danger" data-action="disable">Disable</button>
         </div>`;
-      item.querySelector('[data-action="update"]').onclick=async()=>{
+      
+      item.querySelector('[data-action="update"]').onclick = async () => {
         busy(true);
-        try{
-          await api('admin_update_field',{
-            field_id:Number(f.id),
-            field_name:item.querySelector('[data-k="name"]').value,
-            placeholder:item.querySelector('[data-k="placeholder"]').value,
-            field_type:item.querySelector('[data-k="type"]').value,
-            required:item.querySelector('[data-k="required"]').checked?1:0,
-            enabled:item.querySelector('[data-k="enabled"]').checked?1:0,
-            sort_order:Number(item.querySelector('[data-k="sort"]').value||0)
+        try {
+          await api('admin_update_field', {
+            field_id: Number(f.id),
+            field_name: item.querySelector('[data-k="name"]').value,
+            placeholder: item.querySelector('[data-k="placeholder"]').value,
+            field_type: item.querySelector('[data-k="type"]').value,
+            required: item.querySelector('[data-k="required"]').checked ? 1 : 0,
+            enabled: item.querySelector('[data-k="enabled"]').checked ? 1 : 0,
+            sort_order: Number(item.querySelector('[data-k="sort"]').value || 0)
           });
-          toast('Custom field updated.'); 
+          toast('Field updated.');
           const data = await api('admin_get_fields'); fields = data.fields || []; renderFields();
-        }catch(e){toast(e.message,false)}finally{busy(false)}
+        } catch(e) { toast(e.message, false); } finally { busy(false); }
       };
-      item.querySelector('[data-action="disable"]').onclick=async()=>{
-        if(!confirm('Disable this custom field? Existing submission values are preserved.'))return;
-        busy(true); try{await api('admin_delete_field',{field_id:Number(f.id)});toast('Custom field disabled.');const data = await api('admin_get_fields'); fields = data.fields || []; renderFields();}catch(e){toast(e.message,false)}finally{busy(false)}
+
+      item.querySelector('[data-action="disable"]').onclick = async () => {
+        if(!confirm('Disable this custom field?')) return;
+        busy(true);
+        try {
+          await api('admin_delete_field', { field_id: Number(f.id) });
+          toast('Field disabled.');
+          const data = await api('admin_get_fields'); fields = data.fields || []; renderFields();
+        } catch(e) { toast(e.message, false); } finally { busy(false); }
       };
       box.appendChild(item);
     }
   }
 
   async function addField(){
-    const name=$('newName').value.trim();
-    if(!name){toast('Field name is required.',false);return}
+    const name = $('newName').value.trim();
+    if(!name){ toast('Field name is required.', false); return; }
     busy(true);
-    try{
-      await api('admin_add_field',{
-        field_name:name,
-        placeholder:$('newPlaceholder').value.trim(),
-        field_type:$('newType').value,
-        required:$('newRequired').checked?1:0,
-        sort_order:Number($('newSort').value||0)
+    try {
+      await api('admin_add_field', {
+        field_name: name,
+        placeholder: $('newPlaceholder').value.trim(),
+        field_type: $('newType').value,
+        required: $('newRequired').checked ? 1 : 0,
+        sort_order: Number($('newSort').value || 0)
       });
-      $('newName').value='';$('newPlaceholder').value='';$('newRequired').checked=false;$('newSort').value='0';
-      toast('Custom field added.'); 
+      $('newName').value = '';$('newPlaceholder').value = ''; $('newRequired').checked = false; $('newSort').value = '0';
+      toast('Custom field added.');
       const data = await api('admin_get_fields'); fields = data.fields || []; renderFields();
-    }catch(e){toast(e.message,false)}finally{busy(false)}
+    } catch(e) { toast(e.message, false); } finally { busy(false); }
   }
 
   function renderSubs(){
-    const q=$('search').value.trim().toLowerCase();
-    const list=submissions.filter(s=>!q || [s.id,s.telegram_id,s.user_username,s.first_name,s.instagram_username,s.status].join(' ').toLowerCase().includes(q));
-    const box=$('submissionList'); box.innerHTML='';$('noSubs').classList.toggle('hidden',list.length>0);
+    const q = $('search').value.trim().toLowerCase();
+    const list = submissions.filter(s => !q || [s.id, s.telegram_id, s.user_username, s.first_name, s.instagram_username, s.status].join(' ').toLowerCase().includes(q));
+    const box = $('submissionList'); box.innerHTML = '';$('noSubs').classList.toggle('hidden', list.length > 0);
+
     for(const s of list){
-      const item=document.createElement('div'); item.className='item';
-      const statusClass=['pending','checking','approved','rejected'].includes(s.status)?s.status:'pending';
-      let fieldHtml=(s.fields||[]).map(f=>`<div class="value"><b>${esc(f.field_name)}</b><br>${esc(f.value)}</div>`).join('');
-      item.innerHTML=`
-        <div class="itemtop"><div><strong>#${esc(s.id)} · ${esc(s.instagram_username)}</strong><div class="meta">${esc(s.first_name||'')} ${s.user_username?'(@'+esc(s.user_username)+')':''}<br>Telegram ID: ${esc(s.telegram_id)} · ${fmt(s.submitted_at)}</div></div><span class="pill ${statusClass}">${esc(s.status)}</span></div>
+      const item = document.createElement('div'); item.className = 'item-box';
+      const statusClass = ['pending','checking','approved','rejected'].includes(s.status) ? s.status : 'pending';
+      let fieldHtml = (s.fields || []).map(f => `<div class="value-box"><b>${esc(f.field_name)}</b><br>${esc(f.value)}</div>`).join('');
+      
+      item.innerHTML = `
+        <div class="item-top">
+          <div>
+            <strong>#${esc(s.id)} · ${esc(s.instagram_username)}</strong>
+            <div class="item-meta">
+              ${esc(s.first_name || '')} ${s.user_username ? '(@' + esc(s.user_username) + ')' : ''}<br>
+              Telegram ID: ${esc(s.telegram_id)} · ${fmt(s.submitted_at)}
+            </div>
+          </div>
+          <span class="pill ${statusClass}">${esc(s.status)}</span>
+        </div>
         <div class="subgrid">
-          <div class="mini"><span>Rate</span><b>${money(s.rate_usd)}</b></div>
-          <div class="mini"><span>Credited</span><b>${money(s.credited_usd)}</b></div>
-          <div class="mini"><span>Password</span><b>${s.password_valid?'Valid':'Invalid'}</b></div>
+          <div class="mini-card"><span>Rate</span><b>${money(s.rate_usd)}</b></div>
+          <div class="mini-card"><span>Credited</span><b>${money(s.credited_usd)}</b></div>
+          <div class="mini-card"><span>Password</span><b>${s.password_valid ? 'Valid' : 'Invalid'}</b></div>
         </div>
         ${fieldHtml}
-        ${s.admin_note?`<div class="value"><b>Admin note</b><br>${esc(s.admin_note)}</div>`:''}
-        <div class="actions" style="margin-top:10px">
-          ${s.status==='pending'?'<button class="small" data-act="checking">Move to Checking</button>':''}
-          ${s.status==='checking'?'<button class="small" data-act="approve">Approve & Credit</button><button class="danger" data-act="reject">Reject</button>':''}
+        ${s.admin_note ? `<div class="value-box"><b>Admin note:</b><br>${esc(s.admin_note)}</div>` : ''}
+        <div class="action-row">
+          ${s.status === 'pending' ? '<button class="btn-small" data-act="checking">Move to Checking</button>' : ''}
+          ${s.status === 'checking' ? '<button class="btn-small" data-act="approve">Approve & Credit</button><button class="btn-danger" data-act="reject">Reject</button>' : ''}
         </div>`;
-      const act=async(type)=>{
-        let note='';
-        if(type==='approve'||type==='reject'){note=prompt(type==='approve'?'Optional admin note:':'Reason / admin note:','')??''}
+
+      const act = async (type) => {
+        let note = '';
+        if(type === 'approve' || type === 'reject') {
+          note = prompt(type === 'approve' ? 'Optional admin note:' : 'Reason / admin note:') ?? '';
+        }
         busy(true);
-        try{
-          const action=type==='checking'?'admin_checking':type==='approve'?'admin_approve':'admin_reject';
-          await api(action,{submission_id:Number(s.id),admin_note:note});
-          toast(type==='approve'?'Submission approved and credited.':type==='reject'?'Submission rejected.':'Submission moved to checking.');
+        try {
+          const action = type === 'checking' ? 'admin_checking' : type === 'approve' ? 'admin_approve' : 'admin_reject';
+          await api(action, { submission_id: Number(s.id), admin_note: note });
+          toast('Status updated successfully.');
+          
           const [statsRes, subsRes] = await Promise.all([api('admin_stats'), api('admin_get_submissions')]);
           const st = statsRes.stats || {};
           $('stTotal').textContent = st.total ?? 0;
@@ -296,23 +661,35 @@ button.primary,button.small,button.danger{border:0;color:#fff;border-radius:11px
           $('stPaid').textContent = money(st.total_paid);
           submissions = subsRes.submissions || [];
           renderSubs();
-        }catch(e){toast(e.message,false)}finally{busy(false)}
+        } catch(e) { toast(e.message, false); } finally { busy(false); }
       };
-      item.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b.dataset.act));
+
+      item.querySelectorAll('[data-act]').forEach(b => b.onclick = () => act(b.dataset.act));
       box.appendChild(item);
     }
   }
 
-  $('saveSettings').onclick=saveSettings;
-  $('addField').onclick=addField;
-  $('reloadFields').onclick=async()=>{busy(true);try{const data=await api('admin_get_fields'); fields=data.fields\vert{}\vert{}[]; renderFields();toast('Fields refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}};$('reloadSubs').onclick=async()=>{busy(true);try{const [statsRes, subsRes] = await Promise.all([api('admin_stats'), api('admin_get_submissions')]); const st = statsRes.stats || {}; $('stTotal').textContent = st.total ?? 0; $('stPending').textContent = st.pending ?? 0; $('stChecking').textContent = st.checking ?? 0; $('stApproved').textContent = st.approved ?? 0; $('stPaid').textContent = money(st.total_paid); submissions = subsRes.submissions \vert{}\vert{} []; renderSubs(); toast('Submissions refreshed.')}catch(e){toast(e.message,false)}finally{busy(false)}};$('search').oninput=renderSubs;
-  $('backBtn').onclick=()=>{if(tg?.close)tg.close();else history.back()};
+  $('saveSettings').onclick = saveSettings;
+  $('addField').onclick = addField;
+  $('reloadFields').onclick = async () => {
+    busy(true);
+    try { const data = await api('admin_get_fields'); fields = data.fields || []; renderFields(); toast('Fields refreshed.'); }
+    catch(e) { toast(e.message, false); } finally { busy(false); }
+  };
+  $('reloadSubs').onclick = async () => {
+    busy(true);
+    try {
+      const [statsRes, subsRes] = await Promise.all([api('admin_stats'), api('admin_get_submissions')]);
+      const st = statsRes.stats || {};
+      $('stTotal').textContent = st.total ?? 0; $('stPending').textContent = st.pending ?? 0; $('stChecking').textContent = st.checking ?? 0; $('stApproved').textContent = st.approved ?? 0; $('stPaid').textContent = money(st.total_paid);
+      submissions = subsRes.submissions || []; renderSubs(); toast('Submissions refreshed.');
+    } catch(e) { toast(e.message, false); } finally { busy(false); }
+  };
+  $('search').oninput = renderSubs;
+  $('backBtn').onclick = () => { if(tg?.close) tg.close(); else history.back(); };
 
-  // Run refresh immediately on load
+  // Run initialization immediately on load
   refreshAll();
-  
-  // Background interval sync
-  setInterval(()=>{if(document.visibilityState==='visible')Promise.allSettled([api('admin_stats').then(res=>{const st = res.stats || {}; $('stTotal').textContent = st.total ?? 0; $('stPending').textContent = st.pending ?? 0; $('stChecking').textContent = st.checking ?? 0; $('stApproved').textContent = st.approved ?? 0; $('stPaid').textContent = money(st.total_paid);}), api('admin_get_submissions').then(res=>{submissions = res.submissions || []; renderSubs();})])},15000);
 })();
 </script>
 </body>
