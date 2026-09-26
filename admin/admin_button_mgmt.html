@@ -1,265 +1,525 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>এডমিন প্যানেল বাটন ম্যানেজমেন্ট</title>
-    <!-- Bootstrap 5 & FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- টেলিগ্রাম মিনি অ্যাপ গ্লাস ডিজাইন স্টাইল -->
-    <style>
-        body {
-            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#07111f">
+<title>Admin Button Management | 𝑺𝒐𝒄𝒊𝒂𝒍-𝑿</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- FontAwesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        .glass-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
+<style>
+:root{
+  --bg:#07111f;
+  --card:#0c192b;
+  --card2:#10223a;
+  --line:rgba(255,255,255,.09);
+  --text:#f7f9fc;
+  --muted:#9badc1;
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --danger:#ef4444;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+body{padding:12px 10px 28px}
+button{font:inherit}
+.page{width:100%;max-width:620px;margin:auto}
 
-        .glass-table {
-            color: #ffffff !important;
-        }
+/* TOPBAR */
+.topbar{
+  height:48px;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin-bottom:12px;
+}
+.back{
+  width:42px;height:42px;flex:0 0 42px;
+  display:grid;place-items:center;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:rgba(255,255,255,.045);
+  color:#fff;
+  cursor:pointer;
+}
+.back svg{width:20px;height:20px}
+.brand-title{font-size:17px;font-weight:850}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:2px}
 
-        .glass-table th, .glass-table td {
-            background: transparent !important;
-            color: #ffffff !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-        }
+/* HERO / HEADER SECTION */
+.hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:21px;
+  padding:21px 18px;
+  background:linear-gradient(145deg,var(--card),var(--card2));
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  margin-bottom:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.hero-glow{
+  position:absolute;
+  width:170px;height:170px;
+  border-radius:50%;
+  right:-90px;top:-95px;
+  background:rgba(59,130,246,.16);
+}
+.hero-content{position:relative;z-index:1}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(59,130,246,.10);
+  border:1px solid rgba(96,165,250,.17);
+  color:#9bc8ff;
+  font-size:9px;font-weight:850;
+  letter-spacing:.7px;text-transform:uppercase;
+}
+.badge i{width:6px;height:6px;border-radius:50%;background:#60a5fa}
+h1{
+  margin:8px 0 4px;
+  font-size:20px;
+  line-height:1.18;
+  letter-spacing:-.5px;
+}
+.hero p{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+}
 
-        .glass-modal {
-            background: rgba(30, 30, 47, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-        }
+/* BUTTONS */
+.btn-primary-custom{
+  background:linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+  border: 1px solid rgba(96,165,250,0.3);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+  transition: transform 0.1s ease;
+  z-index: 1;
+}
+.btn-primary-custom:active{transform:scale(0.96)}
 
-        .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-        }
+/* TABLE CARD CONTAINER */
+.table-card{
+  border:1px solid var(--line);
+  border-radius:21px;
+  background:linear-gradient(145deg,var(--card),var(--card2));
+  padding:15px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  overflow-x:auto;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  text-align:left;
+  font-size:12.5px;
+}
+th{
+  color:var(--muted);
+  font-weight:700;
+  padding:10px 8px;
+  border-bottom:1px solid var(--line);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+td{
+  padding:12px 8px;
+  border-bottom:1px solid var(--line);
+  color:var(--text);
+}
+tr:last-child td{border-bottom:none}
+code{
+  background:rgba(255,255,255,.06);
+  padding:2px 6px;
+  border-radius:5px;
+  color:#facc15;
+  font-family:monospace;
+}
 
-        .form-control:focus {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-color: #0d6efd;
-            box-shadow: none;
-        }
+/* BADGES & ACTION BUTTONS */
+.status-badge{
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+.status-fixed{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+.status-custom{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)}
 
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
+.action-btn{
+  background:rgba(239,68,68,0.15);
+  border:1px solid rgba(239,68,68,0.3);
+  color:#f87171;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:11px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.action-btn:disabled{
+  opacity:0.4;
+  cursor:not-allowed;
+  background:rgba(255,255,255,0.05);
+  border-color:var(--line);
+  color:var(--muted);
+}
 
-        .btn-glass-primary {
-            background: rgba(13, 110, 253, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            backdrop-filter: blur(5px);
-        }
+/* MODAL STYLES */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(7,17,31,0.8);
+  backdrop-filter:blur(5px);
+  display:none;
+  place-items:center;
+  z-index:100;
+  padding:15px;
+}
+.modal-content{
+  width:100%;
+  max-width:420px;
+  background:linear-gradient(145deg,var(--card),var(--card2));
+  border:1px solid var(--line);
+  border-radius:21px;
+  padding:20px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:10px;
+}
+.modal-title{font-size:16px;font-weight:850}
+.close-modal{
+  background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;
+}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+.form-control{
+  width:100%;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--line);
+  border-radius:11px;
+  color:var(--text);
+  font-size:13px;
+  outline:none;
+}
+.form-control:focus{border-color:var(--blue)}
+textarea.form-control{resize:vertical;min-height:60px}
 
-        .btn-glass-primary:hover {
-            background: rgba(13, 110, 253, 1);
-            color: #fff;
-        }
+.modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:15px;
+  border-top:1px solid var(--line);
+  padding-top:12px;
+}
+.btn-secondary{
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--line);
+  color:var(--muted);
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:12px;
+}
+.btn-success{
+  background:linear-gradient(135deg, #22c55e, #15803d);
+  border:1px solid rgba(34,197,94,0.3);
+  color:#fff;
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+}
 
-        code {
-            color: #ffc107 !important;
-        }
-    </style>
+/* ALERT */
+#alertBox{margin-bottom:12px}
+.alert{
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:12px;
+  margin-bottom:10px;
+  border:1px solid var(--line);
+}
+.alert-success{background:rgba(34,197,94,0.15);color:#4ade80;border-color:rgba(34,197,94,0.3)}
+.alert-danger{background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3)}
+
+.footer{
+  margin-top:17px;
+  text-align:center;
+  color:#687b91;
+  font-size:10px;
+}
+</style>
 </head>
 <body>
 
-    <div class="container py-4">
-        <!-- হেডার অংশ -->
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-12 d-flex justify-content-between align-items-center glass-container p-3">
-                <h4 class="m-0"><i class="fa-solid fa-sliders text-info"></i> এডমিন বাটন ম্যানেজমেন্ট</h4>
-                <button class="btn btn-glass-primary btn-sm px-3 py-2" data-bs-toggle="modal" data-bs-target="#addButtonModal">
-                    <i class="fa-solid fa-plus"></i> নতুন বাটন যোগ করুন
-                </button>
-            </div>
-        </div>
+<main class="page">
 
-        <!-- অ্যালার্ট ম্যাসেজ বক্স -->
-        <div id="alertBox"></div>
-
-        <!-- গ্লাস কার্ড ও টেবিল -->
-        <div class="glass-container p-3">
-            <div class="table-responsive">
-                <table class="table glass-table align-middle">
-                    <thead>
-                        <tr>
-                            <th>#ID</th>
-                            <th>বাটনের নাম</th>
-                            <th>কী (Key)</th>
-                            <th>বিবরণ</th>
-                            <th>অ্যাকশন</th>
-                            <th>স্ট্যাটাস</th>
-                            <th>কার্যক্রম</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminButtonTableBody">
-                        <tr>
-                            <td colspan="7" class="text-center py-4">ডাটা লোড হচ্ছে...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <!-- টপবার -->
+  <header class="topbar">
+    <button class="back" id="backBtn" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path>
+      </svg>
+    </button>
+    <div>
+      <div class="brand-title">𝑺𝒐𝒄𝒊𝒂𝒍-𝑿</div>
+      <div class="brand-sub">Admin Button Management</div>
     </div>
+  </header>
 
-    <!-- নতুন বাটন যোগ করার গ্লাস মডাল -->
-    <div class="modal fade" id="addButtonModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-modal">
-                <form id="addAdminButtonForm">
-                    <div class="modal-header border-bottom border-secondary">
-                        <h5 class="modal-title"><i class="fa-solid fa-plus-circle text-info"></i> নতুন এডমিন বাটন যুক্ত করুন</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">বাটনের নাম (Name)</label>
-                            <input type="text" class="form-control" id="button_name" required placeholder="যেমন: Report Management">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">বাটন কি (Unique Key)</label>
-                            <input type="text" class="form-control" id="button_key" placeholder="যেমন: report_mgmt">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">বিবরণ (Description)</label>
-                            <textarea class="form-control" id="button_desc" rows="2" placeholder="বাটনের কাজের সংক্ষিপ্ত বিবরণ"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">অ্যাকশন লিংক বা পেজ (Action)</label>
-                            <input type="text" class="form-control" id="button_action" required placeholder="যেমন: reports.html">
-                        </div>
-                    </div>
-                    <div class="modal-footer border-top border-secondary">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">বাতিল</button>
-                        <button type="submit" class="btn btn-success btn-sm">সংরক্ষণ করুন</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+  <!-- হিরো সেクション -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="badge"><i></i> Control Panel</div>
+      <h1>Manage Buttons</h1>
+      <p>এডমিন প্যানেলের বাটনগুলো এখান থেকে ডাইনামিক্যালি নিয়ন্ত্রণ করুন।</p>
     </div>
+    <button class="btn-primary-custom" onclick="openModal()">
+      <i class="fa-solid fa-plus"></i> নতুন বাটন
+    </button>
+  </section>
 
-    <!-- JavaScript লজিক -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', fetchAdminButtons);
+  <!-- অ্যালার্ট মেসেজ -->
+  <div id="alertBox"></div>
 
-        async function fetchAdminButtons() {
-            try {
-                const response = await fetch('/api/admin/buttons/list');
-                const result = await response.json();
-                
-                const tbody = document.getElementById('adminButtonTableBody');
-                tbody.innerHTML = '';
+  <!-- টেবিল কার্ড -->
+  <section class="table-card">
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>নাম</th>
+            <th>কী (Key)</th>
+            <th>বিবরণ</th>
+            <th>অ্যাকশন</th>
+            <th>স্ট্যাটাস</th>
+            <th>কার্যক্রম</th>
+          </tr>
+        </thead>
+        <tbody id="adminButtonTableBody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--muted); padding: 20px;">ডাটা লোড হচ্ছে...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-                if (result.success && result.data.length > 0) {
-                    result.data.forEach(btn => {
-                        let isFixedBadge = btn.is_fixed === 1 
-                            ? '<span class="badge bg-danger bg-opacity-75">সংরক্ষিত</span>' 
-                            : '<span class="badge bg-info bg-opacity-75">কাস্টম</span>';
+  <div class="footer">
+    AL-HUDA TECH GLOBAL • Admin Panel Management System
+  </div>
 
-                        let deleteBtn = btn.is_fixed === 1 
-                            ? '<button class="btn btn-sm btn-secondary opacity-50" disabled title="নিরাপত্তার জন্য এটি ডিলিট করা নিষেধ"><i class="fa-solid fa-lock"></i></button>' 
-                            : `<button class="btn btn-sm btn-danger px-2 py-1" onclick="deleteAdminButton(${btn.id})"><i class="fa-solid fa-trash"></i></button>`;
+</main>
 
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${btn.id}</td>
-                                <td><strong>${btn.button_name}</strong></td>
-                                <td><code>${btn.button_key}</code></td>
-                                <td>${btn.button_desc || '-'}</td>
-                                <td>${btn.button_action}</td>
-                                <td>${isFixedBadge}</td>
-                                <td>${deleteBtn}</td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-warning">কোনো ডাটা পাওয়া যায়নি!</td></tr>`;
-                }
-            } catch (error) {
-                console.error('Error fetching admin buttons:', error);
-            }
-        }
+<!-- নতুন বাটন যোগ করার মডাল -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-plus-circle text-info"></i> নতুন বাটন যুক্ত করুন</div>
+      <button class="close-modal" onclick="closeModal()">&times;</button>
+    </div>
+    <form id="addAdminButtonForm">
+      <div class="form-group">
+        <label class="form-label">বাটনের নাম (Name)</label>
+        <input type="text" class="form-control" id="button_name" required placeholder="যেমন: Report Management">
+      </div>
+      <div class="form-group">
+        <label class="form-label">বাটন কি (Unique Key)</label>
+        <input type="text" class="form-control" id="button_key" required placeholder="যেমন: report_mgmt">
+      </div>
+      <div class="form-group">
+        <label class="form-label">বিবরণ (Description)</label>
+        <textarea class="form-control" id="button_desc" placeholder="সংক্ষিপ্ত বিবরণ"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">অ্যাকশন লিংক বা পেজ (Action)</label>
+        <input type="text" class="form-control" id="button_action" required placeholder="যেমন: reports.html">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal()">বাতিল</button>
+        <button type="submit" class="btn-success">সংরক্ষণ করুন</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        document.getElementById('addAdminButtonForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+<script>
+(function(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if(tg){
+    tg.ready();
+    tg.expand();
+    try{
+      tg.BackButton.show();
+      tg.BackButton.onClick(goBack);
+    }catch(e){}
+  }
 
-            const button_name = document.getElementById('button_name').value;
-            const button_key = document.getElementById('button_key').value;
-            const button_desc = document.getElementById('button_desc').value;
-            const button_action = document.getElementById('button_action').value;
+  function goBack(){
+    if(history.length > 1) history.back();
+    else if(tg) tg.close();
+  }
+  document.getElementById("backBtn").onclick = goBack;
 
-            try {
-                const response = await fetch('/api/admin/buttons/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ button_name, button_key, button_desc, button_action })
-                });
-                const result = await response.json();
+  // ফেচ করে বাটনগুলোর তালিকা আনা
+  window.fetchAdminButtons = async function() {
+    try {
+      const response = await fetch('/api/admin/buttons/list');
+      const result = await response.json();
+      
+      const tbody = document.getElementById('adminButtonTableBody');
+      tbody.innerHTML = '';
 
-                if (result.success) {
-                    let modalEl = document.getElementById('addButtonModal');
-                    let modal = bootstrap.Modal.getInstance(modalEl);
-                    modal.hide();
-                    this.reset();
-                    fetchAdminButtons();
-                    showAlert(result.message, 'success');
-                } else {
-                    showAlert(result.message, 'danger');
-                }
-            } catch (error) {
-                console.error('Error adding button:', error);
-            }
+      if (result.success && result.data.length > 0) {
+        result.data.forEach(btn => {
+          let isFixed = btn.is_fixed === 1;
+          let statusBadge = isFixed 
+            ? `<span class="status-badge status-fixed">সংরক্ষিত</span>` 
+            : `<span class="status-badge status-custom">কাস্টম</span>`;
+
+          let deleteBtn = isFixed 
+            ? `<button class="action-btn" disabled title="নিরাপত্তার জন্য এটি ডিলিট করা নিষেধ"><i class="fa-solid fa-lock"></i></button>` 
+            : `<button class="action-btn" onclick="deleteAdminButton(${btn.id})"><i class="fa-solid fa-trash"></i> ডিলিট</button>`;
+
+          tbody.innerHTML += `
+            <tr>
+              <td>${btn.id}</td>
+              <td><strong>${escapeHtml(btn.button_name)}</strong></td>
+              <td><code>${escapeHtml(btn.button_key)}</code></td>
+              <td>${escapeHtml(btn.button_desc || '-')}</td>
+              <td>${escapeHtml(btn.button_action)}</td>
+              <td>${statusBadge}</td>
+              <td>${deleteBtn}</td>
+            </tr>
+          `;
         });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--muted); padding: 20px;">কোনো ডাটা পাওয়া যায়নি!</td></tr>`;
+      }
+    } catch (error) {
+      console.error('Error fetching admin buttons:', error);
+      document.getElementById('adminButtonTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger); padding: 20px;">ডাটা লোড করতে সমস্যা হয়েছে।</td></tr>`;
+    }
+  };
 
-        async function deleteAdminButton(id) {
-            if (!confirm('আপনি কি নিশ্চিতভাবে এই এডমিন বাটনটি মুছে ফেলতে চান?')) return;
+  // মডাল কন্ট্রোল
+  window.openModal = function() {
+    document.getElementById('addModal').style.display = 'grid';
+  }
+  window.closeModal = function() {
+    document.getElementById('addModal').style.display = 'none';
+    document.getElementById('addAdminButtonForm').reset();
+  }
 
-            try {
-                const response = await fetch('/api/admin/buttons/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                const result = await response.json();
+  // নতুন বাটন সাবমিট ফর্ম
+  document.getElementById('addAdminButtonForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const button_name = document.getElementById('button_name').value;
+    const button_key = document.getElementById('button_key').value;
+    const button_desc = document.getElementById('button_desc').value;
+    const button_action = document.getElementById('button_action').value;
 
-                if (result.success) {
-                    fetchAdminButtons();
-                    showAlert(result.message, 'success');
-                } else {
-                    showAlert(result.message, 'danger');
-                }
-            } catch (error) {
-                console.error('Error deleting button:', error);
-            }
-        }
+    try {
+      const response = await fetch('/api/admin/buttons/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ button_name, button_key, button_desc, button_action })
+      });
+      const result = await response.json();
 
-        function showAlert(message, type) {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.innerHTML = `
-                <div class="alert alert-${type} alert-dismissible fade show bg-opacity-75 text-white border-0" role="alert" style="background: rgba(${type === 'success' ? '25, 135, 84' : '220, 53, 69'}, 0.8);">
-                    ${message}
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            setTimeout(() => { alertBox.innerHTML = ''; }, 4000);
-        }
-    </script>
+      if (result.success) {
+        closeModal();
+        fetchAdminButtons();
+        showAlert(result.message || 'সফলভাবে যুক্ত করা হয়েছে!', 'success');
+      } else {
+        showAlert(result.message || 'ব্যর্থ হয়েছে!', 'danger');
+      }
+    } catch (error) {
+      console.error('Error adding button:', error);
+      showAlert('সারਵার কানেকশনে সমস্যা হয়েছে।', 'danger');
+    }
+  });
+
+  // বাটন ডিলিট করা
+  window.deleteAdminButton = async function(id) {
+    if (!confirm('আপনি কি নিশ্চিতভাবে এই বাটনটি মুছে ফেলতে চান?')) return;
+
+    try {
+      const response = await fetch('/api/admin/buttons/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        fetchAdminButtons();
+        showAlert(result.message || 'সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+      } else {
+        showAlert(result.message || 'মুছে ফেলা সম্ভব হয়নি!', 'danger');
+      }
+    } catch (error) {
+      console.error('Error deleting button:', error);
+      showAlert('সার্ভার কানেকশনে সমস্যা হয়েছে।', 'danger');
+    }
+  };
+
+  function showAlert(message, type) {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.innerHTML = `
+      <div class="alert alert-${type}">
+        ${escapeHtml(message)}
+      </div>
+    `;
+    setTimeout(() => { alertBox.innerHTML = ''; }, 4000);
+  }
+
+  function escapeHtml(v){
+    return String(v)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // পেজ লোড হলে কল হবে
+  fetchAdminButtons();
+})();
+</script>
 </body>
 </html>
