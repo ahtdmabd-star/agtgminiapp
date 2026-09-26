@@ -19,17 +19,21 @@ router.all('/api/buttons/add', async (req, res) => {
         const connection = await mysql.createConnection(dbConfig);
         
         const query = 'INSERT INTO custom_buttons (button_name, button_action, button_icon) VALUES (?, ?, ?)';
-        const [result] = await connection.execute(query, [button_name, button_action, button_icon]);
+        const [result] = await connection.execute(query, [
+            button_name, 
+            button_action, 
+            button_icon || 'fa-solid fa-bolt'
+        ]);
         await connection.end();
 
         res.json({ success: true, message: 'সফলভাবে নতুন বাটন যোগ করা হয়েছে!', buttonId: result.insertId });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Add Button Error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ২. বাটন আপডেট করার এপিআই (বডি থেকে আইডি রিসিভ করার জন্য এটি ঠিক করা হয়েছে)
+// ২. বাটন আপডেট করার এপিআই
 router.all('/api/buttons/update', async (req, res) => {
     try {
         const { id, button_name, button_action, button_icon } = req.body;
@@ -41,12 +45,12 @@ router.all('/api/buttons/update', async (req, res) => {
 
         res.json({ success: true, message: 'বাটনের তথ্য সফলভাবে আপডেট করা হয়েছে!' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Update Button Error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ৩. বাটন ডিলিট করার এপিআই (বডি থেকে আইডি রিসিভ করার জন্য)
+// ৩. বাটন ডিলিট করার এপিআই
 router.all('/api/buttons/delete', async (req, res) => {
     try {
         const { id } = req.body;
@@ -58,8 +62,8 @@ router.all('/api/buttons/delete', async (req, res) => {
 
         res.json({ success: true, message: 'বাটনটি সফলভাবে মুছে ফেলা হয়েছে!' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Delete Button Error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -67,13 +71,13 @@ router.all('/api/buttons/delete', async (req, res) => {
 router.all('/api/buttons/list', async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        const [rows] = await connection.execute('SELECT * FROM custom_buttons');
+        const [rows] = await connection.execute('SELECT * FROM custom_buttons ORDER BY id DESC');
         await connection.end();
 
         res.json({ success: true, data: rows });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error('List Buttons Error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
