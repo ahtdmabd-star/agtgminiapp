@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2/promise');
 
-// ডাটাবেজ কানেকশন কনফিগারেশন (আপনার মেইন ফাইলের তথ্য অনুযায়ী)
+// ডাটাবেজ কানেকশন কনফিগারেশন
 const dbConfig = {
     host: 'mysql-14cc93c7-alhudatechglobal-601b.i.aivencloud.com',
     port: 14363,
@@ -15,11 +15,11 @@ const dbConfig = {
 // ১. নতুন বাটন অ্যাড করার এপিআই
 router.all('/api/buttons/add', async (req, res) => {
     try {
-        const { button_name, button_action, description } = req.body;
+        const { button_name, button_action, button_icon } = req.body;
         const connection = await mysql.createConnection(dbConfig);
         
-        const query = 'INSERT INTO custom_buttons (button_name, button_action, description) VALUES (?, ?, ?)';
-        const [result] = await connection.execute(query, [button_name, button_action, description]);
+        const query = 'INSERT INTO custom_buttons (button_name, button_action, button_icon) VALUES (?, ?, ?)';
+        const [result] = await connection.execute(query, [button_name, button_action, button_icon]);
         await connection.end();
 
         res.json({ success: true, message: 'সফলভাবে নতুন বাটন যোগ করা হয়েছে!', buttonId: result.insertId });
@@ -29,15 +29,14 @@ router.all('/api/buttons/add', async (req, res) => {
     }
 });
 
-// ২. বাটন এডিট বা নাম আপডেট করার এপিআই
-router.all('/api/buttons/update/:id', async (req, res) => {
+// ২. বাটন আপডেট করার এপিআই (বডি থেকে আইডি রিসিভ করার জন্য এটি ঠিক করা হয়েছে)
+router.all('/api/buttons/update', async (req, res) => {
     try {
-        const buttonId = req.params.id;
-        const { button_name, button_action, description } = req.body;
+        const { id, button_name, button_action, button_icon } = req.body;
         const connection = await mysql.createConnection(dbConfig);
 
-        const query = 'UPDATE custom_buttons SET button_name = ?, button_action = ?, description = ? WHERE id = ?';
-        await connection.execute(query, [button_name, button_action, description, buttonId]);
+        const query = 'UPDATE custom_buttons SET button_name = ?, button_action = ?, button_icon = ? WHERE id = ?';
+        await connection.execute(query, [button_name, button_action, button_icon, id]);
         await connection.end();
 
         res.json({ success: true, message: 'বাটনের তথ্য সফলভাবে আপডেট করা হয়েছে!' });
@@ -47,14 +46,14 @@ router.all('/api/buttons/update/:id', async (req, res) => {
     }
 });
 
-// ৩. বাটন ডিলিট করার এপিআই
-router.all('/api/buttons/delete/:id', async (req, res) => {
+// ৩. বাটন ডিলিট করার এপিআই (বডি থেকে আইডি রিসিভ করার জন্য)
+router.all('/api/buttons/delete', async (req, res) => {
     try {
-        const buttonId = req.params.id;
+        const { id } = req.body;
         const connection = await mysql.createConnection(dbConfig);
 
         const query = 'DELETE FROM custom_buttons WHERE id = ?';
-        await connection.execute(query, [buttonId]);
+        await connection.execute(query, [id]);
         await connection.end();
 
         res.json({ success: true, message: 'বাটনটি সফলভাবে মুছে ফেলা হয়েছে!' });
