@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#07111f">
 <title>Tasks | 𝑺𝒐𝒄𝒊𝒂𝒍-𝑿</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- FontAwesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 :root{
@@ -168,18 +170,13 @@ h1{
   margin:0 auto 9px;
   display:grid;place-items:center;
   border-radius:16px;
-  background:var(--icon-bg,rgba(255,255,255,.08));
-  border:1px solid var(--icon-border,rgba(255,255,255,.16));
-  color:var(--icon-color,#fff);
-  box-shadow:0 7px 20px var(--icon-shadow,transparent), inset 0 0 16px rgba(255,255,255,.025);
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  color:#fff;
+  box-shadow:0 7px 20px rgba(0,0,0,.1), inset 0 0 16px rgba(255,255,255,.025);
   filter:saturate(1.12);
+  font-size:22px;
 }
-.icon svg{
-  width:28px;height:28px;
-  stroke:currentColor;
-  fill:none;
-}
-.icon .fill{fill:currentColor;stroke:none}
 
 .name{
   display:block;
@@ -198,32 +195,9 @@ h1{
   font-weight:850;
   letter-spacing:.3px;
   text-transform:uppercase;
-  color:#7f91a7;
-  background:rgba(255,255,255,.045);
-}
-.available .status{
   color:#86bfff;
   background:rgba(59,130,246,.10);
 }
-
-/* BRAND COLORS */
-.instagram{--icon-color:#f43f8f;--icon-bg:linear-gradient(135deg,rgba(245,63,143,.20),rgba(168,85,247,.16),rgba(251,146,60,.14));--icon-border:rgba(244,63,143,.30);--icon-shadow:rgba(244,63,143,.13)}
-.instagram2fa{--icon-color:#ff7a18;--icon-bg:linear-gradient(135deg,rgba(255,122,24,.28),rgba(245,63,143,.20),rgba(168,85,247,.18));--icon-border:rgba(255,122,24,.55);--icon-shadow:rgba(255,122,24,.24)}
-.instagram2fa .icon{}
-.gmail{--icon-color:#ea4335;--icon-bg:rgba(234,67,53,.12);--icon-border:rgba(234,67,53,.28);--icon-shadow:rgba(234,67,53,.10)}
-.facebook{--icon-color:#1877f2;--icon-bg:rgba(24,119,242,.13);--icon-border:rgba(24,119,242,.28);--icon-shadow:rgba(24,119,242,.11)}
-.twofa{--icon-color:#60a5fa;--icon-bg:rgba(59,130,246,.12);--icon-border:rgba(96,165,250,.25)}
-.micro{--icon-color:#22c55e;--icon-bg:rgba(34,197,94,.11);--icon-border:rgba(34,197,94,.24)}
-.survey{--icon-color:#a78bfa;--icon-bg:rgba(139,92,246,.12);--icon-border:rgba(167,139,250,.25)}
-.quiz{--icon-color:#f59e0b;--icon-bg:rgba(245,158,11,.12);--icon-border:rgba(245,158,11,.25)}
-.gift{--icon-color:#ec4899;--icon-bg:rgba(236,72,153,.12);--icon-border:rgba(236,72,153,.25)}
-.referral{--icon-color:#14b8a6;--icon-bg:rgba(20,184,166,.11);--icon-border:rgba(20,184,166,.24)}
-.leaderboard{--icon-color:#facc15;--icon-bg:rgba(250,204,21,.10);--icon-border:rgba(250,204,21,.23)}
-.spin{--icon-color:#f97316;--icon-bg:rgba(249,115,22,.11);--icon-border:rgba(249,115,22,.25)}
-.game{--icon-color:#8b5cf6;--icon-bg:rgba(139,92,246,.12);--icon-border:rgba(139,92,246,.25)}
-.watch{--icon-color:#ef4444;--icon-bg:rgba(239,68,68,.11);--icon-border:rgba(239,68,68,.24)}
-.aff{--icon-color:#38bdf8;--icon-bg:rgba(56,189,248,.11);--icon-border:rgba(56,189,248,.24)}
-.job{--icon-color:#10b981;--icon-bg:rgba(16,185,129,.11);--icon-border:rgba(16,185,129,.24)}
 
 .footer{
   margin-top:17px;
@@ -254,26 +228,11 @@ h1{
   body{padding:10px 7px 24px}
   .task-grid{gap:7px}
   .task{min-height:119px;padding:11px 5px 9px;border-radius:15px}
-  .icon{width:47px;height:47px;border-radius:14px;margin-bottom:8px}
-  .icon svg{width:25px;height:25px}
+  .icon{width:47px;height:47px;border-radius:14px;margin-bottom:8px;font-size:20px}
   .name{font-size:10.5px}
   .status{font-size:7px}
 }
 </style>
-
-<style>
-.instagram2fa{
-  border-color:rgba(255,122,24,.46) !important;
-  background:linear-gradient(155deg,rgba(255,122,24,.085),#091625 72%);
-}
-.instagram2fa .name{color:#fff4ea}
-.instagram2fa .status{
-  color:#ffb06b;
-  background:rgba(255,122,24,.13);
-  border:1px solid rgba(255,122,24,.18);
-}
-</style>
-
 </head>
 
 <body>
@@ -311,7 +270,9 @@ h1{
   </div>
 </div>
 
-<section class="task-grid" id="taskGrid"></section>
+<section class="task-grid" id="taskGrid">
+  <!-- Dynamic buttons will be loaded here from database -->
+</section>
 
 <div class="footer">
   Please follow every task instruction carefully.<br>
@@ -348,129 +309,58 @@ h1{
     else if(tg) tg.close();
   }
 
-  /*
-    ============================================================
-    TASK CONFIGURATION
-    ============================================================
-    Add unlimited buttons here.
+  // Fetch and render buttons dynamically from database API
+  async function loadDynamicTasks() {
+    const grid = document.getElementById("taskGrid");
+    try {
+      const response = await fetch('/api/buttons/list');
+      const result = await response.json();
+      grid.innerHTML = "";
 
-    active       -> opens its own page
-    coming_soon  -> opens /coming_soon.html
-    ============================================================
-  */
-  const TASKS = [
+      if (result.success && result.data && result.data.length > 0) {
+        result.data.forEach(task => {
+          const el = document.createElement("button");
+          el.type = "button";
+          el.className = "task available";
 
-    {name:"Instagram Sell", description:"Instagram earning tasks", type:"active", url:"/user/instagram.html", icon:"instagram", cls:"instagram"},
+          // Default icon if none provided (FontAwesome format e.g. "fa-solid fa-star")
+          let iconClass = task.button_icon || "fa-solid fa-bolt";
 
-    {name:"Instagram 2FA Random", description:"Instagram 2FA random accounts", type:"active", url:"/user/instagram_2fa.html", icon:"instagram2fa", cls:"instagram2fa"},
+          el.innerHTML = `
+            <span class="icon">
+              <i class="${iconClass}"></i>
+            </span>
+            <span class="name">${escapeHtml(task.button_name)}</span>
+            <span class="status">Available</span>
+          `;
 
-    {name:"Gmail Sell", description:"Gmail earning tasks", type:"coming_soon", icon:"gmail", cls:"gmail"},
-
-    {name:"Facebook Sell", description:"Facebook earning tasks", type:"coming_soon", icon:"facebook", cls:"facebook"},
-
-    {name:"Facebook 2FA", description:"Facebook 2FA tasks", type:"coming_soon", icon:"shield", cls:"twofa"},
-
-    {name:"Micro Task", description:"Simple online tasks", type:"coming_soon", icon:"tasks", cls:"micro"},
-
-    {name:"Survey", description:"Complete surveys", type:"coming_soon", icon:"survey", cls:"survey"},
-
-    {name:"Quiz", description:"Quiz & rewards", type:"coming_soon", icon:"quiz", cls:"quiz"},
-
-    {name:"Gift Code", description:"Redeem rewards", type:"coming_soon", icon:"gift", cls:"gift"},
-
-    {name:"Top Referral", description:"Referral rewards", type:"coming_soon", icon:"referral", cls:"referral"},
-
-    {name:"Leaderboard", description:"Top performers", type:"coming_soon", icon:"leaderboard", cls:"leaderboard"},
-
-    {name:"Spin & Earn", description:"Spin for rewards", type:"coming_soon", icon:"spin", cls:"spin"},
-
-    {name:"Play & Earn", description:"Games & rewards", type:"coming_soon", icon:"game", cls:"game"},
-
-    {name:"Watch & Earn", description:"Watch & earn", type:"coming_soon", icon:"watch", cls:"watch"},
-
-    {name:"Affiliate", description:"Affiliate opportunities", type:"coming_soon", icon:"affiliate", cls:"aff"},
-
-    {name:"Online Jobs", description:"Job opportunities", type:"coming_soon", icon:"job", cls:"job"}
-
-  ];
-
-  const ICONS = {
-
-    instagram:`<svg viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.7" r="1" class="fill"/></svg>`,
-
-    instagram2fa:`<svg viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="3.6"/><path d="M12 8.4v3.8l2.5 1.5"/><path d="M17.2 3.9v3.2M18.8 5.5h-3.2"/></svg>`,
-
-    gmail:`<svg viewBox="0 0 24 24"><path d="M3.5 6.5A2.5 2.5 0 0 1 6 4h12a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="m4 6 8 6 8-6"/></svg>`,
-
-    facebook:`<svg viewBox="0 0 24 24"><path d="M13.5 20v-7h2.8l.5-3h-3.3V8.1c0-1 .3-1.7 1.7-1.7H17V3.7c-.3 0-1.4-.2-2.6-.2-2.6 0-4.4 1.6-4.4 4.5V10H7v3h3v7z"/></svg>`,
-
-    shield:`<svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.2 8.3-8 10-4.8-1.7-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>`,
-
-    tasks:`<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h5M8 16h7"/></svg>`,
-
-    survey:`<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>`,
-
-    quiz:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 1 1 4.2 2c-1 .7-1.7 1.2-1.7 2.4"/><path d="M12 17h.01"/></svg>`,
-
-    gift:`<svg viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="11" rx="2"/><path d="M12 9v11M3 13h18M12 9H8.5a2.5 2.5 0 1 1 2.5-2.5V9zM12 9h3.5A2.5 2.5 0 1 0 13 6.5V9z"/></svg>`,
-
-    referral:`<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3.5 19c.6-3 2.4-4.5 5.5-4.5s4.9 1.5 5.5 4.5M15 14c2.7.1 4.4 1.7 4.8 4"/></svg>`,
-
-    leaderboard:`<svg viewBox="0 0 24 24"><path d="M5 20V10h4v10M10 20V5h4v15M15 20v-7h4v7"/></svg>`,
-
-    spin:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4M12 4l2 2M12 20l-2-2"/></svg>`,
-
-    game:`<svg viewBox="0 0 24 24"><path d="M7 8h10c3 0 5 2.4 5 5.5S20.2 19 18 19c-1.7 0-3-1.1-4.2-3H10.2C9 17.9 7.7 19 6 19c-2.2 0-4-2.4-4-5.5S4 8 7 8z"/><path d="M7 11v4M5 13h4M16.5 12.5h.01M18.5 14.5h.01"/></svg>`,
-
-    watch:`<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>`,
-
-    affiliate:`<svg viewBox="0 0 24 24"><circle cx="7" cy="12" r="3"/><circle cx="17" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="m9.6 10.5 4.8-2.2M9.6 13.5l4.8 2.2"/></svg>`,
-
-    job:`<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"/></svg>`
-  };
-
-  function render(){
-
-    const grid=document.getElementById("taskGrid");
-
-    grid.innerHTML="";
-
-    TASKS.forEach(task=>{
-
-      const el=document.createElement("button");
-      el.type="button";
-      el.className="task "+(task.type==="active"?"available":"coming");
-
-      el.innerHTML=`
-        <span class="icon ${task.cls}">
-          ${ICONS[task.icon] || ICONS.tasks}
-        </span>
-        <span class="name">${escapeHtml(task.name)}</span>
-        <span class="status">${task.type==="active"?(task.icon==="instagram2fa"?"Live":"Available"):"Coming Soon"}</span>
-      `;
-
-      el.onclick=()=>openTask(task);
-
-      grid.appendChild(el);
-    });
+          el.onclick = () => openTask(task);
+          grid.appendChild(el);
+        });
+      } else {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:25px;color:var(--muted);font-size:12px;">
+            No tasks available at the moment.
+          </div>`;
+      }
+    } catch (error) {
+      console.error("Error loading tasks:", error);
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:25px;color:#ef4444;font-size:12px;">
+          Failed to load tasks. Please try again later.
+        </div>`;
+    }
   }
 
-  /*
-    Fast UX:
-    The task interface renders immediately.
-    Authentication is checked in the background instead of making
-    the user wait for the API response before seeing the page.
-  */
   function startFastVerification(){
-
-    const tgId=getTelegramId();
+    const tgId = getTelegramId();
 
     if(!tgId){
       blockPage("Account verification required.");
       return;
     }
 
-    render();
+    loadDynamicTasks();
 
     fetch(
       `/api/action?action=get_user&tg_id=${encodeURIComponent(tgId)}`,
@@ -496,32 +386,25 @@ h1{
       }
     })
     .catch(()=>{
-      /*
-        Do not delay the UI. If the existing API is temporarily slow,
-        the page remains usable, while each destination can still
-        enforce its own server-side authorization.
-      */
       document.getElementById("verify").style.display="none";
     });
   }
 
   function openTask(task){
-
-    const tgId=getTelegramId();
+    const tgId = getTelegramId();
 
     if(!tgId){
       blockPage("Please open this page from your authorized account.");
       return;
     }
 
-    let target=task.type==="active"
-      ? task.url
-      : "/coming_soon.html";
+    let target = task.button_action || "/coming_soon.html";
 
-    target += (target.includes("?")?"&":"?")+
-      "tg_id="+encodeURIComponent(tgId);
+    // Append telegram user ID to target action link safely
+    target += (target.includes("?") ? "&" : "?") +
+      "tg_id=" + encodeURIComponent(tgId);
 
-    location.href=target;
+    location.href = target;
   }
 
   function blockPage(message){
@@ -540,7 +423,7 @@ h1{
       .replaceAll("'","&#039;");
   }
 
-  document.getElementById("back").onclick=goBack;
+  document.getElementById("back").onclick = goBack;
 
   startFastVerification();
 
