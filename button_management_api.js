@@ -13,7 +13,7 @@ const dbConfig = {
 };
 
 // ==========================================
-// ১. ইউজার টাস্ক/বাটন ম্যানেজমেন্ট এপিআইসমূহ
+// ১. ইউজার প্যানেল বাটন ম্যানেজমেন্ট এপিআইসমূহ
 // ==========================================
 
 // নতুন বাটন অ্যাড করার এপিআই
@@ -83,7 +83,7 @@ router.all('/api/buttons/delete', async (req, res) => {
     }
 });
 
-// সকল বাটন দেখার এপিআই (আগে অ্যাড করাগুলো উপরে রাখার জন্য ASC করা হয়েছে)
+// সকল বাটন দেখার এপিআই
 router.all('/api/buttons/list', async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
@@ -99,43 +99,120 @@ router.all('/api/buttons/list', async (req, res) => {
 
 
 // =====================================================================
-// ২. এডমিন প্যানেল বাটন / কন্ট্রোল ম্যানেজমেন্ট এপিআই (ভবিষ্যত বা এক্সট্রা কাজের জন্য)
+// ২. এডমিন প্যানেল বাটন / কন্ট্রোল ম্যানেজমেন্ট এপিআইসমূহ
 // =====================================================================
 
-// এডমিন প্যানেলের বাটন লিস্ট বা কনফিগারেশন ফেচ করার এপিআই
+// ক. এডমিন বাটন লিস্ট দেখার এপিআই (টেবিল না থাকলে অটো ডিফল্ট বাটন ক্রিয়েট ও ইনসার্ট করবে)
 router.all('/api/admin/buttons/list', async (req, res) => {
     try {
-        // আপনি চাইলে এডমিন প্যানেলের আলাদা টেবিল বা লজিক এখানে যুক্ত করতে পারেন
         const connection = await mysql.createConnection(dbConfig);
         
-        // উদাহরণ স্বরূপ একটি ডামি বা ফ্লেক্সিবল স্ট্রাকচার রাখা হলো
-        // প্রয়োজনে টেবিল বানিয়ে এখানে কুয়েরি দিতে পারবেন।
-        const adminButtons = [
-            { id: 1, name: 'User Management', action: '/admin/users.html', icon: 'fa-solid fa-users' },
-            { id: 2, name: 'Task Settings', action: '/admin/tasks.html', icon: 'fa-solid fa-tasks' }
-        ];
+        // প্রথমে চেক করি এডমিন টেবিলটি ডাটাবেজে আছে কি না, না থাকলে তৈরি করে নেব
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS admin_buttons (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                button_key VARCHAR(100) UNIQUE NOT NULL,
+                button_name VARCHAR(255) NOT NULL,
+                button_desc TEXT NOT NULL,
+                button_action VARCHAR(255) NOT NULL,
+                is_fixed TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        // টেবিলে কোনো ডাটা না থাকলে ডিফল্ট এডমিন বাটনগুলো ইনসার্ট করে দেব
+        const [existing] = await connection.execute('SELECT COUNT(*) as count FROM admin_buttons');
+        if (existing[0].count === 0) {
+            const defaultAdminButtons = [
+                ['accounts', 'Account Management', 'Review and manage accounts', 'accounts.html', 0],
+                ['users', 'User Management', 'Manage registered users', 'users.html', 0],
+                ['deposit', 'Deposit Requests', 'Review and manage deposits', 'deposit.html', 0],
+                ['withdraw', 'Withdrawal Requests', 'Process user withdrawal requests', 'withdraw.html', 0],
+                ['buttonmgmt', 'Button Management', 'Add, edit or delete user panel buttons', 'button_mgmt.html', 1], // ফিক্সড কার্ড
+                ['adminbuttonmgmt', 'Admin Button Management', 'Manage admin panel buttons and cards', 'admin_button_mgmt.html', 1], // ফিক্সড কার্ড
+                ['tasks', 'Task Management', 'Manage microtask submissions', 'tasks.html', 0],
+                ['instagram', 'Instagram Tasks', 'Manage Instagram task operations', 'instagram.html', 0],
+                ['instagram2fa', 'Instagram 2FA Random', 'Manage Instagram 2FA random accounts', 'instagram_2fa.html', 0],
+                ['gmail', 'Gmail Tasks', 'Manage Gmail task submissions', 'gmail.html', 0],
+                ['facebook', 'Facebook Tasks', 'Manage Facebook task operations', 'facebook.html', 0],
+                ['tiktok', 'TikTok Tasks', 'Manage TikTok task operations', 'tiktok.html', 0],
+                ['twitter', 'X / Twitter Tasks', 'Manage X and Twitter tasks', 'twitter.html', 0],
+                ['gift', 'Gift Code Manager', 'Create and manage gift codes', 'gift_codes.html', 0],
+                ['bonus', 'Bonus Management', 'Configure bonus campaigns', 'target_bonus.html', 0],
+                ['referral', 'Referral Management', 'Manage referral commissions', 'referral_mgmt.html', 0],
+                ['trophy', 'Referral Leaders', 'View top referral performers', 'top_referral.html', 0],
+                ['star', 'Top Workers', 'Monitor highest earning workers', 'top_worker.html', 0],
+                ['service', 'Service Center', 'Manage all available services', 'other_services.html', 0]
+            ];
 
+            for (let btn of defaultAdminButtons) {
+                await connection.execute(
+                    'INSERT IGNORE INTO admin_buttons (button_key, button_name, button_desc, button_action, is_fixed) VALUES (?, ?, ?, ?, ?)',
+                    btn
+                );
+            }
+        }
+
+        const [rows] = await connection.execute('SELECT * FROM admin_buttons ORDER BY id ASC');
         await connection.end();
-        res.json({ success: true, data: adminButtons, message: 'Admin buttons fetched successfully.' });
+
+        res.json({ success: true, data: rows });
     } catch (error) {
-        console.error('Admin Buttons Error:', error);
+        console.error('Admin Buttons List Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// এডমিন প্যানেলের নতুন কন্ট্রোল বা বাটন যুক্ত করার এপিআই
-router.all('/api/admin/buttons/save', async (req, res) => {
+// খ. নতুন এডমিন বাটন বা কার্ড যোগ করার এপিআই
+router.all('/api/admin/buttons/add', async (req, res) => {
     try {
-        const { admin_action_name, endpoint_url } = req.body;
-        
-        // এখানে আপনার এডমিন প্যানেল ম্যানেজমেন্টের ডাটাবেজ লজিক বসাতে পারবেন
-        
-        res.json({ success: true, message: 'Admin control saved successfully.' });
+        const { button_key, button_name, button_desc, button_action } = req.body;
+        if (!button_name || !button_action) {
+            return res.status(400).json({ success: false, message: 'Button name and action are required.' });
+        }
+
+        const connection = await mysql.createConnection(dbConfig);
+        const query = 'INSERT INTO admin_buttons (button_key, button_name, button_desc, button_action, is_fixed) VALUES (?, ?, ?, ?, 0)';
+        const [result] = await connection.execute(query, [
+            button_key || 'custom_' + Date.now(),
+            button_name,
+            button_desc || '',
+            button_action
+        ]);
+        await connection.end();
+
+        res.json({ success: true, message: 'সফলভাবে নতুন এডমিন বাটন যোগ করা হয়েছে!', buttonId: result.insertId });
     } catch (error) {
-        console.error('Admin Save Error:', error);
+        console.error('Add Admin Button Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// গ. এডমিন বাটন ডিলিট করার এপিআই (ফিক্সড বাটনগুলো ডিলিট হওয়া থেকে সুরক্ষিত থাকবে)
+router.all('/api/admin/buttons/delete', async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.status(400).json({ success: false, message: 'Button ID is required.' });
+        }
+
+        const connection = await mysql.createConnection(dbConfig);
+        
+        // চেক করা যাক বাটনটি ফিক্সড কি না
+        const [rows] = await connection.execute('SELECT is_fixed FROM admin_buttons WHERE id = ?', [id]);
+        if (rows.length > 0 && rows[0].is_fixed === 1) {
+            await connection.end();
+            return res.status(403).json({ success: false, message: 'এই বাটনটি সিস্টেমের জন্য অত্যন্ত জরুরি এবং এটি ডিলিট করা যাবে না!' });
+        }
+
+        await connection.execute('DELETE FROM admin_buttons WHERE id = ?', [id]);
+        await connection.end();
+
+        res.json({ success: true, message: 'এডমিন বাটনটি সফলভাবে মুছে ফেলা হয়েছে!' });
+    } catch (error) {
+        console.error('Delete Admin Button Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
 module.exports = router;
-                  
