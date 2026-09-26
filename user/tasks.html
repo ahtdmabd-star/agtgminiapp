@@ -30,7 +30,7 @@ html,body{
 }
 body{padding:12px 10px 28px}
 button{font:inherit}
-.page{width:100%;max-width:620px;margin:auto}
+.page{width:100%;max-width:680px;margin:auto}
 
 /* TOP */
 .topbar{
@@ -47,6 +47,7 @@ button{font:inherit}
   border-radius:13px;
   background:rgba(255,255,255,.045);
   color:#fff;
+  cursor:pointer;
 }
 .back svg{width:20px;height:20px}
 .brand-title{font-size:17px;font-weight:850}
@@ -83,15 +84,15 @@ button{font:inherit}
 .badge i{width:6px;height:6px;border-radius:50%;background:#60a5fa}
 h1{
   margin:11px 0 7px;
-  font-size:24px;
+  font-size:22px;
   line-height:1.18;
   letter-spacing:-.5px;
 }
 .hero p{
   margin:0;
   color:var(--muted);
-  font-size:12.5px;
-  line-height:1.65;
+  font-size:12px;
+  line-height:1.6;
 }
 
 /* SECTION */
@@ -104,25 +105,25 @@ h1{
 .section-title{font-size:16px;font-weight:850}
 .section-sub{font-size:10px;color:#72859a;margin-top:3px}
 
-/* 3 COLUMN GRID */
+/* 4 COLUMN GRID (প্রতি লাইনে ৪টি বাটন) */
 .task-grid{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:9px;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
 }
 
 .task{
   position:relative;
   min-width:0;
-  min-height:128px;
-  padding:13px 7px 10px;
+  min-height:110px;
+  padding:12px 5px 8px;
   border:1px solid var(--line);
-  border-radius:17px;
+  border-radius:15px;
   background:linear-gradient(155deg,#0c1a2d,#091625);
   color:#fff;
   cursor:pointer;
   text-align:center;
-  box-shadow:0 7px 20px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.025);
+  box-shadow:0 6px 16px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.025);
   transition:transform .16s ease, border-color .18s ease, box-shadow .18s ease;
   overflow:hidden;
   isolation:isolate;
@@ -140,58 +141,43 @@ h1{
 }
 .task:hover{
   transform:translateY(-2px);
-  box-shadow:0 12px 28px rgba(0,0,0,.23),0 0 22px var(--task-glow,rgba(59,130,246,.08));
+  box-shadow:0 10px 24px rgba(0,0,0,.22),0 0 18px var(--task-glow,rgba(59,130,246,.08));
 }
-.task:active{transform:scale(.96)}
+.task:active{transform:scale(.95)}
 .task.available{
   border-color:rgba(96,165,250,.42);
   --task-glow:rgba(96,165,250,.18);
-  animation:liveFloat 3.2s ease-in-out infinite;
-}
-.task.coming{opacity:.90}
-.task.available .icon{
-  animation:iconPulse 2.5s ease-in-out infinite;
-}
-@keyframes taskShimmer{
-  0%,65%,100%{transform:translateX(-120%)}
-  78%{transform:translateX(120%)}
-}
-@keyframes liveFloat{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-1.5px)}
-}
-@keyframes iconPulse{
-  0%,100%{filter:brightness(1);box-shadow:0 7px 20px var(--icon-shadow,transparent)}
-  50%{filter:brightness(1.14);box-shadow:0 9px 26px var(--icon-shadow,transparent)}
 }
 
 .icon{
-  width:52px;height:52px;
-  margin:0 auto 9px;
+  width:42px;height:42px;
+  margin:0 auto 7px;
   display:grid;place-items:center;
-  border-radius:16px;
+  border-radius:12px;
   background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.14);
   color:#fff;
-  box-shadow:0 7px 20px rgba(0,0,0,.1), inset 0 0 16px rgba(255,255,255,.025);
-  filter:saturate(1.12);
-  font-size:22px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  font-size:18px;
 }
 
 .name{
   display:block;
   color:#fff;
-  font-size:11.5px;
-  line-height:1.25;
-  font-weight:850;
-  min-height:29px;
+  font-size:10.5px;
+  line-height:1.2;
+  font-weight:750;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:0 2px;
 }
 .status{
   display:inline-block;
-  margin-top:5px;
-  padding:3px 6px;
-  border-radius:6px;
-  font-size:7.5px;
+  margin-top:4px;
+  padding:2px 5px;
+  border-radius:4px;
+  font-size:6.5px;
   font-weight:850;
   letter-spacing:.3px;
   text-transform:uppercase;
@@ -224,13 +210,13 @@ h1{
 }
 @keyframes load{0%{transform:translateX(-130%)}100%{transform:translateX(400%)}}
 
-@media(max-width:360px){
-  body{padding:10px 7px 24px}
-  .task-grid{gap:7px}
-  .task{min-height:119px;padding:11px 5px 9px;border-radius:15px}
-  .icon{width:47px;height:47px;border-radius:14px;margin-bottom:8px;font-size:20px}
-  .name{font-size:10.5px}
-  .status{font-size:7px}
+/* মোবাইল স্ক্রিনের জন্য ছোট এডজাস্টমেন্ট */
+@media(max-width:380px){
+  body{padding:8px 6px 20px}
+  .task-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;} /* অনেক ছোট স্ক্রিনে ৩ কলামে ফলব্যাক করবে */
+  .task{min-height:102px;padding:10px 4px 6px}
+  .icon{width:38px;height:38px;font-size:16px;border-radius:10px}
+  .name{font-size:10px}
 }
 </style>
 </head>
@@ -323,14 +309,13 @@ h1{
           el.type = "button";
           el.className = "task available";
 
-          // Default icon if none provided (FontAwesome format e.g. "fa-solid fa-star")
           let iconClass = task.button_icon || "fa-solid fa-bolt";
 
           el.innerHTML = `
             <span class="icon">
               <i class="${iconClass}"></i>
             </span>
-            <span class="name">${escapeHtml(task.button_name)}</span>
+            <span class="name" title="${escapeHtml(task.button_name)}">${escapeHtml(task.button_name)}</span>
             <span class="status">Available</span>
           `;
 
@@ -400,7 +385,6 @@ h1{
 
     let target = task.button_action || "/coming_soon.html";
 
-    // Append telegram user ID to target action link safely
     target += (target.includes("?") ? "&" : "?") +
       "tg_id=" + encodeURIComponent(tgId);
 
