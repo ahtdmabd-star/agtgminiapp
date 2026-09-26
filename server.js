@@ -7511,6 +7511,12 @@ app.all('/api/action', async (req, res) => {
 });
 
 // ============================================================
+// BUTTON MANAGEMENT API ROUTE CONNECTION
+// ============================================================
+const buttonManagementRoute = require('./button_management_api');
+app.use('/', buttonManagementRoute);
+
+// ============================================================
 // SELF-PING & START SERVER
 // ============================================================
 setInterval(() => {
