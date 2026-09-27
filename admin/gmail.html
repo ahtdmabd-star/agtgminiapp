@@ -165,10 +165,15 @@
             }
 
             hubButtons.forEach(btn => {
-                // এডমিন ফোল্ডারের জন্য লিংক ফরম্যাটিং (admin/ যুক্ত করা)
-                let adminPath = btn.button_action;
-                if (!adminPath.startsWith('http://') && !adminPath.startsWith('https://')) {
-                    adminPath = adminPath.startsWith('/') ? `admin${adminPath}` : `admin/${adminPath}`;
+                let rawAction = btn.button_action || '';
+                let adminPath = rawAction;
+
+                // যদি ডাইরেক্ট এক্সটার্নাল URL (http/https) না হয়
+                if (!rawAction.startsWith('http://') && !rawAction.startsWith('https://')) {
+                    // পাথ থেকে শুধু মূল ফাইলের নাম (filename) বের করা হচ্ছে
+                    const filename = rawAction.split('/').pop();
+                    // ফাইল নামটিকে শুধুই admin/ ফোল্ডারের অধীনে দেখানো হচ্ছে
+                    adminPath = `admin/${filename}`;
                 }
 
                 const tr = document.createElement('tr');
