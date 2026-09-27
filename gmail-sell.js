@@ -1,6 +1,6 @@
 /**
  * =================================================================
- * 𝑺𝒐𝒄𝒊𝒂𝒍-𝑿 - Gmail Sell Independent API Module
+ * 𝑺𝒐𝒄𝒊𝒂𝒍-𝑿 - Gmail Sell Independent API Module (With Referral Commission)
  * =================================================================
  */
 
@@ -99,6 +99,16 @@ async function verifyAdmin(connection, tgId) {
     return user;
 }
 
+// রেফারেল পার্সেন্টেজ বের করার ফাংশন
+async function getReferralPercent(connection) {
+    const [rows] = await connection.execute(
+        'SELECT referral_percentage FROM settings WHERE id = 1 LIMIT 1'
+    );
+    if (rows.length === 0) return 0;
+    const percentage = Number(rows[0].referral_percentage || 0);
+    return Number.isFinite(percentage) && percentage > 0 ? percentage : 0;
+}
+
 // =================================================================
 // API ENDPOINTS
 // =================================================================
@@ -125,7 +135,6 @@ router.all('/gmail-sell', async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Category parameter is missing.' });
             }
 
-            // ক্যাটাগরি সেটিংস ফেচ করা (ডাইনামিক রেট, রুলস ইত্যাদি)
             const [settingsRows] = await connection.execute(
                 `SELECT * FROM gmail_sell_settings WHERE category = ? LIMIT 1`,
                 [category]
@@ -140,14 +149,12 @@ router.all('/gmail-sell', async (req, res) => {
                 enabled: 1
             };
 
-            // গত ২৪ ঘণ্টার সাবমিশন কাউন্ট
             const [countRows] = await connection.execute(
                 `SELECT COUNT(*) AS count24h FROM gmail_sell_submissions WHERE telegram_id = ? AND category = ? AND submitted_at >= (NOW() - INTERVAL 24 HOUR)`,
                 [user.telegram_id, category]
             );
             const count24h = Number(countRows[0]?.count24h || 0);
 
-            // ইউজারের নিজস্ব সাবমিশন হিস্টরি
             const [historyRows] = await connection.execute(
                 `SELECT id, category, gmail_username, status, rate_usd, submitted_at, reviewed_at, admin_note FROM gmail_sell_submissions WHERE telegram_id = ? AND category = ? ORDER BY id DESC LIMIT 50`,
                 [user.telegram_id, category]
@@ -185,7 +192,7 @@ router.all('/gmail-sell', async (req, res) => {
             });
         }
 
-        // ৩. জিমেইল সাবমিট হ্যান্ডলার (৫টি ক্যাটাগরির জন্য কমন সাবমিট)
+        // ৩. জিমেইল সাবমিট হ্যান্ডলার
         if (action === 'submit_gmail') {
             const user = await verifyUser(connection, tgId);
             const category = cleanStr(payload.category, 50);
@@ -199,7 +206,6 @@ router.all('/gmail-sell', async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Required fields are missing.' });
             }
 
-            // ক্যাটাগরি স্ট্যাটাস এবং রেট যাচাই
             const [settingsRows] = await connection.execute(
                 `SELECT rate_usd, enabled FROM gmail_sell_settings WHERE category = ? LIMIT 1`,
                 [category]
@@ -214,7 +220,6 @@ router.all('/gmail-sell', async (req, res) => {
 
             await connection.beginTransaction();
             try {
-                // যদি ক্যাটাগরি কাস্টম নেম হয়, তবে পুল আপডেট করা
                 if (category === 'new_custom_name' && poolId > 0) {
                     await connection.execute(
                         `UPDATE gmail_custom_pool SET status = 'submitted', submitted_tg_id = ? WHERE id = ? AND status = 'available'`,
@@ -222,7 +227,6 @@ router.all('/gmail-sell', async (req, res) => {
                     );
                 }
 
-                // সাবমিশন এন্ট্রি ইনসার্ট করা
                 const [result] = await connection.execute(
                     `INSERT INTO gmail_sell_submissions 
                     (telegram_id, category, gmail_username, password_encrypted, pool_id, old_days, used_reason, rate_usd, status, submitted_at)
@@ -268,7 +272,6 @@ router.all('/gmail-sell', async (req, res) => {
 
             const [rows] = await connection.execute(query, params);
 
-            // সিক্রেট পাসওয়ার্ড ডিক্রিপ্ট করা এডমিনের জন্য
             const formattedRows = rows.map(row => ({
                 ...row,
                 gmail_password: decryptGmailSecret(row.password_encrypted)
@@ -288,9 +291,9 @@ router.all('/gmail-sell', async (req, res) => {
             );
 
             return res.json({ success: true, message: 'Status updated to Checking.' });
-        }
+                        }
 
-        // ৬. এডমিন প্যানেল: অ্যাপ্রুভ (ব্যালেন্স যোগ করা)
+            // ৬. এডমিন প্যানেল: অ্যাপ্রুভ (ব্যালেন্স ও রেফারেল কমিশন যোগ করা)
         if (action === 'admin_approve') {
             await verifyAdmin(connection, tgId);
             const submissionId = numVal(payload.submission_id, 0);
@@ -306,11 +309,15 @@ router.all('/gmail-sell', async (req, res) => {
                 if (subRows.length === 0) throw new Error('Submission not found.');
                 const sub = subRows[0];
 
-                if (sub.status === 'Approved') throw new Error('Already approved.');
+                if (String(sub.status).toLowerCase() === 'approved') {
+                    throw new Error('Already approved.');
+                }
 
                 const creditUsd = Number(sub.rate_usd || 0);
+                if (!Number.isFinite(creditUsd) || creditUsd <= 0) {
+                    throw new Error('Invalid Gmail credit amount.');
+                }
 
-                // ইউজারের ব্যালেন্স ফেচ ও আপডেট
                 const [userRows] = await connection.execute(
                     `SELECT balance FROM users WHERE telegram_id = ? FOR UPDATE`,
                     [sub.telegram_id]
@@ -325,20 +332,89 @@ router.all('/gmail-sell', async (req, res) => {
                     [balanceAfter, sub.telegram_id]
                 );
 
-                // ট্রানজেকশন রেকর্ড লগ করা
-                await connection.execute(
-                    `INSERT INTO transactions (telegram_id, transaction_type, source_id, amount_usd, balance_before, balance_after, status, description) VALUES (?, 'gmail_sell', ?, ?, ?, ?, 'completed', ?)`,
-                    [sub.telegram_id, sub.id, creditUsd, balanceBefore, balanceAfter, `Gmail Sell Approved #${sub.id} (${sub.category})`]
+                const [transactionResult] = await connection.execute(
+                    `INSERT INTO transactions (telegram_id, transaction_type, source_id, source_reference, amount_usd, balance_before, balance_after, status, description) VALUES (?, 'gmail_sell', ?, ?, ?, ?, ?, 'completed', ?)`,
+                    [sub.telegram_id, sub.id, `GMAIL-${sub.id}`, creditUsd, balanceBefore, balanceAfter, `Gmail Sell Approved #${sub.id} (${sub.category})`]
                 );
 
-                // সাবমিশন স্ট্যাটাস আপডেট
+                const sourceTransactionId = transactionResult.insertId;
+
+                // ==========================================
+                // রেফারেল কমিশন সিস্টেম হ্যান্ডলিং
+                // ==========================================
+                let referralCommission = 0;
+                let referrerTelegramId = null;
+
+                const [referrerRows] = await connection.execute(
+                    'SELECT referred_by FROM users WHERE telegram_id = ? LIMIT 1',
+                    [sub.telegram_id]
+                );
+
+                if (referrerRows.length > 0 && referrerRows[0].referred_by) {
+                    const referralCode = String(referrerRows[0].referred_by).trim();
+                    const [referrerUserRows] = await connection.execute(
+                        'SELECT telegram_id FROM users WHERE referral_code = ? LIMIT 1',
+                        [referralCode]
+                    );
+
+                    if (referrerUserRows.length > 0) {
+                        referrerTelegramId = String(referrerUserRows[0].telegram_id);
+                    }
+                }
+
+                const referralPercent = await getReferralPercent(connection);
+
+                if (referrerTelegramId && referrerTelegramId !== String(sub.telegram_id) && referralPercent > 0) {
+                    referralCommission = (creditUsd * referralPercent) / 100;
+
+                    const [referrerBalanceRows] = await connection.execute(
+                        'SELECT balance FROM users WHERE telegram_id = ? FOR UPDATE',
+                        [referrerTelegramId]
+                    );
+
+                    if (referrerBalanceRows.length > 0 && referralCommission > 0) {
+                        const referrerBefore = Number(referrerBalanceRows[0].balance || 0);
+                        const referrerAfter = referrerBefore + referralCommission;
+
+                        const [commissionInsert] = await connection.execute(
+                            `INSERT INTO referral_commissions 
+                            (source_transaction_id, referrer_telegram_id, referred_telegram_id, commission_percent, source_amount_usd, commission_amount_usd, status) 
+                            VALUES (?, ?, ?, ?, ?, ?, 'completed')`,
+                            [sourceTransactionId, referrerTelegramId, sub.telegram_id, referralPercent, creditUsd, referralCommission]
+                        );
+
+                        await connection.execute(
+                            'UPDATE users SET balance = ? WHERE telegram_id = ?',
+                            [referrerAfter, referrerTelegramId]
+                        );
+
+                        const [commissionTransaction] = await connection.execute(
+                            `INSERT INTO transactions 
+                            (telegram_id, transaction_type, source_id, source_reference, amount_usd, balance_before, balance_after, status, description) 
+                            VALUES (?, 'referral_commission', ?, ?, ?, ?, ?, 'completed', ?)`,
+                            [referrerTelegramId, sourceTransactionId, `GMAIL-${sub.id}`, referralCommission, referrerBefore, referrerAfter, `Direct referral commission from Gmail Sell #${sub.id}`]
+                        );
+
+                        await connection.execute(
+                            'UPDATE referral_commissions SET commission_transaction_id = ? WHERE id = ?',
+                            [commissionTransaction.insertId, commissionInsert.insertId]
+                        );
+                    }
+                }
+
                 await connection.execute(
                     `UPDATE gmail_sell_submissions SET status = 'Approved', admin_note = ?, reviewed_at = CURRENT_TIMESTAMP WHERE id = ?`,
                     [adminNote || null, submissionId]
                 );
 
                 await connection.commit();
-                return res.json({ success: true, message: 'Gmail approved and user balance credited successfully.' });
+                return res.json({
+                    success: true,
+                    message: 'Gmail approved and user balance credited successfully.',
+                    submission_id: submissionId,
+                    credited_usd: Number(creditUsd.toFixed(4)),
+                    referral_commission_usd: Number(referralCommission.toFixed(4))
+                });
 
             } catch (err) {
                 await connection.rollback();
@@ -409,4 +485,3 @@ router.all('/gmail-sell', async (req, res) => {
 });
 
 module.exports = router;
-
