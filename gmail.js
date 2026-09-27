@@ -374,11 +374,12 @@ module.exports = function(dbConfig) {
                             }
                         }
 
-                        // জিমেইল সাবমিশনের স্ট্যাটাস Approved করা
-                        await connection.execute(
-                            'UPDATE `gmail_submissions` SET `status` = "approved", `reviewed_at` = CURRENT_TIMESTAMP WHERE `id` = ?',
-                            [sub.id]
-                        );
+                        // ✅ সঠিক লাইন:
+await connection.execute(
+    "UPDATE gmail_submissions SET status = 'approved', reviewed_at = CURRENT_TIMESTAMP WHERE id = ?",
+    [sub.id]
+);
+                        
 
                         await connection.commit();
                         return res.json({ success: true, message: 'Submission approved, balance credited, and referral commission distributed.' });
