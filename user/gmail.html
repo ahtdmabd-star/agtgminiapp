@@ -174,7 +174,8 @@
                             // পাথ বা আগের ইউআরএল থেকে শুধু ফাইলের নামটি আলাদা করে বের করবে
                             const filename = rawAction.split('/').pop();
                             // ফাইল নামটিকে নিশ্চিতভাবে user/ ফোল্ডারের ভেতরে রুট করে দেবে
-                            userPath = `user/${filename}`;
+                        userPath = `/user/${filename}`;
+                            
                         }
                         
                         btnEl.href = userPath;
