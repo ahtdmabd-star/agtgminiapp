@@ -155,11 +155,12 @@ module.exports = function(dbConfig) {
                     return res.status(400).json({ success: false, message: 'Please enter a valid @gmail.com address.' });
                 }
 
-                // ডুপ্লিকেট চেকিং (একই ইমেইল পেন্ডিং, চেকিং বা এপ্রুভড থাকলে নিবে না)
-                const [duplicate] = await connection.execute(
-                    'SELECT id FROM gmail_submissions WHERE email = ? AND status IN ("pending", "checking", "approved") LIMIT 1',
-                    [email]
-                );
+                // ✅ সঠিক কোড:
+const [duplicate] = await connection.execute(
+    'SELECT id FROM gmail_submissions WHERE email = ? AND status IN ("pending", "checking", "approved") LIMIT 1',
+    [email]
+);
+                
                 if (duplicate.length > 0) {
                     return res.status(400).json({ success: false, message: 'This Gmail address has already been submitted.' });
                 }
