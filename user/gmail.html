@@ -168,7 +168,7 @@
                         
                         let userPath = btn.button_action;
                         if (!userPath.startsWith('http://') && !userPath.startsWith('https://')) {
-                            userPath = userPath.startsWith('/') ? `user${userPath}` : `user/${userPath}`;
+                            userPath = userPath.startsWith('/') ? `user${userPath}` : `/${userPath}`;
                         }
                         
                         btnEl.href = userPath;
