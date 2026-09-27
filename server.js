@@ -4,7 +4,7 @@ const mysql = require('mysql2/promise');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট করা
+// সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট ক
 const dbConfig = {
     host: 'mysql-14cc93c7-alhudatechglobal-601b.i.aivencloud.com',
     port: 14363,
