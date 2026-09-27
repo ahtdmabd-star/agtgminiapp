@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,16 +9,16 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Telegram Mini App WebApp Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         body {
-            font-family: 'Hind Siliguri', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
             color: #f8fafc;
-            min-h-screen: 100vh;
+            min-height: 100vh;
         }
 
         /* Glassmorphism Card Style */
@@ -33,7 +33,7 @@
         .glass-header {
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(12px);
-            border-b: 1px solid rgba(59, 130, 246, 0.2);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         /* Glowing Blue Effects */
@@ -65,18 +65,17 @@
     <!-- Header Section -->
     <header class="glass-header sticky top-0 z-50 px-4 py-3.5 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <!-- App Back Button (Goes back without closing Telegram Mini App) -->
             <button id="navBackBtn" onclick="handleGoBack()" class="bg-slate-800/80 hover:bg-slate-700 text-blue-400 p-2 rounded-xl border border-blue-500/30 transition flex items-center justify-center">
                 <i class="fa-solid fa-arrow-left text-lg"></i>
             </button>
             <div>
                 <h1 class="text-xl font-bold tracking-wide bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">Social X</h1>
-                <p class="text-[10px] text-slate-400 font-medium">ফিক্সড পাসওয়ার্ড জিমেইল প্যানেল</p>
+                <p class="text-[10px] text-slate-400 font-medium">Fixed Password Gmail Panel</p>
             </div>
         </div>
         <div>
             <span class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full flex items-center gap-1.5 font-medium">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> এ্যাক্টিভ
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Active
             </span>
         </div>
     </header>
@@ -84,40 +83,40 @@
     <!-- Main Container -->
     <main class="max-w-md mx-auto px-4 mt-5 space-y-5">
 
-        <!-- 1. Tutorial Button (Highlighted) -->
+        <!-- 1. Tutorial Button -->
         <a id="tutorialLinkBtn" href="#" target="_blank" class="tutorial-btn w-full py-3 px-4 rounded-2xl text-white font-bold text-sm flex items-center justify-between transition-transform active:scale-95">
             <div class="flex items-center gap-3">
                 <div class="bg-white/20 p-2 rounded-xl">
                     <i class="fa-solid fa-circle-play text-xl text-amber-100"></i>
                 </div>
                 <div>
-                    <span class="block">কীভাবে কাজ করবেন? (টিউটোরিয়াল)</span>
-                    <span class="text-[11px] font-normal text-amber-100/90">ভিডিও নিয়ম না দেখলে পেমেন্ট পাবেন না</span>
+                    <span class="block">How to Work? (Tutorial)</span>
+                    <span class="text-[11px] font-normal text-amber-100/90">Must follow video instructions for payment</span>
                 </div>
             </div>
             <i class="fa-solid fa-chevron-right text-xs bg-white/20 p-1.5 rounded-full"></i>
         </a>
 
-        <!-- 2. Gmail Rules Section (Truncated + See All Modal) -->
+        <!-- 2. Gmail Rules Section -->
         <div class="glass-card p-4 rounded-2xl space-y-2">
             <div class="flex items-center justify-between border-b border-slate-700/50 pb-2">
                 <h2 class="text-xs font-semibold text-blue-300 flex items-center gap-1.5">
-                    <i class="fa-solid fa-clipboard-list"></i> জিমেইল বিক্রির নিয়মাবলী
+                    <i class="fa-solid fa-clipboard-list"></i> Gmail Submission Rules
                 </h2>
                 <button onclick="toggleRulesModal(true)" class="text-xs text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1">
                     See All <i class="fa-solid fa-angles-right text-[10px]"></i>
                 </button>
             </div>
             <div id="shortRulesText" class="text-xs text-slate-300 space-y-1 line-clamp-3 leading-relaxed whitespace-pre-line">
-                নিয়মাবলী লোড হচ্ছে...
+                Loading rules...
             </div>
         </div>
 
-        <!-- 3. Stats Section (2 Columns: Rate & 24h Submissions) -->
+        <!-- 3. Stats Section -->
         <div class="grid grid-cols-2 gap-3">
             <!-- Rate Card -->
             <div class="glass-card p-3.5 rounded-2xl border-l-4 border-l-blue-500">
-                <p class="text-[11px] text-slate-400 font-medium">বর্তমান রেট (প্রতি জিমেইল)</p>
+                <p class="text-[11px] text-slate-400 font-medium">Current Rate (Per Gmail)</p>
                 <div class="flex items-baseline gap-1 mt-1">
                     <span class="text-lg font-bold text-emerald-400 font-mono">$</span>
                     <span id="gmailRateText" class="text-base font-bold text-white font-mono">0.000000</span>
@@ -126,10 +125,10 @@
 
             <!-- 24h Submissions Card -->
             <div class="glass-card p-3.5 rounded-2xl border-l-4 border-l-indigo-500">
-                <p class="text-[11px] text-slate-400 font-medium">২৪ ঘণ্টায় জমা দিয়েছেন</p>
+                <p class="text-[11px] text-slate-400 font-medium">Submitted in 24 Hours</p>
                 <div class="flex items-baseline gap-1 mt-1">
                     <span id="sub24hCount" class="text-xl font-bold text-indigo-400 font-mono">0</span>
-                    <span class="text-xs text-slate-400 font-normal">টি</span>
+                    <span class="text-xs text-slate-400 font-normal">PCS</span>
                 </div>
             </div>
         </div>
@@ -137,57 +136,57 @@
         <!-- 4. Gmail Submission Form -->
         <div class="glass-card p-5 rounded-2xl space-y-4">
             <h3 class="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-700/50 pb-2">
-                <i class="fa-solid fa-paper-plane text-blue-400"></i> জিমেইল সাবমিট করুন
+                <i class="fa-solid fa-paper-plane text-blue-400"></i> Submit Gmail
             </h3>
 
             <!-- Gmail Username Input -->
             <div>
-                <label class="block text-xs text-slate-300 font-medium mb-1">জিমেইল ইউজারনেম (Gmail)</label>
+                <label class="block text-xs text-slate-300 font-medium mb-1">Gmail Address</label>
                 <div class="relative">
                     <input type="email" id="inputEmail" placeholder="example@gmail.com" class="w-full bg-slate-900/80 border border-slate-700 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition font-mono">
                     <i class="fa-regular fa-envelope absolute right-3.5 top-3 text-slate-500 text-xs"></i>
                 </div>
             </div>
 
-            <!-- Fixed Password (Readonly + Copy Button) -->
+            <!-- Fixed Password -->
             <div>
-                <label class="block text-xs text-slate-300 font-medium mb-1">নির্ধারিত পাসওয়ার্ড (Fixed Password)</label>
+                <label class="block text-xs text-slate-300 font-medium mb-1">Fixed Password</label>
                 <div class="flex gap-2">
                     <input type="text" id="inputFixedPassword" readonly value="Loading..." class="w-full bg-slate-900/50 border border-slate-800 text-slate-400 rounded-xl px-3.5 py-2.5 text-xs outline-none font-mono cursor-not-allowed">
                     <button onclick="copyPassword()" class="bg-blue-600/30 hover:bg-blue-600/50 text-blue-400 border border-blue-500/30 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
-                        <i class="fa-regular fa-copy"></i> কপি
+                        <i class="fa-regular fa-copy"></i> Copy
                     </button>
                 </div>
                 <p class="text-[10px] text-amber-400/80 mt-1 flex items-center gap-1">
-                    <i class="fa-solid fa-triangle-exclamation"></i> জিমেইল তৈরির সময় এই পাসওয়ার্ডটি ব্যবহার আবশ্যক।
+                    <i class="fa-solid fa-triangle-exclamation"></i> You must use this password when creating the Gmail account.
                 </p>
             </div>
 
             <!-- Submit Button -->
             <button onclick="submitGmail()" id="btnSubmit" class="glow-button w-full py-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 transition active:scale-95">
-                <i class="fa-solid fa-check-circle text-sm"></i> সাবমিট করুন
+                <i class="fa-solid fa-check-circle text-sm"></i> Submit Now
             </button>
         </div>
 
         <!-- 5. User Submission History -->
         <div class="glass-card p-4 rounded-2xl space-y-3">
             <h3 class="text-xs font-bold text-slate-200 flex items-center justify-between">
-                <span><i class="fa-solid fa-clock-rotate-left text-blue-400 mr-1"></i> সাম্প্রতিক সাবমিশন হিস্টোরি</span>
-                <button onclick="loadHistory()" class="text-[11px] text-blue-400 hover:text-blue-300"><i class="fa-solid fa-arrows-rotate"></i> রিফ্রেশ</button>
+                <span><i class="fa-solid fa-clock-rotate-left text-blue-400 mr-1"></i> Recent Submission History</span>
+                <button onclick="loadHistory()" class="text-[11px] text-blue-400 hover:text-blue-300"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
             </h3>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="text-slate-400 border-b border-slate-700/50 text-[10px] uppercase">
-                            <th class="pb-2">জিমেইল</th>
-                            <th class="pb-2 text-center">রেট</th>
-                            <th class="pb-2 text-right">স্ট্যাটাস</th>
+                            <th class="pb-2">Gmail</th>
+                            <th class="pb-2 text-center">Rate</th>
+                            <th class="pb-2 text-right">Status</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody" class="divide-y divide-slate-800/60 text-slate-300">
                         <tr>
-                            <td colspan="3" class="py-4 text-center text-slate-500">ডাটা লোড হচ্ছে...</td>
+                            <td colspan="3" class="py-4 text-center text-slate-500">Loading data...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -201,7 +200,7 @@
         <div class="glass-card max-w-md w-full p-5 rounded-2xl space-y-4 max-h-[80vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-700 pb-3">
                 <h3 class="font-bold text-sm text-blue-300 flex items-center gap-2">
-                    <i class="fa-solid fa-book-open"></i> জিমেইল বিক্রির সম্পূর্ণ নিয়মাবলী
+                    <i class="fa-solid fa-book-open"></i> Complete Submission Rules
                 </h3>
                 <button onclick="toggleRulesModal(false)" class="text-slate-400 hover:text-white text-lg">
                     <i class="fa-solid fa-xmark"></i>
@@ -212,7 +211,7 @@
             </div>
             <div class="pt-2 border-t border-slate-700">
                 <button onclick="toggleRulesModal(false)" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-2.5 rounded-xl font-medium">
-                    বন্ধ করুন
+                    Close
                 </button>
             </div>
         </div>
@@ -227,18 +226,18 @@
             tg.expand();
         }
 
-        // Get Telegram ID (Fallback for testing)
+        // Get Telegram ID
         const tgUser = tg?.initDataUnsafe?.user;
-        const tgId = tgUser?.id ? String(tgUser.id) : "123456789"; // Replace test ID if needed
+        const tgId = tgUser?.id ? String(tgUser.id) : "123456789"; 
 
         const API_BASE = '/api/gmail';
 
-        // Internal Go Back (Without closing Telegram Mini App)
+        // Internal Go Back Logic
         function handleGoBack() {
             if (window.history.length > 1) {
                 window.history.back();
             } else {
-                alert('আপনি প্রধান পেজে আছেন।');
+                alert('You are on the main page.');
             }
         }
 
@@ -252,8 +251,8 @@
                     document.getElementById('gmailRateText').innerText = Number(data.rate_usd).toFixed(8);
                     document.getElementById('sub24hCount').innerText = data.submissions_24h || 0;
                     document.getElementById('inputFixedPassword').value = data.fixed_password || '';
-                    document.getElementById('shortRulesText').innerText = data.rules_text || 'কোনো নিয়ম যোগ করা হয়নি।';
-                    document.getElementById('fullRulesText').innerText = data.rules_text || 'কোনো নিয়ম যোগ করা হয়নি।';
+                    document.getElementById('shortRulesText').innerText = data.rules_text || 'No rules provided.';
+                    document.getElementById('fullRulesText').innerText = data.rules_text || 'No rules provided.';
                     
                     if (data.tutorial_link) {
                         document.getElementById('tutorialLinkBtn').href = data.tutorial_link;
@@ -270,12 +269,12 @@
             const btn = document.getElementById('btnSubmit');
 
             if (!email) {
-                alert('অনুগ্রহ করে জিমেইল ইউজারনেম দিন।');
+                alert('Please enter a Gmail address.');
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> প্রসেসিং...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing...`;
 
             try {
                 const res = await fetch(API_BASE, {
@@ -297,14 +296,14 @@
                     loadHistory();
                 }
             } catch (err) {
-                alert('সাবমিট করতে সমস্যা হয়েছে।');
+                alert('Failed to submit. Please try again.');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-check-circle text-sm"></i> সাবমিট করুন`;
+                btn.innerHTML = `<i class="fa-solid fa-check-circle text-sm"></i> Submit Now`;
             }
         }
 
-        // Load History
+        // Load History Function
         async function loadHistory() {
             const tbody = document.getElementById('historyTableBody');
             try {
@@ -314,10 +313,10 @@
                 if (data.success && data.history.length > 0) {
                     tbody.innerHTML = data.history.map(item => {
                         let statusBadge = '';
-                        if (item.status === 'pending') statusBadge = `<span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded text-[10px]">পেন্ডিং</span>`;
-                        else if (item.status === 'checking') statusBadge = `<span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[10px]">চেকিং</span>`;
-                        else if (item.status === 'approved') statusBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px]">গৃহীত</span>`;
-                        else statusBadge = `<span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px]">বাতিল</span>`;
+                        if (item.status === 'pending') statusBadge = `<span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded text-[10px]">Pending</span>`;
+                        else if (item.status === 'checking') statusBadge = `<span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[10px]">Checking</span>`;
+                        else if (item.status === 'approved') statusBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px]">Approved</span>`;
+                        else statusBadge = `<span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[10px]">Rejected</span>`;
 
                         return `
                             <tr>
@@ -328,21 +327,21 @@
                         `;
                     }).join('');
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-500">কোনো হিস্টোরি পাওয়া যায়নি।</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-500">No submission history found.</td></tr>`;
                 }
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-red-400">হিস্টোরি লোড করতে ব্যর্থ।</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-red-400">Failed to load history.</td></tr>`;
             }
         }
 
-        // Copy Password
+        // Copy Password Function
         function copyPassword() {
             const passInput = document.getElementById('inputFixedPassword');
             navigator.clipboard.writeText(passInput.value);
-            alert('পাসওয়ার্ড কপি করা হয়েছে: ' + passInput.value);
+            alert('Password copied: ' + passInput.value);
         }
 
-        // Rules Modal Toggle
+        // Toggle Rules Modal
         function toggleRulesModal(show) {
             document.getElementById('rulesModal').classList.toggle('hidden', !show);
         }
@@ -354,5 +353,4 @@
         };
     </script>
 </body>
-                    </html>
-                    
+</html>
