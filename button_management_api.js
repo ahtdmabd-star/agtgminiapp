@@ -102,11 +102,12 @@ router.all('/api/buttons/list', async (req, res) => {
 // ২. এডমিন প্যানেল বাটন / কন্ট্রোল ম্যানেজমেন্ট এপিআইসমূহ
 // =====================================================================
 
-// ক. এডমিন বাটন লিস্ট দেখার এপিআই
+// ক. এডমিন বাটন লিস্ট দেখার এপিআই (টেবিল না থাকলে অটো ডিফল্ট বাটন ক্রিয়েট ও ইনসার্ট করবে)
 router.all('/api/admin/buttons/list', async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
         
+        // প্রথমে চেক করি এডমিন টেবিলটি ডাটাবেজে আছে কি না, না থাকলে তৈরি করে নেব
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS admin_buttons (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -119,6 +120,7 @@ router.all('/api/admin/buttons/list', async (req, res) => {
             )
         `);
         
+        // টেবিলে কোনো ডাটা না থাকলে ডিফল্ট এডমিন বাটনগুলো ইনসার্ট করে দেব
         const [existing] = await connection.execute('SELECT COUNT(*) as count FROM admin_buttons');
         if (existing[0].count === 0) {
             const defaultAdminButtons = [
@@ -126,8 +128,8 @@ router.all('/api/admin/buttons/list', async (req, res) => {
                 ['users', 'User Management', 'Manage registered users', 'users.html', 0],
                 ['deposit', 'Deposit Requests', 'Review and manage deposits', 'deposit.html', 0],
                 ['withdraw', 'Withdrawal Requests', 'Process user withdrawal requests', 'withdraw.html', 0],
-                ['buttonmgmt', 'Button Management', 'Add, edit or delete user panel buttons', 'button_mgmt.html', 1],
-                ['adminbuttonmgmt', 'Admin Button Management', 'Manage admin panel buttons and cards', 'admin_button_mgmt.html', 1],
+                ['buttonmgmt', 'Button Management', 'Add, edit or delete user panel buttons', 'button_mgmt.html', 1], // ফিক্সড কার্ড
+                ['adminbuttonmgmt', 'Admin Button Management', 'Manage admin panel buttons and cards', 'admin_button_mgmt.html', 1], // ফিক্সড কার্ড
                 ['tasks', 'Task Management', 'Manage microtask submissions', 'tasks.html', 0],
                 ['instagram', 'Instagram Tasks', 'Manage Instagram task operations', 'instagram.html', 0],
                 ['instagram2fa', 'Instagram 2FA Random', 'Manage Instagram 2FA random accounts', 'instagram_2fa.html', 0],
@@ -186,7 +188,7 @@ router.all('/api/admin/buttons/add', async (req, res) => {
     }
 });
 
-// গ. এডমিন বাটন ডিলিট করার এপিআই
+// গ. এডমিন বাটন ডিলিট করার এপিআই (ফিক্সড বাটনগুলো ডিলিট হওয়া থেকে সুরক্ষিত থাকবে)
 router.all('/api/admin/buttons/delete', async (req, res) => {
     try {
         const { id } = req.body;
@@ -196,6 +198,7 @@ router.all('/api/admin/buttons/delete', async (req, res) => {
 
         const connection = await mysql.createConnection(dbConfig);
         
+        // চেক করা যাক বাটনটি ফিক্সড কি না
         const [rows] = await connection.execute('SELECT is_fixed FROM admin_buttons WHERE id = ?', [id]);
         if (rows.length > 0 && rows[0].is_fixed === 1) {
             await connection.end();
@@ -214,501 +217,147 @@ router.all('/api/admin/buttons/delete', async (req, res) => {
 
 
 // =====================================================================
-// ৩. 𝑺𝒐𝒄𝒊𝒂𝒍-𝑿 Gmail Sell & Management System APIs
+// ৩. নতুন জিমেইল হাব / কাস্টম পেজ এপিআইসমূহ (সম্পূর্ণ নতুন ও স্বাধীন)
 // =====================================================================
 
-// প্রয়োজনীয় টেবিলগুলো স্বয়ংক্রিয়ভাবে তৈরি করার হেলপার ফাংশন
-async function initGmailTables(connection) {
-    // ১. জিমেইল সাবমিশন টেবিল
+// ডাটাবেজ টেবিল অটো-ইনশিলাইজেশন
+async function initHubTables() {
+    const connection = await mysql.createConnection(dbConfig);
+    
+    // ১. হাব পেজ সেটিংস টেবিল
     await connection.execute(`
-        CREATE TABLE IF NOT EXISTS gmail_submissions (
+        CREATE TABLE IF NOT EXISTS hub_page_settings (
+            id INT PRIMARY KEY DEFAULT 1,
+            page_headline VARCHAR(255) DEFAULT 'Gmail Hub Center',
+            page_subheadline VARCHAR(255) DEFAULT 'Select your preferred service below',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+
+    // ডিফল্ট সেটিং নিশ্চিতকরণ
+    await connection.execute(`
+        INSERT IGNORE INTO hub_page_settings (id, page_headline, page_subheadline) 
+        VALUES (1, 'Gmail Hub Center', 'Select your preferred service below')
+    `);
+
+    // ২. হাব কাস্টম বাটন টেবিল
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS hub_custom_buttons (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
-            category VARCHAR(50) NOT NULL,
-            email VARCHAR(255) NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            additional_info TEXT NULL,
-            rate DECIMAL(12, 6) NOT NULL DEFAULT 0.000000,
-            status ENUM('pending', 'checking', 'approved', 'rejected') DEFAULT 'pending',
-            admin_note TEXT NULL,
+            button_name VARCHAR(255) NOT NULL,
+            button_action VARCHAR(500) NOT NULL,
+            button_icon TEXT,
+            sort_order INT DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
 
-    // ২. কাস্টম নেম ডাটা স্টক (বাল্ক আপলোড টেবিল)
-    await connection.execute(`
-        CREATE TABLE IF NOT EXISTS gmail_custom_names_stock (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            first_name VARCHAR(100) NOT NULL,
-            last_name VARCHAR(100) NOT NULL,
-            suggested_email VARCHAR(255) NOT NULL,
-            password VARCHAR(255) NOT NULL,
-                        is_used TINYINT(1) DEFAULT 0,
-            used_by_user_id INT NULL,
-            reserved_by_user_id INT NULL,
-            reserved_at TIMESTAMP NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-
-    // ৩. ক্যাটাগরি সেটিংস টেবিল (Rules, Rates, Tutorial Links)
-    await connection.execute(`
-        CREATE TABLE IF NOT EXISTS gmail_settings (
-            category_key VARCHAR(50) PRIMARY KEY,
-            rules TEXT NULL,
-            rate DECIMAL(12, 6) NOT NULL DEFAULT 0.000000,
-            tutorial_link VARCHAR(500) NULL,
-            custom_password VARCHAR(255) NULL
-        )
-    `);
-
-    // ডিফল্ট ক্যাটাগরি সেটিংস ইনসার্ট করা
-    const [existing] = await connection.execute('SELECT COUNT(*) as count FROM gmail_settings');
-    if (existing[0].count === 0) {
-        const defaultCategories = [
-            ['new_random', '1. Submit active email.\n2. Do not use recovery phone.', 0.002000, 'https://youtube.com', ''],
-            ['new_custom_password', '1. Use provided password only.', 0.002500, 'https://youtube.com', 'SocialX1234#'],
-            ['new_custom_name', '1. Use assigned name and details.\n2. Violations lead to suspension.', 0.003000, 'https://youtube.com', ''],
-            ['old_gmail', '1. Must be older than specified days.', 0.005000, 'https://youtube.com', ''],
-            ['used_gmail', '1. Mention previous usage explicitly.', 0.001500, 'https://youtube.com', '']
-        ];
-        for (let cat of defaultCategories) {
-            await connection.execute(
-                'INSERT IGNORE INTO gmail_settings (category_key, rules, rate, tutorial_link, custom_password) VALUES (?, ?, ?, ?, ?)',
-                cat
-            );
-        }
-    }
+    await connection.end();
 }
 
-// ---------------------------------------------------------------------
-// ক. ইউজার পেজ ডাটা (ক্যাটাগরি রুলস, রেট, টিউটোরিয়াল ও গত ২৪ ঘণ্টার কাউন্ট)
-// ---------------------------------------------------------------------
-router.all('/api/gmail/category-info', async (req, res) => {
+// ক. পেজ সেটিংস ও সকল বাটন দেখার API
+router.all('/api/hub/data', async (req, res) => {
     try {
-        const { category, user_id } = req.body;
-        if (!category) {
-            return res.status(400).json({ success: false, message: 'Category name is required.' });
-        }
-
+        await initHubTables();
         const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        const [settings] = await connection.execute('SELECT * FROM gmail_settings WHERE category_key = ?', [category]);
         
-        let last24Count = 0;
-        if (user_id) {
-            const [countResult] = await connection.execute(
-                `SELECT COUNT(*) as count FROM gmail_submissions 
-                 WHERE user_id = ? AND category = ? AND created_at >= NOW() - INTERVAL 1 DAY`,
-                [user_id, category]
-            );
-            last24Count = countResult[0].count;
-        }
-
-        await connection.end();
-
-        if (settings.length === 0) {
-            return res.status(404).json({ success: false, message: 'Category settings not found.' });
-        }
-
-        res.json({
-            success: true,
-            brand: '𝑺𝒐𝒄𝒊𝒂𝒍-𝑿',
-            data: {
-                category: settings[0].category_key,
-                rules: settings[0].rules,
-                rate: parseFloat(settings[0].rate),
-                tutorial_link: settings[0].tutorial_link,
-                custom_password: settings[0].custom_password,
-                submitted_last_24h: last24Count
-            }
-        });
-    } catch (error) {
-        console.error('Gmail Category Info Error:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------
-// ---------------------------------------------------------------------
-// খ. কাস্টম নেম ডাটা জেনারেট এপিআই (Category 3 - Unique System with Hold Logic)
-// ---------------------------------------------------------------------
-router.all('/api/gmail/generate-custom-name', async (req, res) => {
-    try {
-        const { user_id } = req.body;
-        if (!user_id) {
-            return res.status(400).json({ success: false, message: 'User ID is required.' });
-        }
-
-        const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        // রিজার্ভেশনের সময়সীমা (যেমন: ১০ মিনিট = 10 MINUTE)
-        const HOLD_MINUTES = 10;
-
-        // ১. আগে চেক করা হবে এই ইউজারকে আগেই কোনো ডাটা হোল্ড করে দেওয়া আছে কিনা যা এখনও মেয়াদ শেষ হয়নি
-        let [stock] = await connection.execute(
-            `SELECT * FROM gmail_custom_names_stock 
-             WHERE is_used = 0 AND reserved_by_user_id = ? 
-             AND reserved_at >= NOW() - INTERVAL ? MINUTE LIMIT 1`,
-            [user_id, HOLD_MINUTES]
-        );
-
-        // ২. যদি আগের কোনো একটিভ হোল্ড না থাকে, তবে সম্পূর্ণ ফ্রী অথবা রিজার্ভ সময় পার হয়ে গেছে এমন একটি ডাটা আনা হবে
-        if (stock.length === 0) {
-            [stock] = await connection.execute(
-                `SELECT * FROM gmail_custom_names_stock 
-                 WHERE is_used = 0 AND (reserved_at IS NULL OR reserved_at < NOW() - INTERVAL ? MINUTE) 
-                 LIMIT 1`,
-                [HOLD_MINUTES]
-            );
-
-            if (stock.length === 0) {
-                await connection.end();
-                return res.status(404).json({ 
-                    success: false, 
-                    message: 'No available account data in stock right now! Please try again in a few minutes.' 
-                });
-            }
-
-            // ৩. নতুন পাওয়া ডাটাটি বর্তমান ইউজারের নামে রিজার্ভ/লক করা হলো
-            await connection.execute(
-                `UPDATE gmail_custom_names_stock 
-                 SET reserved_by_user_id = ?, reserved_at = NOW() 
-                 WHERE id = ?`,
-                [user_id, stock[0].id]
-            );
-        }
-
+        const [settings] = await connection.execute('SELECT * FROM hub_page_settings WHERE id = 1');
+        const [buttons] = await connection.execute('SELECT * FROM hub_custom_buttons ORDER BY sort_order ASC, id ASC');
+        
         await connection.end();
 
         res.json({
             success: true,
-            data: {
-                id: stock[0].id,
-                first_name: stock[0].first_name,
-                last_name: stock[0].last_name,
-                suggested_email: stock[0].suggested_email,
-                password: stock[0].password,
-                expires_in_minutes: HOLD_MINUTES
-            }
+            settings: settings[0] || { page_headline: 'Gmail Hub Center', page_subheadline: 'Select service' },
+            buttons: buttons
         });
     } catch (error) {
-        console.error('Generate Custom Name Error:', error);
+        console.error('Hub Data Fetch Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-
-// ---------------------------------------------------------------------
-// গ. ইউজার জিমেইল সাবমিট এপিআই (All 5 Categories)
-// ---------------------------------------------------------------------
-router.all('/api/gmail/submit', async (req, res) => {
+// খ. হাব হেডলাইন ও সাবটাইটেল আপডেট করার API
+router.all('/api/hub/settings/update', async (req, res) => {
     try {
-        const { user_id, category, email, password, additional_info, generated_stock_id, warning_agreed } = req.body;
-
-        if (!user_id || !category || !email || !password) {
-            return res.status(400).json({ success: false, message: 'Missing required submission fields.' });
-        }
-
-        if (category === 'new_custom_name' && !warning_agreed) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'You must agree to the privacy and warning terms before submitting!' 
-            });
-        }
-
+        const { page_headline, page_subheadline } = req.body;
+        await initHubTables();
+        
         const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        const [catSettings] = await connection.execute('SELECT rate FROM gmail_settings WHERE category_key = ?', [category]);
-        const rate = catSettings.length > 0 ? catSettings[0].rate : 0.000000;
-
-        const [result] = await connection.execute(
-            `INSERT INTO gmail_submissions (user_id, category, email, password, additional_info, rate, status) 
-             VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-            [user_id, category, email, password, additional_info || null, rate]
-        );
-
-        if (category === 'new_custom_name' && generated_stock_id) {
-            await connection.execute(
-                'UPDATE gmail_custom_names_stock SET is_used = 1, used_by_user_id = ? WHERE id = ?',
-                [user_id, generated_stock_id]
-            );
-        }
-
-        await connection.end();
-
-        res.json({
-            success: true,
-            message: 'Gmail submitted successfully and is currently under review!',
-            submission_id: result.insertId
-        });
-    } catch (error) {
-        console.error('Gmail Submit Error:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------
-// ঘ. ইউজার সাবমিশন হিস্টরি দেখার এপিআই
-// ---------------------------------------------------------------------
-router.all('/api/gmail/user-history', async (req, res) => {
-    try {
-        const { user_id, category } = req.body;
-        if (!user_id) {
-            return res.status(400).json({ success: false, message: 'User ID is required.' });
-        }
-
-        const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        let query = 'SELECT * FROM gmail_submissions WHERE user_id = ?';
-        let params = [user_id];
-
-        if (category) {
-            query += ' AND category = ?';
-            params.push(category);
-        }
-
-        query += ' ORDER BY id DESC LIMIT 50';
-
-        const [rows] = await connection.execute(query, params);
-        await connection.end();
-
-        res.json({ success: true, data: rows });
-    } catch (error) {
-        console.error('User History Error:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------
-// ঙ. এডমিন ম্যানেজমেন্ট এপিআই - লিস্ট রিড (৫টি আলাদা ট্যাব সাপোর্টেড)
-// ---------------------------------------------------------------------
-router.all('/api/admin/gmail/submissions', async (req, res) => {
-    try {
-        const { category, status } = req.body;
-
-        const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        let query = 'SELECT * FROM gmail_submissions WHERE 1=1';
-        let params = [];
-
-        if (category) {
-            query += ' AND category = ?';
-            params.push(category);
-        }
-
-        if (status) {
-            query += ' AND status = ?';
-            params.push(status);
-        }
-
-        query += ' ORDER BY id DESC';
-
-        const [rows] = await connection.execute(query, params);
-        await connection.end();
-
-        res.json({ success: true, data: rows });
-    } catch (error) {
-        console.error('Admin Submissions List Error:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------
-// চ. এডমিন স্ট্যাটাস চেঞ্জ (Checking/Approve/Reject + Referral Commission)
-// ---------------------------------------------------------------------
-router.all('/api/admin/gmail/update-status', async (req, res) => {
-    try {
-        const { submission_id, status, admin_note } = req.body;
-
-        if (!submission_id || !['checking', 'approved', 'rejected'].includes(status)) {
-            return res.status(400).json({ success: false, message: 'Valid submission ID and status are required.' });
-        }
-
-        const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        const [submissions] = await connection.execute('SELECT * FROM gmail_submissions WHERE id = ?', [submission_id]);
-        if (submissions.length === 0) {
-            await connection.end();
-            return res.status(404).json({ success: false, message: 'Submission record not found.' });
-        }
-
-        const sub = submissions[0];
-
-        if (sub.status === 'approved' || sub.status === 'rejected') {
-            await connection.end();
-            return res.status(400).json({ success: false, message: `Submission is already marked as ${sub.status}.` });
-        }
-
-        if (status === 'checking') {
-            await connection.execute(
-                'UPDATE gmail_submissions SET status = "checking", admin_note = ? WHERE id = ?',
-                [admin_note || null, submission_id]
-            );
-            await connection.end();
-            return res.json({ success: true, message: 'Status updated to Checking.' });
-        }
-
-        if (status === 'rejected') {
-            await connection.execute(
-                'UPDATE gmail_submissions SET status = "rejected", admin_note = ? WHERE id = ?',
-                [admin_note || null, submission_id]
-            );
-            await connection.end();
-            return res.json({ success: true, message: 'Submission rejected.' });
-        }
-
-        if (status === 'approved') {
-            const earnedAmount = parseFloat(sub.rate);
-
-            // ১. ইউজারের ব্যালেন্স যোগ
-            await connection.execute(
-                'UPDATE users SET balance = balance + ? WHERE id = ?',
-                [earnedAmount, sub.user_id]
-            );
-
-            // ২. জিমেইল সাবমিশন স্ট্যাটাস আপডেট
-            await connection.execute(
-                'UPDATE gmail_submissions SET status = "approved", admin_note = ? WHERE id = ?',
-                [admin_note || null, submission_id]
-            );
-
-            // ৩. অটোমেটিক রেফারেল কমিশন যোগ
-            const [userRows] = await connection.execute('SELECT referred_by FROM users WHERE id = ?', [sub.user_id]);
-            
-            if (userRows.length > 0 && userRows[0].referred_by) {
-                const referrerId = userRows[0].referred_by;
-
-                const [settingRows] = await connection.execute('SELECT value FROM settings WHERE key = "referral_percentage"');
-                const referralPercent = settingRows.length > 0 ? parseFloat(settingRows[0].value) : 10.0;
-
-                const commissionAmount = (earnedAmount * referralPercent) / 100.0;
-
-                if (commissionAmount > 0) {
-                    await connection.execute(
-                        'UPDATE users SET balance = balance + ? WHERE id = ?',
-                        [commissionAmount, referrerId]
-                    );
-
-                    await connection.execute(`
-                        CREATE TABLE IF NOT EXISTS referral_commissions (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            referrer_id INT NOT NULL,
-                            referred_user_id INT NOT NULL,
-                            amount DECIMAL(12, 6) NOT NULL,
-                            source VARCHAR(50) DEFAULT 'gmail',
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        )
-                    `);
-                    await connection.execute(
-                        'INSERT INTO referral_commissions (referrer_id, referred_user_id, amount, source) VALUES (?, ?, ?, "gmail")',
-                        [referrerId, sub.user_id, commissionAmount]
-                    );
-
-                    await connection.execute(`
-                        CREATE TABLE IF NOT EXISTS transactions (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            user_id INT NOT NULL,
-                            amount DECIMAL(12, 6) NOT NULL,
-                            type VARCHAR(50) NOT NULL,
-                            description TEXT NULL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        )
-                    `);
-                    await connection.execute(
-                        'INSERT INTO transactions (user_id, amount, type, description) VALUES (?, ?, "referral_commission", ?)',
-                        [referrerId, commissionAmount, `Gmail referral commission from user #${sub.user_id}`]
-                    );
-                }
-            }
-
-            await connection.end();
-            return res.json({ 
-                success: true, 
-                message: `Submission approved! Credited $${earnedAmount.toFixed(6)} to user balance and referral commission processed.` 
-            });
-        }
-
-    } catch (error) {
-        console.error('Admin Update Status Error:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------
-// ছ. কাস্টম নেম বাল্ক আপলোড এপিআই (Category 3 - Admin Bulk Upload)
-// ---------------------------------------------------------------------
-router.all('/api/admin/gmail/bulk-upload-custom-names', async (req, res) => {
-    try {
-        const { items } = req.body;
-
-        if (!Array.isArray(items) || items.length === 0) {
-            return res.status(400).json({ success: false, message: 'Items array is required for bulk upload.' });
-        }
-
-        const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
-        let insertedCount = 0;
-        for (let item of items) {
-            if (item.first_name && item.last_name && item.suggested_email && item.password) {
-                await connection.execute(
-                    `INSERT INTO gmail_custom_names_stock (first_name, last_name, suggested_email, password) 
-                     VALUES (?, ?, ?, ?)`,
-                    [item.first_name, item.last_name, item.suggested_email, item.password]
-                );
-                insertedCount++;
-            }
-        }
-
-        await connection.end();
-
-        res.json({
-            success: true,
-            message: `Successfully bulk uploaded ${insertedCount} custom name records!`
-        });
-    } catch (error) {
-        console.error('Bulk Upload Error:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------
-// জ. ডাইনামিক সেটিংস আপডেট (Rules, Rates, Tutorial Links, Passwords)
-// ---------------------------------------------------------------------
-router.all('/api/admin/gmail/update-settings', async (req, res) => {
-    try {
-        const { category_key, rules, rate, tutorial_link, custom_password } = req.body;
-
-        if (!category_key) {
-            return res.status(400).json({ success: false, message: 'category_key is required.' });
-        }
-
-        const connection = await mysql.createConnection(dbConfig);
-        await initGmailTables(connection);
-
         await connection.execute(
-            `INSERT INTO gmail_settings (category_key, rules, rate, tutorial_link, custom_password) 
-             VALUES (?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE 
-             rules = VALUES(rules), 
-             rate = VALUES(rate), 
-             tutorial_link = VALUES(tutorial_link),
-             custom_password = VALUES(custom_password)`,
-            [category_key, rules || null, rate || 0.000000, tutorial_link || null, custom_password || null]
+            'UPDATE hub_page_settings SET page_headline = ?, page_subheadline = ? WHERE id = 1',
+            [page_headline, page_subheadline]
         );
-
         await connection.end();
 
-        res.json({ success: true, message: `Settings updated successfully for ${category_key}!` });
+        res.json({ success: true, message: 'হেডলাইন সফলভাবে আপডেট হয়েছে!' });
     } catch (error) {
-        console.error('Update Gmail Settings Error:', error);
+        console.error('Update Hub Settings Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// গ. নতুন হাব বাটন যোগ করার API
+router.all('/api/hub/buttons/add', async (req, res) => {
+    try {
+        const { button_name, button_action, button_icon, sort_order } = req.body;
+        if (!button_name || !button_action) {
+            return res.status(400).json({ success: false, message: 'Button name and action are required.' });
+        }
+
+        await initHubTables();
+        const connection = await mysql.createConnection(dbConfig);
+        
+        const query = 'INSERT INTO hub_custom_buttons (button_name, button_action, button_icon, sort_order) VALUES (?, ?, ?, ?)';
+        const [result] = await connection.execute(query, [
+            button_name,
+            button_action,
+            button_icon || '<i class="fa-solid fa-link"></i>',
+            sort_order || 0
+        ]);
+        await connection.end();
+
+        res.json({ success: true, message: 'নতুন বাটন যুক্ত করা হয়েছে!', buttonId: result.insertId });
+    } catch (error) {
+        console.error('Add Hub Button Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ঘ. হাব বাটন আপডেট করার API
+router.all('/api/hub/buttons/update', async (req, res) => {
+    try {
+        const { id, button_name, button_action, button_icon, sort_order } = req.body;
+        if (!id) return res.status(400).json({ success: false, message: 'Button ID is required.' });
+
+        await initHubTables();
+        const connection = await mysql.createConnection(dbConfig);
+        
+        const query = 'UPDATE hub_custom_buttons SET button_name = ?, button_action = ?, button_icon = ?, sort_order = ? WHERE id = ?';
+        await connection.execute(query, [button_name, button_action, button_icon, sort_order || 0, id]);
+        await connection.end();
+
+        res.json({ success: true, message: 'বাটন সফলভাবে আপডেট করা হয়েছে!' });
+    } catch (error) {
+        console.error('Update Hub Button Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ঙ. হাব বাটন মুছে ফেলার API
+router.all('/api/hub/buttons/delete', async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) return res.status(400).json({ success: false, message: 'Button ID is required.' });
+
+        await initHubTables();
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute('DELETE FROM hub_custom_buttons WHERE id = ?', [id]);
+        await connection.end();
+
+        res.json({ success: true, message: 'বাটন ডিলিট করা হয়েছে!' });
+    } catch (error) {
+        console.error('Delete Hub Button Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
