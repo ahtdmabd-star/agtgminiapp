@@ -7519,12 +7519,6 @@ const buttonManagementRoute = require('./button_management_api');
 app.use('/', buttonManagementRoute);
 
 // ============================================================
-// GMAIL SELL API ROUTE CONNECTION
-// ============================================================
-const gmailSellApi = require('./gmail-sell'); // আপনার নতুন ফাইলের পাথ ঠিকমতো দিন
-app.use('/api/gmail-sell', gmailSellApi);
-
-// ============================================================
 // SELF-PING & START SERVER
 // ============================================================
 setInterval(() => {
