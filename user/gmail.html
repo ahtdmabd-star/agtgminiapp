@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gmail Hub</title>
+    <title>Gmail Hub Center</title>
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Tailwind CSS -->
@@ -12,57 +12,91 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background: radial-gradient(circle at top left, #0f172a, #020617);
+            background: #090d16;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
             min-height: 100vh;
             color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+        .glass-header {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         .glass-btn {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(30, 41, 59, 0.45);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .glass-btn:active {
-            transform: scale(0.97);
-            background: rgba(99, 102, 241, 0.2);
-            border-color: rgba(129, 140, 248, 0.4);
+            transform: scale(0.98);
+            background: rgba(99, 102, 241, 0.18);
+            border-color: rgba(129, 140, 248, 0.35);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
     </style>
 </head>
-<body class="p-4 flex flex-col items-center justify-center min-h-screen">
+<body class="flex flex-col items-center justify-start min-h-screen">
 
-    <!-- সিকিউরিটি গার্ড ব্লক স্ক্রিন (টেলিগ্রাম ছাড়া ওপেন করলে দেখাবে) -->
-    <div id="access-denied" class="hidden text-center p-6 glass-card rounded-2xl max-w-sm">
+    <!-- Telegram Security Access Guard -->
+    <div id="access-denied" class="hidden text-center p-6 m-auto glass-btn rounded-3xl max-w-xs">
         <i class="fa-solid fa-shield-halved text-rose-500 text-5xl mb-4 animate-bounce"></i>
         <h2 class="text-xl font-bold text-white mb-2">অ্যাক্সেস সংরক্ষিত</h2>
         <p class="text-xs text-slate-400">এই পেজটি শুধুমাত্র টেলিগ্রাম মিনি অ্যাপ অ্যাপ্লিকেশনের ভেতরে ব্যবহারযোগ্য।</p>
     </div>
 
-    <!-- মূল জিমেইল হাব অ্যাপ -->
-    <div id="hub-content" class="w-full max-w-md space-y-6">
+    <!-- Main Container -->
+    <div id="hub-content" class="w-full max-w-md flex flex-col min-h-screen">
         
-        <!-- হেডলাইন সেকশন (এডমিন প্যানেল থেকে পরিবর্তনযোগ্য) -->
-        <div class="text-center space-y-2 glass-card p-6 rounded-3xl relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/20 rounded-full blur-2xl"></div>
-            <h1 id="page-headline" class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
-                Loading...
-            </h1>
-            <p id="page-subheadline" class="text-xs font-medium text-slate-400">
-                Please wait while loading content
-            </p>
+        <!-- Top App Bar & Navigation Header (একেবারে পেজের উপরে) -->
+        <div class="glass-header sticky top-0 z-50 px-4 py-4 rounded-b-2xl mb-4">
+            <div class="flex items-center justify-between gap-3">
+                <!-- UI Back Button -->
+                <button onclick="goBackPrevious()" class="w-10 h-10 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center text-slate-300 hover:text-white active:scale-90 transition">
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                </button>
+
+                <!-- Page Headline & Subheadline Center -->
+                <div class="text-center flex-1">
+                    <h1 id="page-headline" class="text-lg font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-purple-200 to-pink-300">
+                        Gmail Hub Center
+                    </h1>
+                    <p id="page-subheadline" class="text-[11px] font-medium text-slate-400 leading-tight">
+                        Select your preferred service below
+                    </p>
+                </div>
+
+                <!-- Right Placeholder Space for Layout Symmetry -->
+                <div class="w-10"></div>
+            </div>
         </div>
 
-        <!-- ডাইনামিক বাটন লিস্ট -->
-        <div id="buttons-list" class="space-y-3">
-            <!-- বাটনগুলো এপিআই থেকে অটো আসবে -->
+        <!-- Buttons Vertical List Container (সিরিয়াল অনুযায়ী একের পর এক নিচে নামবে) -->
+        <div class="px-4 pb-8 space-y-3 flex-1 overflow-y-auto" id="buttons-list">
+            <!-- Dynamic Buttons will be injected here via API -->
+            <div class="text-center py-10">
+                <i class="fa-solid fa-circle-notch fa-spin text-indigo-400 text-2xl mb-2"></i>
+                <p class="text-xs text-slate-500">ডাটা লোড হচ্ছে...</p>
+            </div>
         </div>
 
     </div>
@@ -70,33 +104,62 @@
     <script>
         const tg = window.Telegram ? window.Telegram.WebApp : null;
 
-        // টেলিগ্রাম এনভায়রনমেন্ট ভেরিফিকেশন
+        // ব্যাক বাটন হ্যান্ডলার (অ্যাপ বন্ধ না করে আগের পেজে ফেরাবে)
+        function goBackPrevious() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else if (tg && tg.BackButton.isVisible) {
+                tg.close(); // যদি হিস্ট্রি না থাকে তবে সেফ ক্লোজ
+            } else {
+                window.location.href = 'index.html'; // ডিফল্ট ব্যাক রুট (প্রয়োজনে আপনার প্রধান পেজের ইউআরএল দিন)
+            }
+        }
+
+        // টেলিগ্রাম সিকিউরিটি এবং টেলিগ্রাম নেটিভ ব্যাক-বাটন কনফিগারেশন
         function verifyTelegramEnvironment() {
             if (!tg || !tg.initData || tg.initData === "") {
                 document.getElementById('hub-content').classList.add('hidden');
                 document.getElementById('access-denied').classList.remove('hidden');
                 return false;
             }
+
             tg.expand();
             tg.ready();
+
+            // Telegram Native Upper Back Button Enable
+            if (tg.BackButton) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(function() {
+                    goBackPrevious();
+                });
+            }
+
             return true;
         }
 
-        // এপিআই থেকে ডাটা লোড
+        // API থেকে ডাটা ফেচ করা
         async function fetchHubData() {
             try {
                 const response = await fetch('/api/hub/data');
                 const result = await response.json();
 
                 if (result.success) {
-                    document.getElementById('page-headline').innerText = result.settings.page_headline;
-                    document.getElementById('page-subheadline').innerText = result.settings.page_subheadline;
+                    // ১. হেডলাইন আপডেট
+                    if (result.settings) {
+                        document.getElementById('page-headline').innerText = result.settings.page_headline || 'Gmail Hub Center';
+                        document.getElementById('page-subheadline').innerText = result.settings.page_subheadline || 'Select your preferred service below';
+                    }
 
+                    // ২. বাটন লিস্ট রেন্ডার
                     const btnContainer = document.getElementById('buttons-list');
                     btnContainer.innerHTML = '';
 
-                    if(result.buttons.length === 0) {
-                        btnContainer.innerHTML = `<p class="text-center text-xs text-slate-500">কোনো বাটন পাওয়া যায়নি।</p>`;
+                    if (!result.buttons || result.buttons.length === 0) {
+                        btnContainer.innerHTML = `
+                            <div class="glass-btn p-8 rounded-2xl text-center">
+                                <i class="fa-solid fa-inbox text-slate-600 text-3xl mb-2"></i>
+                                <p class="text-xs text-slate-400">কোনো সার্ভিস বা বাটন পাওয়া যায়নি</p>
+                            </div>`;
                         return;
                     }
 
@@ -107,12 +170,14 @@
                         
                         btnEl.innerHTML = `
                             <div class="flex items-center space-x-3.5">
-                                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                     ${btn.button_icon}
                                 </div>
-                                <span class="font-semibold text-sm tracking-wide">${btn.button_name}</span>
+                                <span class="font-semibold text-sm tracking-wide text-slate-200 group-hover:text-white">${btn.button_name}</span>
                             </div>
-                            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:translate-x-1 transition"></i>
+                            <div class="w-7 h-7 rounded-lg bg-slate-800/40 flex items-center justify-center border border-slate-700/40">
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-300 transition"></i>
+                            </div>
                         `;
                         btnContainer.appendChild(btnEl);
                     });
@@ -122,6 +187,7 @@
             }
         }
 
+        // রান সিস্টেম
         if (verifyTelegramEnvironment()) {
             fetchHubData();
         }
