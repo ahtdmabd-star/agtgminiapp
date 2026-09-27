@@ -32,7 +32,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Highlit Dynamic Button Design */
+        /* Highlight Dynamic Button Design */
         .highlight-btn {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
             backdrop-filter: blur(16px);
@@ -166,9 +166,15 @@
                     result.buttons.forEach(btn => {
                         const btnEl = document.createElement('a');
                         
-                        let userPath = btn.button_action;
-                        if (!userPath.startsWith('http://') && !userPath.startsWith('https://')) {
-                            userPath = userPath.startsWith('/') ? `user${userPath}` : `/${userPath}`;
+                        let rawAction = btn.button_action || '';
+                        let userPath = rawAction;
+
+                        // যদি এক্সটার্নাল পুরো লিংক না হয় (http:// বা https:// না থাকে)
+                        if (!rawAction.startsWith('http://') && !rawAction.startsWith('https://')) {
+                            // পাথ বা আগের ইউআরএল থেকে শুধু ফাইলের নামটি আলাদা করে বের করবে
+                            const filename = rawAction.split('/').pop();
+                            // ফাইল নামটিকে নিশ্চিতভাবে user/ ফোল্ডারের ভেতরে রুট করে দেবে
+                            userPath = `user/${filename}`;
                         }
                         
                         btnEl.href = userPath;
