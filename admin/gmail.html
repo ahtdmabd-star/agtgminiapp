@@ -173,7 +173,8 @@
                     // পাথ থেকে শুধু মূল ফাইলের নাম (filename) বের করা হচ্ছে
                     const filename = rawAction.split('/').pop();
                     // ফাইল নামটিকে শুধুই admin/ ফোল্ডারের অধীনে দেখানো হচ্ছে
-                    adminPath = `admin/${filename}`;
+                    adminPath = `/admin/${filename}`;
+                    
                 }
 
                 const tr = document.createElement('tr');
