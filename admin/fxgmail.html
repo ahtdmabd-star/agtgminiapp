@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social X - Gmail Admin Management</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Telegram Mini App Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="pb-10">
+
+    <!-- Header Section -->
+    <header class="glass-header sticky top-0 z-50 px-4 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600/20 p-2 rounded-xl border border-blue-500/30">
+                <i class="fa-solid fa-user-shield text-blue-400 text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide text-white">Gmail Admin Panel</h1>
+                <p class="text-[10px] text-slate-400 font-medium">Control System & Review Submissions</p>
+            </div>
+        </div>
+        <button onclick="loadAdminDashboard()" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 mt-6 space-y-6">
+
+        <!-- 1. Stats Overview Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-card p-4 rounded-2xl border-l-4 border-l-blue-500">
+                <p class="text-xs text-slate-400 font-medium">Total Submissions</p>
+                <h3 id="statTotal" class="text-xl font-bold text-white font-mono mt-1">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border-l-4 border-l-amber-500">
+                <p class="text-xs text-slate-400 font-medium">Pending Review</p>
+                <h3 id="statPending" class="text-xl font-bold text-amber-400 font-mono mt-1">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
+                <p class="text-xs text-slate-400 font-medium">Approved</p>
+                <h3 id="statApproved" class="text-xl font-bold text-emerald-400 font-mono mt-1">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border-l-4 border-l-rose-500">
+                <p class="text-xs text-slate-400 font-medium">Rejected</p>
+                <h3 id="statRejected" class="text-xl font-bold text-rose-400 font-mono mt-1">0</h3>
+            </div>
+        </div>
+
+        <!-- 2. System Settings Form -->
+        <div class="glass-card p-5 rounded-2xl space-y-4">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-700/50 pb-3">
+                <i class="fa-solid fa-sliders text-blue-400"></i> Global Gmail Settings
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs text-slate-300 font-medium mb-1">Rate Per Gmail (USD)</label>
+                    <input type="number" step="0.00000001" id="cfgRate" placeholder="0.00212475" class="w-full bg-slate-900/80 border border-slate-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 font-medium mb-1">Fixed Password</label>
+                    <input type="text" id="cfgPassword" placeholder="Pass#2026!Fixed" class="w-full bg-slate-900/80 border border-slate-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 font-medium mb-1">Tutorial Video Link</label>
+                    <input type="url" id="cfgTutorial" placeholder="https://youtube.com/..." class="w-full bg-slate-900/80 border border-slate-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none font-mono">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs text-slate-300 font-medium mb-1">Rules & Guidelines (Markdown / Line breaks allowed)</label>
+                <textarea id="cfgRules" rows="3" placeholder="Enter instructions..." class="w-full bg-slate-900/80 border border-slate-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none leading-relaxed"></textarea>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="updateSettings()" id="btnSaveSettings" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-600/30">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Gmail Submissions List -->
+        <div class="glass-card p-5 rounded-2xl space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-700/50 pb-3">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-indigo-400"></i> User Submissions Review
+                </h2>
+
+                <!-- Filters & Search -->
+                <div class="flex items-center gap-2">
+                    <input type="text" id="searchInput" oninput="filterSubmissions()" placeholder="Search Email / TG ID..." class="bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none w-48 font-mono">
+                    
+                    <select id="statusFilter" onchange="filterSubmissions()" class="bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 outline-none">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="checking">Checking</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-slate-700/50 text-[11px] uppercase tracking-wider">
+                            <th class="pb-3 px-2">ID</th>
+                            <th class="pb-3 px-2">User Info</th>
+                            <th class="pb-3 px-2">Gmail Address</th>
+                            <th class="pb-3 px-2">Rate (USD)</th>
+                            <th class="pb-3 px-2">Submitted At</th>
+                            <th class="pb-3 px-2">Status</th>
+                            <th class="pb-3 px-2 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+                        <tr>
+                            <td colspan="7" class="py-6 text-center text-slate-500">Loading dashboard submissions...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Telegram WebApp Initialization
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // Get Telegram ID (Ensure Admin Telegram ID)
+        const tgUser = tg?.initDataUnsafe?.user;
+        const tgId = tgUser?.id ? String(tgUser.id) : "123456789"; // Insert your Admin TG ID for local browser testing
+
+        const API_BASE = '/api/gmail';
+        let rawSubmissionsData = [];
+
+        // Load Dashboard Data (Configs & List)
+        async function loadAdminDashboard() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Fetching dashboard data...</td></tr>`;
+
+            try {
+                const res = await fetch(`${API_BASE}?action=admin_get_dashboard&tg_id=${tgId}`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert(data.message || 'Access denied or failed to fetch dashboard.');
+                    tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-400">${data.message || 'Error loading dashboard'}</td></tr>`;
+                    return;
+                }
+
+                // 1. Populate Settings Form
+                const st = data.settings || {};
+                document.getElementById('cfgRate').value = st.rate_usd || 0.00212475;
+                document.getElementById('cfgPassword').value = st.fixed_password || '';
+                document.getElementById('cfgTutorial').value = st.tutorial_link || '';
+                document.getElementById('cfgRules').value = st.rules_text || '';
+
+                // 2. Populate Submissions Data
+                rawSubmissionsData = data.submissions || [];
+                updateStats(rawSubmissionsData);
+                renderSubmissionsTable(rawSubmissionsData);
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-400">Failed to connect to backend server.</td></tr>`;
+            }
+        }
+
+        // Calculate Header Stats
+        function updateStats(list) {
+            document.getElementById('statTotal').innerText = list.length;
+            document.getElementById('statPending').innerText = list.filter(i => i.status === 'pending').length;
+            document.getElementById('statApproved').innerText = list.filter(i => i.status === 'approved').length;
+            document.getElementById('statRejected').innerText = list.filter(i => i.status === 'rejected').length;
+        }
+
+        // Render Table Rows
+        function renderSubmissionsTable(list) {
+            const tbody = document.getElementById('adminTableBody');
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500">No submissions found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(item => {
+                let badge = '';
+                if (item.status === 'pending') badge = `<span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded text-[10px]">Pending</span>`;
+                else if (item.status === 'checking') badge = `<span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[10px]">Checking</span>`;
+                else if (item.status === 'approved') badge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px]">Approved</span>`;
+                else badge = `<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded text-[10px]">Rejected</span>`;
+
+                const dateStr = item.submitted_at ? new Date(item.submitted_at).toLocaleString() : 'N/A';
+                const userInfo = item.username ? `@${item.username}` : (item.first_name || `ID: ${item.telegram_id}`);
+
+                // Action Buttons Logic
+                let actionBtns = '';
+                if (item.status !== 'approved') {
+                    actionBtns = `
+                        <div class="flex items-center justify-end gap-1.5">
+                            ${item.status !== 'checking' ? `<button onclick="changeStatus(${item.id}, 'checking')" title="Mark Checking" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-2 py-1 rounded border border-blue-500/30 text-[10px]"><i class="fa-solid fa-magnifying-glass"></i> Check</button>` : ''}
+                            <button onclick="changeStatus(${item.id}, 'approved')" title="Approve & Credit Balance" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 px-2 py-1 rounded border border-emerald-500/30 text-[10px] font-semibold"><i class="fa-solid fa-check"></i> Approve</button>
+                            ${item.status !== 'rejected' ? `<button onclick="changeStatus(${item.id}, 'rejected')" title="Reject" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 px-2 py-1 rounded border border-rose-500/30 text-[10px]"><i class="fa-solid fa-xmark"></i> Reject</button>` : ''}
+                        </div>
+                    `;
+                } else {
+                    actionBtns = `<span class="text-[10px] text-emerald-400/80 font-mono"><i class="fa-solid fa-circle-check"></i> Balance Credited</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="py-3 px-2 font-mono text-slate-400">#${item.id}</td>
+                        <td class="py-3 px-2">
+                            <div class="font-medium text-slate-200">${userInfo}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">${item.telegram_id}</div>
+                        </td>
+                        <td class="py-3 px-2 font-mono text-blue-300">${item.email}</td>
+                        <td class="py-3 px-2 font-mono text-emerald-400">$${Number(item.rate_usd).toFixed(6)}</td>
+                        <td class="py-3 px-2 text-[10px] text-slate-400">${dateStr}</td>
+                        <td class="py-3 px-2">${badge}</td>
+                        <td class="py-3 px-2 text-right">${actionBtns}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Search & Status Filter
+        function filterSubmissions() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const status = document.getElementById('statusFilter').value;
+
+            const filtered = rawSubmissionsData.filter(item => {
+                const matchesSearch = item.email.toLowerCase().includes(query) || 
+                                      String(item.telegram_id).includes(query) || 
+                                      (item.username && item.username.toLowerCase().includes(query));
+                
+                const matchesStatus = (status === 'all') || (item.status === status);
+
+                return matchesSearch && matchesStatus;
+            });
+
+            renderSubmissionsTable(filtered);
+        }
+
+        // Save Global Settings
+        async function updateSettings() {
+            const btn = document.getElementById('btnSaveSettings');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Saving...`;
+
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'admin_update_settings',
+                        tg_id: tgId,
+                        rate_usd: document.getElementById('cfgRate').value,
+                        fixed_password: document.getElementById('cfgPassword').value,
+                        tutorial_link: document.getElementById('cfgTutorial').value,
+                        rules_text: document.getElementById('cfgRules').value
+                    })
+                });
+
+                const data = await res.json();
+                alert(data.message);
+
+                if (data.success) {
+                    loadAdminDashboard();
+                }
+            } catch (err) {
+                alert('Failed to save settings.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Settings`;
+            }
+        }
+
+        // Change Submission Status
+        async function changeStatus(submissionId, newStatus) {
+            if (newStatus === 'approved') {
+                if (!confirm(`Are you sure you want to APPROVE submission #${submissionId}? This will automatically add funds to the user's main balance and issue referral commission.`)) {
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'admin_update_status',
+                        tg_id: tgId,
+                        submission_id: submissionId,
+                        new_status: newStatus
+                    })
+                });
+
+                const data = await res.json();
+                alert(data.message);
+
+                if (data.success) {
+                    loadAdminDashboard();
+                }
+            } catch (err) {
+                alert('Failed to update submission status.');
+            }
+        }
+
+        // Page Load Initializer
+        window.onload = () => {
+            loadAdminDashboard();
+        };
+    </script>
+</body>
+</html>
