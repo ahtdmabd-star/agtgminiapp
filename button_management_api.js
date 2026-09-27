@@ -243,8 +243,10 @@ async function initGmailTables(connection) {
             last_name VARCHAR(100) NOT NULL,
             suggested_email VARCHAR(255) NOT NULL,
             password VARCHAR(255) NOT NULL,
-            is_used TINYINT(1) DEFAULT 0,
+                        is_used TINYINT(1) DEFAULT 0,
             used_by_user_id INT NULL,
+            reserved_by_user_id INT NULL,
+            reserved_at TIMESTAMP NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
@@ -329,7 +331,8 @@ router.all('/api/gmail/category-info', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------
-// খ. কাস্টম নেম ডাটা জেনারেট এপিআই (Category 3 - Unique System)
+// ---------------------------------------------------------------------
+// খ. কাস্টম নেম ডাটা জেনারেট এপিআই (Category 3 - Unique System with Hold Logic)
 // ---------------------------------------------------------------------
 router.all('/api/gmail/generate-custom-name', async (req, res) => {
     try {
@@ -341,16 +344,41 @@ router.all('/api/gmail/generate-custom-name', async (req, res) => {
         const connection = await mysql.createConnection(dbConfig);
         await initGmailTables(connection);
 
-        const [stock] = await connection.execute(
-            'SELECT * FROM gmail_custom_names_stock WHERE is_used = 0 LIMIT 1'
+        // রিজার্ভেশনের সময়সীমা (যেমন: ১০ মিনিট = 10 MINUTE)
+        const HOLD_MINUTES = 10;
+
+        // ১. আগে চেক করা হবে এই ইউজারকে আগেই কোনো ডাটা হোল্ড করে দেওয়া আছে কিনা যা এখনও মেয়াদ শেষ হয়নি
+        let [stock] = await connection.execute(
+            `SELECT * FROM gmail_custom_names_stock 
+             WHERE is_used = 0 AND reserved_by_user_id = ? 
+             AND reserved_at >= NOW() - INTERVAL ? MINUTE LIMIT 1`,
+            [user_id, HOLD_MINUTES]
         );
 
+        // ২. যদি আগের কোনো একটিভ হোল্ড না থাকে, তবে সম্পূর্ণ ফ্রী অথবা রিজার্ভ সময় পার হয়ে গেছে এমন একটি ডাটা আনা হবে
         if (stock.length === 0) {
-            await connection.end();
-            return res.status(404).json({ 
-                success: false, 
-                message: 'No available account data in stock! Please contact support or try later.' 
-            });
+            [stock] = await connection.execute(
+                `SELECT * FROM gmail_custom_names_stock 
+                 WHERE is_used = 0 AND (reserved_at IS NULL OR reserved_at < NOW() - INTERVAL ? MINUTE) 
+                 LIMIT 1`,
+                [HOLD_MINUTES]
+            );
+
+            if (stock.length === 0) {
+                await connection.end();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'No available account data in stock right now! Please try again in a few minutes.' 
+                });
+            }
+
+            // ৩. নতুন পাওয়া ডাটাটি বর্তমান ইউজারের নামে রিজার্ভ/লক করা হলো
+            await connection.execute(
+                `UPDATE gmail_custom_names_stock 
+                 SET reserved_by_user_id = ?, reserved_at = NOW() 
+                 WHERE id = ?`,
+                [user_id, stock[0].id]
+            );
         }
 
         await connection.end();
@@ -362,7 +390,8 @@ router.all('/api/gmail/generate-custom-name', async (req, res) => {
                 first_name: stock[0].first_name,
                 last_name: stock[0].last_name,
                 suggested_email: stock[0].suggested_email,
-                password: stock[0].password
+                password: stock[0].password,
+                expires_in_minutes: HOLD_MINUTES
             }
         });
     } catch (error) {
@@ -370,6 +399,7 @@ router.all('/api/gmail/generate-custom-name', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
 
 // ---------------------------------------------------------------------
 // গ. ইউজার জিমেইল সাবমিট এপিআই (All 5 Categories)
