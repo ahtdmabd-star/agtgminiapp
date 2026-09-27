@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Management Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: #f3f4f6;
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="glass-header sticky top-0 z-50 border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <button id="backBtn" onclick="switchPanel()" class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-lg transition-all duration-200 flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span class="text-sm font-medium">পিছনে যান</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-envelope-circle-check text-blue-600 text-2xl"></i>
+                    <h1 id="headerTitle" class="text-xl font-bold text-gray-800">ইউজার প্যানেল — ফিক্সড পাসওয়ার্ড জিমেইল</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span id="panelBadge" class="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">ইউজার ভিউ</span>
+                <button onclick="togglePanelMode()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-2 rounded-lg transition">
+                    <i class="fa-solid fa-right-left mr-1"></i> প্যানেল পরিবর্তন
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- ================= USER PANEL ================= -->
+        <section id="userPanel" class="space-y-6">
+            <!-- Action / Info Bar -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">নতুন জিমেইল টাস্ক সংগ্রহ করুন</h2>
+                    <p class="text-sm text-gray-500">নির্দিষ্ট পাসওয়ার্ড ব্যবহার করে অ্যাকাউন্ট জমা দিন। সময় শেষ হওয়ার আগেই জমা দিন।</p>
+                </div>
+                <button onclick="assignTask()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>নতুন জিমেইল নিন</span>
+                </button>
+            </div>
+
+            <!-- Active Task Container -->
+            <div id="activeTaskArea" class="hidden bg-white p-6 rounded-2xl border border-blue-200 shadow-md">
+                <div class="flex justify-between items-center border-b pb-4 mb-4">
+                    <span class="text-sm font-semibold text-blue-600 flex items-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin"></i> চলন্ত টাস্ক
+                    </span>
+                    <div class="text-red-500 font-mono font-bold text-sm bg-red-50 px-3 py-1 rounded-lg border border-red-100">
+                        সময় বাকি: <span id="timer">10:00</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-500 uppercase block mb-1">জিমেইল ইউজারনেম</label>
+                        <div class="flex items-center justify-between">
+                            <span id="userGmail" class="font-mono font-semibold text-gray-800">user123@gmail.com</span>
+                            <button onclick="copyText('userGmail')" class="text-gray-400 hover:text-blue-600"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-500 uppercase block mb-1">নির্ধারিত পাসওয়ার্ড (Fixed)</label>
+                        <div class="flex items-center justify-between">
+                            <span id="userPass" class="font-mono font-semibold text-gray-800">Pass#2026!Fixed</span>
+                            <button onclick="copyText('userPass')" class="text-gray-400 hover:text-blue-600"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button onclick="cancelTask()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">বাতিল করুন</button>
+                    <button onclick="submitTask()" class="px-6 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow">সাবমিট করুন</button>
+                </div>
+            </div>
+
+            <!-- User History Table -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-bold text-gray-800">সাম্প্রতিক সাবমিশন</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-600">
+                        <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                            <tr>
+                                <th class="px-6 py-3">ইমেইল</th>
+                                <th class="px-6 py-3">পাসওয়ার্ড</th>
+                                <th class="px-6 py-3">তারিখ</th>
+                                <th class="px-6 py-3">স্ট্যাটাস</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userHistoryTable" class="divide-y divide-gray-100">
+                            <tr>
+                                <td class="px-6 py-4 font-mono">example.one@gmail.com</td>
+                                <td class="px-6 py-4 font-mono">Pass#2026!Fixed</td>
+                                <td class="px-6 py-4">27 Sep, 2026</td>
+                                <td class="px-6 py-4"><span class="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full font-medium">পেন্ডিং</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN PANEL ================= -->
+        <section id="adminPanel" class="hidden space-y-6">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-500 uppercase">মোট জেনারেটেড</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">১২০</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-500 uppercase">পেন্ডিং সাবমিশন</p>
+                    <p class="text-2xl font-bold text-yellow-600 mt-1">১৫</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-500 uppercase">অনুমোদিত (Approved)</p>
+                    <p class="text-2xl font-bold text-emerald-600 mt-1">৯৫</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-500 uppercase">বাতিল (Rejected)</p>
+                    <p class="text-2xl font-bold text-red-600 mt-1">১০</p>
+                </div>
+            </div>
+
+            <!-- Controls & Settings -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                <h3 class="font-bold text-gray-800 border-b pb-2">এডমিন সেটিংস — ফিক্সড পাসওয়ার্ড</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ডিফল্ট সিস্টেম পাসওয়ার্ড</label>
+                        <input type="text" value="Pass#2026!Fixed" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">টাইমার (মিনিট)</label>
+                        <input type="number" value="10" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Table -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800">সব ইউজার সাবমিশন ট্র্যাকিং</h3>
+                    <button class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-download mr-1"></i> এক্সপোর্ট (CSV)
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-600">
+                        <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                            <tr>
+                                <th class="px-6 py-3">ইউজার</th>
+                                <th class="px-6 py-3">জিমেইল</th>
+                                <th class="px-6 py-3">পাসওয়ার্ড</th>
+                                <th class="px-6 py-3">স্ট্যাটাস</th>
+                                <th class="px-6 py-3 text-right">অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-gray-900">User_01</td>
+                                <td class="px-6 py-4 font-mono">example.one@gmail.com</td>
+                                <td class="px-6 py-4 font-mono">Pass#2026!Fixed</td>
+                                <td class="px-6 py-4"><span class="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full font-medium">পেন্ডিং</span></td>
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 p-2 rounded-lg"><i class="fa-solid fa-check"></i></button>
+                                    <button class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let currentMode = 'user'; // 'user' or 'admin'
+        let timerInterval;
+
+        function togglePanelMode() {
+            if (currentMode === 'user') {
+                showAdminPanel();
+            } else {
+                showUserPanel();
+            }
+        }
+
+        function showUserPanel() {
+            currentMode = 'user';
+            document.getElementById('userPanel').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('headerTitle').innerText = 'ইউজার প্যানেল — ফিক্সড পাসওয়ার্ড জিমেইল';
+            document.getElementById('panelBadge').innerText = 'ইউজার ভিউ';
+            document.getElementById('panelBadge').className = 'bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full';
+            document.getElementById('backBtn').classList.add('hidden');
+        }
+
+        function showAdminPanel() {
+            currentMode = 'admin';
+            document.getElementById('userPanel').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'এডমিন প্যানেল — ফিক্সড পাসওয়ার্ড জিমেইল';
+            document.getElementById('panelBadge').innerText = 'এডমিন ভিউ';
+            document.getElementById('panelBadge').className = 'bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full';
+            document.getElementById('backBtn').classList.remove('hidden');
+        }
+
+        function switchPanel() {
+            showUserPanel();
+        }
+
+        function assignTask() {
+            document.getElementById('activeTaskArea').classList.remove('hidden');
+            startTimer(600); // 10 minutes
+        }
+
+        function cancelTask() {
+            document.getElementById('activeTaskArea').classList.add('hidden');
+            clearInterval(timerInterval);
+        }
+
+        function submitTask() {
+            alert('টাস্ক সফলভাবে সাবমিট করা হয়েছে!');
+            cancelTask();
+        }
+
+        function startTimer(duration) {
+            clearInterval(timerInterval);
+            let timer = duration, minutes, seconds;
+            timerInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                document.getElementById('timer').textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(timerInterval);
+                    alert("সময় শেষ হয়ে গেছে!");
+                    cancelTask();
+                }
+            }, 1000);
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text);
+            alert('কপি করা হয়েছে: ' + text);
+        }
+    </script>
+</body>
+                      </html>
+  
