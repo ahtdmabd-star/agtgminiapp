@@ -1,5 +1,5 @@
 // ============================================================
-// File: gmail.js
+// File: gmail.js - PART 1
 // Dedicated Gmail API Router Module with Auto-Table & Column Sync
 // ============================================================
 
@@ -53,20 +53,23 @@ module.exports = function(dbConfig) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         `);
 
-        // ১.৩ কোনো কলাম যেন বাদ না পড়ে তা স্বয়ংক্রিয়ভাবে নিশ্চিত করার জন্য অটো-কলাম অল্টার লজিক
+        // ১.৩ নিরাপদ কলাম চেক ও এড করার ফাংশন
         const checkAndAddColumn = async (tableName, columnName, columnDefinition) => {
-            const [cols] = await connection.execute(
-                `SHOW COLUMNS FROM \`${tableName}\` LIKE ?`, 
-                [columnName]
-            );
-            if (cols.length === 0) {
-                await connection.execute(
-                    `ALTER TABLE \`${tableName}\` ADD COLUMN ${columnDefinition}`
+            try {
+                const [cols] = await connection.execute(
+                    `SHOW COLUMNS FROM \`${tableName}\` LIKE '${columnName}'`
                 );
+                if (cols.length === 0) {
+                    await connection.execute(
+                        `ALTER TABLE \`${tableName}\` ADD COLUMN ${columnDefinition}`
+                    );
+                }
+            } catch (err) {
+                console.error(`Error checking/adding column ${columnName}:`, err.message);
             }
         };
 
-        // missing columns auto-addition check
+        // অটো-কলাম অল্টার চেক
         await checkAndAddColumn('gmail_submissions', 'rate_usd', '`rate_usd` DECIMAL(12, 8) NOT NULL AFTER `password`');
         await checkAndAddColumn('gmail_submissions', 'status', "`status` ENUM('pending', 'checking', 'approved', 'rejected') DEFAULT 'pending' AFTER `rate_usd`");
         await checkAndAddColumn('gmail_submissions', 'admin_note', '`admin_note` VARCHAR(255) DEFAULT NULL AFTER `status`');
@@ -139,7 +142,7 @@ module.exports = function(dbConfig) {
                 const [settings] = await connection.execute('SELECT * FROM `gmail_settings` WHERE `id` = 1 LIMIT 1');
                 const config = settings[0] || {};
 
-                // ২. গত ২৪ ঘণ্টায় ইউজারের মোট সাবমিশন কাউন্ট (Auto Reset tracking)
+                // ২. গত ২৪ ঘণ্টায় ইউজারের মোট সাবমিশন কাউন্ট
                 const [countRows] = await connection.execute(
                     `SELECT COUNT(*) as count_24h 
                      FROM \`gmail_submissions\` 
@@ -174,9 +177,9 @@ module.exports = function(dbConfig) {
                     return res.status(400).json({ success: false, message: 'Please enter a valid @gmail.com address.' });
                 }
 
-                // ✅ সঠিক সিঙ্গেল কোটেশনসহ ডুপ্লিকেট চেকিং
+                // ডুপ্লিকেট চেকিং
                 const [duplicate] = await connection.execute(
-                    "SELECT `id` FROM `gmail_submissions` WHERE `email` = ? AND `status` IN ('pending', 'checking', 'approved') LIMIT 1",
+                    `SELECT \`id\` FROM \`gmail_submissions\` WHERE \`email\` = ? AND \`status\` IN ('pending', 'checking', 'approved') LIMIT 1`,
                     [email]
                 );
                 
@@ -202,7 +205,6 @@ module.exports = function(dbConfig) {
                     submission_id: insertRes.insertId
                 });
             }
-
             // ====================================================
             // ACTION 3: User Submission History
             // ====================================================
@@ -267,7 +269,7 @@ module.exports = function(dbConfig) {
                 await requireAdmin(tgId);
 
                 const submissionId = Number(body.submission_id);
-                const newStatus = String(body.new_status || '').toLowerCase().trim(); // 'checking', 'approved', 'rejected'
+                const newStatus = String(body.new_status || '').toLowerCase().trim();
 
                 if (!['checking', 'approved', 'rejected'].includes(newStatus)) {
                     return res.status(400).json({ success: false, message: 'Invalid status provided.' });
@@ -285,7 +287,6 @@ module.exports = function(dbConfig) {
 
                 const sub = subRows[0];
 
-                // যদি আগের স্ট্যাটাস আর নতুন স্ট্যাটাস এক হয়
                 if (sub.status === newStatus) {
                     return res.json({ success: true, message: `Status is already ${newStatus}` });
                 }
@@ -299,7 +300,7 @@ module.exports = function(dbConfig) {
                     return res.json({ success: true, message: `Submission marked as ${newStatus}.` });
                 }
 
-                // ২. যদি 'Approved' করা হয় -> তখনই কেবল ব্যালেন্স ও রেফারেল কমিশন বিতরণ হবে
+                // ২. যদি 'Approved' করা হয়
                 if (newStatus === 'approved') {
                     if (sub.status === 'approved') {
                         return res.status(400).json({ success: false, message: 'Already approved before.' });
@@ -328,9 +329,7 @@ module.exports = function(dbConfig) {
                             [sub.telegram_id, sub.id, `GMAIL-${sub.id}`, creditAmount, oldBal, newBal, `Gmail Sell #${sub.id} Approved`]
                         );
 
-                        // ----------------------------------------------------
                         // রেফারেল কমিশন বন্টন লজিক
-                        // ----------------------------------------------------
                         const [refUser] = await connection.execute('SELECT `referred_by` FROM `users` WHERE `telegram_id` = ? LIMIT 1', [sub.telegram_id]);
                         if (refUser.length > 0 && refUser[0].referred_by) {
                             const refCode = String(refUser[0].referred_by).trim();
@@ -339,7 +338,6 @@ module.exports = function(dbConfig) {
                             if (parentUser.length > 0) {
                                 const referrerTgId = String(parentUser[0].telegram_id);
 
-                                // সেটিং থেকে রেফারেল পার্সেন্টেজ রিড
                                 const [st] = await connection.execute('SELECT `referral_percentage` FROM `settings` WHERE `id` = 1 LIMIT 1');
                                 const refPercent = st.length > 0 ? Number(st[0].referral_percentage || 0) : 0;
 
@@ -408,3 +406,4 @@ module.exports = function(dbConfig) {
 
     return router;
 };
+                                         
