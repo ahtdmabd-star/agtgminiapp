@@ -13,7 +13,7 @@
 
     <div class="max-w-4xl mx-auto space-y-6">
         
-        <!-- Header -->
+        <!-- Top App Bar -->
         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
             <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
                 <i class="fa-solid fa-sliders text-indigo-500"></i> Gmail Hub Control Center
@@ -23,10 +23,20 @@
             </span>
         </div>
 
-        <!-- ১. হেডলাইন ও সাবটাইটেল সেটিং -->
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+        <!-- ২ টি সেটিংস কাস্টম ট্যাব বাটন -->
+        <div class="grid grid-cols-2 gap-3 p-1.5 bg-slate-900 border border-slate-800 rounded-2xl">
+            <button id="tab-btn-1" onclick="switchTab(1)" class="py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg">
+                <i class="fa-solid fa-pen-to-square"></i> ১. নাম ও হেডলাইন চেঞ্জ
+            </button>
+            <button id="tab-btn-2" onclick="switchTab(2)" class="py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-layer-group"></i> ২. বাটন ম্যানেজার ও লিস্ট
+            </button>
+        </div>
+
+        <!-- ট্যাব ১: হেডলাইন চেঞ্জ সেটিংস -->
+        <div id="tab-content-1" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
             <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-heading text-indigo-400"></i> ১. পেজ হেডলাইন ও বিবরণ
+                <i class="fa-solid fa-heading text-indigo-400"></i> হাব হেডলাইন ও সাব-টাইটেল সেটিং
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -38,63 +48,68 @@
                     <input type="text" id="input-subheadline" placeholder="যেমন: Select your preferred service below" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
                 </div>
             </div>
-            <button onclick="updateSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> হেডলাইন সেভ করুন
+            <button onclick="updateSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> সেটিং সেভ করুন
             </button>
         </div>
 
-        <!-- ২. বাটন তৈরি ও এডিট ফর্ম -->
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
-            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2" id="form-title">
-                <i class="fa-solid fa-plus-circle text-emerald-400"></i> ২. নতুন বাটন যোগ করুন
-            </h2>
-            <input type="hidden" id="btn-id">
+        <!-- ট্যাব ২: নতুন বাটন যোগ করা এবং বাটন ম্যানেজমেন্ট -->
+        <div id="tab-content-2" class="space-y-6 hidden">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1 font-medium">বাটনের নাম</label>
-                    <input type="text" id="btn-name" placeholder="যেমন: Buy Gmail Account" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+            <!-- বাটন তৈরি ও এডিট করার ফর্ম -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+                <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2" id="form-title">
+                    <i class="fa-solid fa-plus-circle text-emerald-400"></i> নতুন বাটন তৈরি করুন
+                </h2>
+                <input type="hidden" id="btn-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">বাটনের নাম</label>
+                        <input type="text" id="btn-name" placeholder="যেমন: Buy Gmail Account" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">ফাইল বা পেজ লিংক (URL)</label>
+                        <input type="text" id="btn-action" placeholder="যেমন: buy_gmail.html" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">কাস্টম আইকন HTML কোড</label>
+                        <input type="text" id="btn-icon" placeholder='<i class="fa-solid fa-cart-shopping"></i>' class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-indigo-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1 font-medium">বাটন লিংক (URL / Route)</label>
-                    <input type="text" id="btn-action" placeholder="যেমন: buy_gmail.html" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1 font-medium">কাস্টম আইকন HTML কোড</label>
-                    <input type="text" id="btn-icon" placeholder='যেমন: <i class="fa-solid fa-cart-shopping"></i>' class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-indigo-500">
+
+                <div class="flex items-center space-x-3 pt-2">
+                    <button onclick="saveButton()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-check"></i> বাটন সেভ করুন
+                    </button>
+                    <button onclick="resetForm()" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2.5 rounded-lg text-slate-300 transition">
+                        রিসেট
+                    </button>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-3 pt-2">
-                <button onclick="saveButton()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-lg transition flex items-center gap-2">
-                    <i class="fa-solid fa-check"></i> বাটন সেভ করুন
-                </button>
-                <button onclick="resetForm()" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2.5 rounded-lg text-slate-300 transition">
-                    রিসেট
-                </button>
+            <!-- লাইভ বাটন লিস্ট টেবিল -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+                <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-purple-400"></i> বর্তমান বাটন তালিকা (Admin View)
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">আইকন</th>
+                                <th class="p-3">বাটনের নাম</th>
+                                <th class="p-3">এডমিন ফোল্ডার লিংক</th>
+                                <th class="p-3 text-right">অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-btn-rows" class="divide-y divide-slate-800/60">
+                            <!-- ডাটা আসবে -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <!-- ৩. বাটন টেবিল তালিকা -->
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
-            <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-purple-400"></i> ৩. বর্তমান বাটন তালিকা
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-                        <tr>
-                            <th class="p-3">আইকন</th>
-                            <th class="p-3">বাটনের নাম</th>
-                            <th class="p-3">লিংক / একশন</th>
-                            <th class="p-3 text-right">অ্যাকশন</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-btn-rows" class="divide-y divide-slate-800/60">
-                        <!-- এপিআই থেকে ডাটা আসবে -->
-                    </tbody>
-                </table>
-            </div>
         </div>
 
     </div>
@@ -102,7 +117,27 @@
     <script>
         let hubButtons = [];
 
-        // ডাটা লোড করার ফাংশন
+        // সেটিংস বাটন বা ট্যাব সুইচ লজিক
+        function switchTab(tabIndex) {
+            const btn1 = document.getElementById('tab-btn-1');
+            const btn2 = document.getElementById('tab-btn-2');
+            const content1 = document.getElementById('tab-content-1');
+            const content2 = document.getElementById('tab-content-2');
+
+            if (tabIndex === 1) {
+                btn1.className = 'py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg';
+                btn2.className = 'py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-400 hover:text-white';
+                content1.classList.remove('hidden');
+                content2.classList.add('hidden');
+            } else {
+                btn2.className = 'py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg';
+                btn1.className = 'py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-400 hover:text-white';
+                content2.classList.remove('hidden');
+                content1.classList.add('hidden');
+            }
+        }
+
+        // এপিআই থেকে ডাটা লোড
         async function loadAdminData() {
             try {
                 const res = await fetch('/api/hub/data');
@@ -119,7 +154,7 @@
             }
         }
 
-        // টেবিল রেন্ডার
+        // টেবিল রেন্ডারিং
         function renderRows() {
             const tbody = document.getElementById('admin-btn-rows');
             tbody.innerHTML = '';
@@ -130,12 +165,22 @@
             }
 
             hubButtons.forEach(btn => {
+                // এডমিন ফোল্ডারের জন্য লিংক ফরম্যাটিং (admin/ যুক্ত করা)
+                let adminPath = btn.button_action;
+                if (!adminPath.startsWith('http://') && !adminPath.startsWith('https://')) {
+                    adminPath = adminPath.startsWith('/') ? `admin${adminPath}` : `admin/${adminPath}`;
+                }
+
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-950/40 transition';
                 tr.innerHTML = `
                     <td class="p-3 font-mono text-indigo-400 text-sm">${btn.button_icon}</td>
                     <td class="p-3 font-semibold text-slate-200">${btn.button_name}</td>
-                    <td class="p-3 font-mono text-slate-400 text-[11px]">${btn.button_action}</td>
+                    <td class="p-3 font-mono text-emerald-400 text-[11px]">
+                        <a href="${adminPath}" class="hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-folder text-amber-500"></i> ${adminPath}
+                        </a>
+                    </td>
                     <td class="p-3 text-right space-x-2">
                         <button onclick="editBtn(${btn.id})" class="px-2.5 py-1 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-800/50 rounded transition">এডিট</button>
                         <button onclick="deleteBtn(${btn.id})" class="px-2.5 py-1 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800/50 rounded transition">ডিলিট</button>
@@ -145,7 +190,7 @@
             });
         }
 
-        // সেটিংস আপডেট (হেডলাইন ও সাব-টাইটেল)
+        // সেটিং আপডেট
         async function updateSettings() {
             const headline = document.getElementById('input-headline').value;
             const subheadline = document.getElementById('input-subheadline').value;
@@ -198,7 +243,6 @@
             }
         }
 
-        // বাটন এডিট মোড
         function editBtn(id) {
             const btn = hubButtons.find(b => b.id === id);
             if(!btn) return;
@@ -210,7 +254,6 @@
             document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-indigo-400"></i> বাটন এডিট করুন';
         }
 
-        // বাটন ডিলিট
         async function deleteBtn(id) {
             if(!confirm('আপনি কি নিশ্চিতভাবে এই বাটনটি ডিলিট করতে চান?')) return;
 
@@ -229,16 +272,14 @@
             }
         }
 
-        // ফর্ম রিসেট
         function resetForm() {
             document.getElementById('btn-id').value = '';
             document.getElementById('btn-name').value = '';
             document.getElementById('btn-action').value = '';
             document.getElementById('btn-icon').value = '';
-            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-plus-circle text-emerald-400"></i> ২. নতুন বাটন যোগ করুন';
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-plus-circle text-emerald-400"></i> নতুন বাটন তৈরি করুন';
         }
 
-        // শুরুর সময় ডাটা লোড
         loadAdminData();
     </script>
 </body>
