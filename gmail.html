@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social-X - Gmail Submissions</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-purple: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* Top Header & Navbar */
+        .app-header {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        /* Top Highlighted Tutorial Button */
+        .btn-tutorial-top {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 20px;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-tutorial-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+            color: #fff;
+        }
+
+        /* Category Nav Tabs */
+        .category-scroll-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .category-scroll-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .cat-btn {
+            display: inline-block;
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cat-btn.active, .cat-btn:hover {
+            background: linear-gradient(135deg, var(--accent-purple), #4f46e5);
+            color: #fff;
+            border-color: var(--accent-purple);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* Cards Styling */
+        .custom-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-badge {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Rules Box */
+        .rules-box {
+            background-color: rgba(15, 23, 42, 0.6);
+            border-left: 4px solid var(--accent-purple);
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            white-space: pre-line;
+            margin-bottom: 20px;
+        }
+
+        /* Custom Inputs */
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-control, .form-select {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            background-color: #0f172a;
+            color: var(--text-main);
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 0.25rem var(--accent-glow);
+        }
+
+        .form-control[readonly] {
+            background-color: #1e293b;
+            color: #94a3b8;
+        }
+
+        /* Generated Details Card for Category 3 */
+        .generated-box {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+            border: 1px dashed var(--accent-purple);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .copy-btn {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--accent-purple);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent-purple), #4f46e5);
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            width: 100%;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        /* Table Styling */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .custom-table {
+            width: 100%;
+            margin-bottom: 0;
+            color: var(--text-main);
+            background-color: var(--card-bg);
+        }
+
+        .custom-table th {
+            background-color: #0f172a;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 0.85rem;
+        }
+
+        /* Badges */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-checking { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .status-approved { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-rejected { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* Countdown Timer */
+        #holdTimer {
+            font-weight: 700;
+            color: var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header Navigation -->
+    <header class="app-header mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-brands fa-google text-primary fs-4"></i>
+                <span class="brand-logo">𝑺𝒐𝒄𝒊𝒂𝒍-𝑿</span>
+            </div>
+            <!-- Top Highlighted Tutorial Button -->
+            <a id="topTutorialBtn" href="#" target="_blank" class="btn btn-tutorial-top text-decoration-none">
+                <i class="fa-solid fa-circle-play me-1"></i> Tutorial
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 5 Category Buttons Horizontal Scroll -->
+        <div class="category-scroll-container">
+            <div class="cat-btn active" onclick="switchCategory('new_random')">
+                <i class="fa-solid fa-shuffle me-1"></i> New Gmail Random
+            </div>
+            <div class="cat-btn" onclick="switchCategory('new_custom_password')">
+                <i class="fa-solid fa-key me-1"></i> New Custom Password
+            </div>
+            <div class="cat-btn" onclick="switchCategory('new_custom_name')">
+                <i class="fa-solid fa-id-card me-1"></i> New Custom Name
+            </div>
+            <div class="cat-btn" onclick="switchCategory('old_gmail')">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> Old Gmail
+            </div>
+            <div class="cat-btn" onclick="switchCategory('used_gmail')">
+                <i class="fa-solid fa-box-archive me-1"></i> Used Gmail
+            </div>
+        </div>
+
+        <!-- Main Submission Card -->
+        <div class="custom-card">
+            <!-- Header Info: Rate & 24h Count -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h5 id="categoryTitle" class="fw-bold mb-0 text-white">New Gmail Random</h5>
+                <div class="d-flex gap-2">
+                    <span class="stat-badge"><i class="fa-solid fa-dollar-sign me-1"></i> Rate: $<span id="catRate">0.000000</span></span>
+                    <span class="stat-badge"><i class="fa-solid fa-chart-line me-1"></i> 24h Submits: <span id="sub24hCount">0</span></span>
+                </div>
+            </div>
+
+            <!-- Rules Box -->
+            <div class="rules-box" id="categoryRules">
+                Loading rules...
+            </div>
+
+            <!-- Form Start -->
+            <form id="gmailSubmitForm" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="selectedCategory" value="new_random">
+                <input type="hidden" id="generatedStockId" value="">
+
+                <!-- Category 3 Unique Section: Custom Name Generator Box -->
+                <div id="customNameSection" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <button type="button" class="btn btn-outline-info btn-sm rounded-pill" onclick="generateCustomName()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate Account Details
+                        </button>
+                        <span id="timerContainer" style="display: none;" class="small text-muted">
+                            Hold Expires In: <span id="holdTimer">10:00</span>
+                        </span>
+                    </div>
+
+                    <div id="generatedCard" class="generated-box" style="display: none;">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <div class="d-flex gap-1">
+                                    <input type="text" id="genFullName" class="form-control form-control-sm" readonly>
+                                    <button type="button" class="copy-btn" onclick="copyValue('genFullName')"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Suggested Username</label>
+                                <div class="d-flex gap-1">
+                                    <input type="text" id="genUsername" class="form-control form-control-sm" readonly>
+                                    <button type="button" class="copy-btn" onclick="copyValue('genUsername')"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <label class="form-label">System Assigned Password</label>
+                                <div class="d-flex gap-1">
+                                    <input type="text" id="genPassword" class="form-control form-control-sm" readonly>
+                                    <button type="button" class="copy-btn" onclick="copyValue('genPassword')"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Fields Grid -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Gmail Address / Username *</label>
+                        <input type="email" id="inputEmail" class="form-control" placeholder="example@gmail.com" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Password *</label>
+                        <input type="text" id="inputPassword" class="form-control" placeholder="Enter password" required>
+                    </div>
+
+                    <!-- Category 4 Field: Days Old -->
+                    <div class="col-md-12" id="fieldDaysOld" style="display: none;">
+                        <label class="form-label">Account Age (in Days) *</label>
+                        <input type="number" id="inputDaysOld" class="form-control" placeholder="e.g. 30, 90, 365">
+                    </div>
+
+                    <!-- Category 5 Field: Previous Usage -->
+                    <div class="col-md-12" id="fieldUsedFor" style="display: none;">
+                        <label class="form-label">Previous Usage Details (Optional)</label>
+                        <textarea id="inputUsedFor" class="form-control" rows="2" placeholder="Where was this Gmail used previously?"></textarea>
+                    </div>
+
+                    <!-- Category 3 Warning Checkbox -->
+                    <div class="col-12" id="fieldWarningCheckbox" style="display: none;">
+                        <div class="form-check text-warning small">
+                            <input class="form-check-input" type="checkbox" id="warningAgreed">
+                            <label class="form-check-label" for="warningAgreed">
+                                I confirm that I created the account with the exact details generated above. Incorrect submissions will cause account suspension.
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <button type="submit" id="submitBtn" class="btn-submit">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Submit Gmail
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- History Table Section -->
+        <div class="custom-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-white"><i class="fa-solid fa-list-check me-2 text-primary"></i> Submission History</h6>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="loadUserHistory()">
+                    <i class="fa-solid fa-rotate-right me-1"></i> Refresh
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Email Address</th>
+                            <th>Password</th>
+                            <th>Rate</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">Loading submission history...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast / Alert Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div id="liveToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Mock User Session (In production, replace with actual logged in User ID)
+        const USER_ID = 1; 
+        
+        let currentCategory = 'new_random';
+        let customPassword = '';
+        let timerInterval = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            switchCategory('new_random');
+            loadUserHistory();
+        });
+
+        // Show Toast Function
+        function showToast(message, type = 'info') {
+            const toastEl = document.getElementById('liveToast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.innerText = message;
+            toastEl.className = `toast align-items-center text-bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'dark'} border-0`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        // Switch Category Tabs
+        function switchCategory(catKey) {
+            currentCategory = catKey;
+            document.getElementById('selectedCategory').value = catKey;
+
+            // Highlight Tab Button
+            const buttons = document.querySelectorAll('.cat-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event?.currentTarget?.classList.add('active');
+
+            // Reset Form Fields
+            document.getElementById('gmailSubmitForm').reset();
+            document.getElementById('generatedStockId').value = '';
+            document.getElementById('generatedCard').style.display = 'none';
+            document.getElementById('timerContainer').style.display = 'none';
+            if(timerInterval) clearInterval(timerInterval);
+
+            // Hide Special Fields
+            document.getElementById('customNameSection').style.display = 'none';
+            document.getElementById('fieldDaysOld').style.display = 'none';
+            document.getElementById('fieldUsedFor').style.display = 'none';
+            document.getElementById('fieldWarningCheckbox').style.display = 'none';
+            document.getElementById('inputPassword').readOnly = false;
+
+            // Specific Category Customizations
+            if (catKey === 'new_custom_password') {
+                if (customPassword) {
+                    document.getElementById('inputPassword').value = customPassword;
+                    document.getElementById('inputPassword').readOnly = true;
+                }
+            } else if (catKey === 'new_custom_name') {
+                document.getElementById('customNameSection').style.display = 'block';
+                document.getElementById('fieldWarningCheckbox').style.display = 'block';
+            } else if (catKey === 'old_gmail') {
+                document.getElementById('fieldDaysOld').style.display = 'block';
+            } else if (catKey === 'used_gmail') {
+                document.getElementById('fieldUsedFor').style.display = 'block';
+            }
+
+            // Fetch Category Details
+            fetchCategoryInfo(catKey);
+        }
+
+        // Fetch Rules, Rate, Tutorial Link & 24h Submit Count
+        async function fetchCategoryInfo(catKey) {
+            try {
+                const response = await fetch('/api/gmail/category-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category: catKey, user_id: USER_ID })
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    const data = res.data;
+                    document.getElementById('catRate').innerText = parseFloat(data.rate).toFixed(6);
+                    document.getElementById('sub24hCount').innerText = data.submitted_last_24h;
+                    document.getElementById('categoryRules').innerText = data.rules || 'Follow system rules.';
+                    
+                    if (data.tutorial_link) {
+                        document.getElementById('topTutorialBtn').href = data.tutorial_link;
+                    }
+
+                    if (catKey === 'new_custom_password') {
+                        customPassword = data.custom_password || '';
+                        document.getElementById('inputPassword').value = customPassword;
+                        document.getElementById('inputPassword').readOnly = true;
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch Category Info Error:', err);
+            }
+        }
+
+        // Category 3: Generate Custom Name (Unique System with 10 Min Hold)
+        async function generateCustomName() {
+            try {
+                const response = await fetch('/api/gmail/generate-custom-name', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: USER_ID })
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    const data = res.data;
+                    document.getElementById('generatedStockId').value = data.id;
+                    document.getElementById('genFullName').value = `${data.first_name} ${data.last_name}`;
+                    document.getElementById('genUsername').value = data.suggested_email;
+                    document.getElementById('genPassword').value = data.password;
+
+                    // Fill submission form fields automatically
+                    document.getElementById('inputEmail').value = data.suggested_email;
+                    document.getElementById('inputPassword').value = data.password;
+
+                    document.getElementById('generatedCard').style.display = 'block';
+                    
+                    // Start Hold Timer Countdown
+                    startHoldTimer(data.expires_in_minutes || 10);
+                    showToast('Account details generated & reserved for 10 minutes!', 'success');
+                } else {
+                    showToast(res.message || 'No available custom names in stock!', 'error');
+                }
+            } catch (err) {
+                showToast('Error generating account details.', 'error');
+            }
+        }
+
+        // Countdown Timer Function for Hold Period
+        function startHoldTimer(minutes) {
+            if (timerInterval) clearInterval(timerInterval);
+            let totalSeconds = minutes * 60;
+            const timerDisplay = document.getElementById('holdTimer');
+            document.getElementById('timerContainer').style.display = 'inline';
+
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(totalSeconds / 60);
+                const secs = totalSeconds % 60;
+                timerDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.innerText = "Expired!";
+                    showToast('Hold period expired! Please generate details again.', 'error');
+                }
+                totalSeconds--;
+            }, 1000);
+        }
+
+        // Copy Text Helper
+        function copyValue(elementId) {
+            const copyText = document.getElementById(elementId);
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            showToast('Copied to clipboard!', 'success');
+        }
+
+        // Form Submit Handler
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const category = document.getElementById('selectedCategory').value;
+            const email = document.getElementById('inputEmail').value.trim();
+            const password = document.getElementById('inputPassword').value.trim();
+            const stockId = document.getElementById('generatedStockId').value;
+            const warningAgreed = document.getElementById('warningAgreed').checked;
+
+            if (category === 'new_custom_name') {
+                if (!warningAgreed) {
+                    showToast('You must agree to the terms & warning checkbox!', 'error');
+                    return;
+                }
+                if (!stockId) {
+                    showToast('Please generate account details first!', 'error');
+                    return;
+                }
+            }
+
+            let additionalInfo = null;
+            if (category === 'old_gmail') {
+                const days = document.getElementById('inputDaysOld').value;
+                if (!days) {
+                    showToast('Please enter account age in days!', 'error');
+                    return;
+                }
+                additionalInfo = JSON.stringify({ days_old: days });
+            } else if (category === 'used_gmail') {
+                const usage = document.getElementById('inputUsedFor').value;
+                additionalInfo = JSON.stringify({ used_for: usage });
+            }
+
+            const payload = {
+                user_id: USER_ID,
+                category: category,
+                email: email,
+                password: password,
+                additional_info: additionalInfo,
+                generated_stock_id: stockId || null,
+                warning_agreed: warningAgreed
+            };
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Submitting...';
+
+            try {
+                const response = await fetch('/api/gmail/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    showToast(res.message, 'success');
+                    document.getElementById('gmailSubmitForm').reset();
+                    document.getElementById('generatedCard').style.display = 'none';
+                    document.getElementById('timerContainer').style.display = 'none';
+                    if (timerInterval) clearInterval(timerInterval);
+                    loadUserHistory();
+                    fetchCategoryInfo(category);
+                } else {
+                    showToast(res.message || 'Submission failed!', 'error');
+                }
+            } catch (err) {
+                showToast('Server error while submitting!', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> Submit Gmail';
+            }
+        }
+
+        // Load Submission History
+        async function loadUserHistory() {
+            try {
+                const response = await fetch('/api/gmail/user-history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: USER_ID })
+                });
+                const res = await response.json();
+
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = '';
+
+                if (res.success && res.data.length > 0) {
+                    res.data.forEach(item => {
+                        let statusClass = 'status-pending';
+                        if (item.status === 'checking') statusClass = 'status-checking';
+                        if (item.status === 'approved') statusClass = 'status-approved';
+                        if (item.status === 'rejected') statusClass = 'status-rejected';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>#${item.id}</td>
+                            <td><span class="badge bg-secondary">${item.category}</span></td>
+                            <td>${item.email}</td>
+                            <td><code>${item.password}</code></td>
+                            <td>$${parseFloat(item.rate).toFixed(6)}</td>
+                            <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+                            <td class="small text-muted">${new Date(item.created_at).toLocaleString()}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No submissions found.</td></tr>';
+                }
+            } catch (err) {
+                console.error('Load History Error:', err);
+            }
+        }
+    </script>
+</body>
+</html>
