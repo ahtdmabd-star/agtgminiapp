@@ -32,6 +32,13 @@
         .btn-action:active {
             transform: scale(0.96);
         }
+        .btn-exchange {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-exchange:active {
+            transform: scale(0.95);
+        }
         .page-section {
             display: none;
         }
@@ -42,7 +49,7 @@
 </head>
 <body class="p-4 pb-20 max-w-md mx-auto">
 
-    <!-- Header Section -->
+    <!-- Header Section with Coin Balance and Exchange Button -->
     <div class="glass-card p-4 mb-4 flex justify-between items-center shadow-xl">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
@@ -53,12 +60,17 @@
                 <p id="userIdDisplay" class="text-xs text-gray-400">ID: --</p>
             </div>
         </div>
-        <div class="text-right">
-            <p class="text-xs text-gray-400">Coin Balance</p>
-            <div class="flex items-center justify-end gap-1 text-amber-400 font-bold text-lg">
+        
+        <!-- Coins & Exchange Button -->
+        <div class="text-right flex flex-col items-end gap-1">
+            <p class="text-xs text-gray-400">Coins</p>
+            <div class="flex items-center justify-end gap-1 text-amber-400 font-bold text-base">
                 <i class="fa-solid fa-coins"></i>
                 <span id="userCoins">0</span>
             </div>
+            <button onclick="exchangeCoins()" class="btn-exchange px-3 py-1 rounded-lg text-[10px] font-bold text-white shadow-md flex items-center gap-1 mt-1">
+                <i class="fa-solid fa-[#10b981] fa-arrow-right-arrow-left"></i> Exchange
+            </button>
         </div>
     </div>
 
@@ -87,7 +99,7 @@
         <div class="space-y-3">
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 pl-1">Available Ad Tasks</h3>
 
-            <!-- Block 1: Task Ad -->
+            <!-- Block 1: Special Task Ad -->
             <div class="glass-card p-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
@@ -98,12 +110,12 @@
                         <span class="text-xs text-emerald-400 font-semibold">+Reward Coins</span>
                     </div>
                 </div>
-                <button onclick="triggerAd('task-50533')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
+                <button onclick="triggerAd('50533')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
                     Watch
                 </button>
             </div>
 
-            <!-- Block 2: Interstitial / Direct Ad -->
+            <!-- Block 2: Direct Ad -->
             <div class="glass-card p-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-lg">
@@ -160,10 +172,10 @@
                 <span id="walletCoins" class="font-bold text-amber-400 text-lg">0</span>
             </div>
             <p class="text-xs text-gray-400 leading-relaxed">
-                Complete ad tasks to earn coins. Once you hit the threshold, conversion to main balance will open.
+                Minimum 1,000 coins required to exchange to USD main balance.
             </p>
-            <button onclick="alert('Withdrawal System is currently active!')" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold text-xs text-white shadow-lg">
-                Request Cashout
+            <button onclick="exchangeCoins()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold text-xs text-white shadow-lg">
+                Exchange Coins To USD
             </button>
         </div>
     </div>
@@ -177,8 +189,8 @@
             <ul class="text-xs text-gray-300 space-y-2 list-disc pl-4 leading-relaxed">
                 <li>You must watch the full ad to receive your reward coins.</li>
                 <li>Closing or skipping ads prematurely marks them as incomplete.</li>
+                <li>Minimum 1,000 coins required for instant exchange to USD balance.</li>
                 <li>Daily task stats reset every 24 hours automatically.</li>
-                <li>Using VPNs or automated clickers is strictly prohibited.</li>
             </ul>
         </div>
     </div>
@@ -187,14 +199,12 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Get User details from Telegram WebApp Context
         const user = tg.initDataUnsafe?.user || { id: "12345678", first_name: "Member" };
         const userId = user.id;
 
         document.getElementById('userName').innerText = user.first_name;
         document.getElementById('userIdDisplay').innerText = `ID: ${userId}`;
 
-        // Navigation Control with Native Telegram BackButton
         let currentPage = 'dashboard';
 
         function navigateTo(pageId) {
@@ -215,7 +225,7 @@
             }
         });
 
-        // Sync Statistics with Backend
+        // Sync Statistics
         async function fetchUserStats() {
             try {
                 const res = await fetch(`/api/ads/user-stats/${userId}`);
@@ -233,14 +243,33 @@
             }
         }
 
-        // Adsgram Ad Handler for Multiple Block IDs
+        // Exchange Coins Function
+        async function exchangeCoins() {
+            try {
+                const res = await fetch('/api/ads/convert-coins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId })
+                });
+
+                const json = await res.json();
+                alert(json.message);
+                if (json.success) {
+                    fetchUserStats(); // Refresh Balance
+                }
+            } catch (e) {
+                alert("Exchange Request Failed!");
+            }
+        }
+
+        // Adsgram Ad Handler
         function triggerAd(blockId) {
             if (!window.Adsgram) {
                 alert("Adsgram SDK unavailable. Please reload.");
                 return;
             }
 
-            const AdController = window.Adsgram.init({ blockId: blockId, debug: false });
+            const AdController = window.Adsgram.init({ blockId: String(blockId), debug: false });
 
             AdController.show().then((result) => {
                 alert("Ad Completed! Verifying reward with server...");
@@ -260,5 +289,4 @@
         fetchUserStats();
     </script>
 </body>
-                  </html>
-                  
+</html>
