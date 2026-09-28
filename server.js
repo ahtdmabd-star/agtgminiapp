@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 const gmailRoutes = require('./gmail');
 const adTasksRoutes = require('./ad_tasks_api'); 
 
-// সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট ক
+// সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট 
 const dbConfig = {
     host: 'mysql-14cc93c7-alhudatechglobal-601b.i.aivencloud.com',
     port: 14363,
