@@ -5,18 +5,17 @@ const mysql = require('mysql2/promise');
 module.exports = function (dbConfig) {
     const router = express.Router();
 
-    // ডাটাবেজ হেলপার ফাংশন
     async function getConnection() {
         return await mysql.createConnection(dbConfig);
     }
 
-    // টেবিল অটো-ক্রিয়েশন (সার্ভার চালু হলেই অটোমেটিক তৈরি হবে)
+    // টেবিল অটো-ক্রিয়েশন
     async function initTables() {
         let conn;
         try {
             conn = await getConnection();
             
-            // ১. ইউজার টাস্ক ডাটা টেবিল
+            // ১. অ্যাড টাস্ক ইউজার টেবিল
             await conn.query(`
                 CREATE TABLE IF NOT EXISTS ad_task_users (
                     user_id VARCHAR(100) PRIMARY KEY,
@@ -28,7 +27,7 @@ module.exports = function (dbConfig) {
                 )
             `);
 
-            // ২. অ্যাডমিন অ্যাড সেটিংস টেবিল
+            // ২. অ্যাডমিন সেটিংস টেবিল
             await conn.query(`
                 CREATE TABLE IF NOT EXISTS ad_settings (
                     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -38,7 +37,6 @@ module.exports = function (dbConfig) {
                 )
             `);
 
-            // ডিফল্ট সেটিংস ইনসার্ট
             const [rows] = await conn.query(`SELECT * FROM ad_settings WHERE id = 1`);
             if (rows.length === 0) {
                 await conn.query(`INSERT INTO ad_settings (id, task_reward_coins, coins_per_usd, min_convert_coins) VALUES (1, 100, 10000, 1000)`);
@@ -51,23 +49,19 @@ module.exports = function (dbConfig) {
     }
     initTables();
 
-    // Adsgram Secret Key
     const ADSGRAM_SECRET = process.env.ADSGRAM_SECRET || "YOUR_ADSGRAM_SECRET_KEY";
 
     /**
-     * ১. Adsgram Webhook
-     * URL: https://agtgminiapp.onrender.com/api/ads/reward-callback?userId=[userId]
+     * ১. Adsgram Webhook Callback
      */
     router.get('/reward-callback', async (req, res) => {
         let conn;
         try {
-            // ছোট হাতের (userid) এবং বড় হাতের (userId) দুটিই সাপোর্ট করবে
             const telegramUserId = req.query.userId || req.query.userid;
             const { hash, ...params } = req.query;
 
             if (!telegramUserId) return res.status(400).send("User ID missing");
 
-            // --- Signature Verification (সিকিউরিটি চেক) ---
             if (hash) {
                 const checkString = Object.keys(params)
                     .sort()
@@ -83,23 +77,18 @@ module.exports = function (dbConfig) {
             }
 
             conn = await getConnection();
-
-            // সেটিংস থেকে রিওয়ার্ড কয়েন পড়া
             const [settings] = await conn.query(`SELECT task_reward_coins FROM ad_settings WHERE id = 1`);
             const rewardCoins = settings[0]?.task_reward_coins || 100;
 
-            // ইউজার ডাটা চেক করা
             const [users] = await conn.query(`SELECT * FROM ad_task_users WHERE user_id = ?`, [telegramUserId]);
             const now = new Date();
 
             if (users.length === 0) {
-                // নতুন ইউজার রেকর্ড
                 await conn.query(`
                     INSERT INTO ad_task_users (user_id, coins, completed_tasks, daily_completed_tasks, last_ad_time)
                     VALUES (?, ?, 1, 1, ?)
                 `, [telegramUserId, rewardCoins, now]);
             } else {
-                // ২৪ ঘন্টার হিসাব ও আপডেট
                 const user = users[0];
                 const lastTime = user.last_ad_time ? new Date(user.last_ad_time) : new Date(0);
                 const hoursPassed = (now - lastTime) / (1000 * 60 * 60);
@@ -116,11 +105,9 @@ module.exports = function (dbConfig) {
                 `, [rewardCoins, newDaily, now, telegramUserId]);
             }
 
-            console.log(`[Adsgram] ${rewardCoins} coins credited to User ${telegramUserId}`);
             return res.status(200).send("OK");
 
         } catch (error) {
-            console.error("Adsgram Callback Error:", error);
             return res.status(500).send("Server Error");
         } finally {
             if (conn) await conn.end();
@@ -128,7 +115,63 @@ module.exports = function (dbConfig) {
     });
 
     /**
-     * ২. অসম্পূর্ণ অ্যাড ট্র্যাকিং API
+     * ২. কয়েন থেকে ডলারে এক্সচেঞ্জ করার এপিআই (Coin Exchange API)
+     */
+    router.post('/convert-coins', async (req, res) => {
+        let conn;
+        try {
+            const userId = req.body.userId || req.body.userid;
+            if (!userId) return res.status(400).json({ success: false, message: "User ID missing" });
+
+            conn = await getConnection();
+
+            // সেটিংস চেক
+            const [settings] = await conn.query(`SELECT coins_per_usd, min_convert_coins FROM ad_settings WHERE id = 1`);
+            const coinsPerUsd = settings[0]?.coins_per_usd || 10000;
+            const minConvert = settings[0]?.min_convert_coins || 1000;
+
+            // ইউজারের কয়েন ডাটা চেক
+            const [users] = await conn.query(`SELECT coins FROM ad_task_users WHERE user_id = ?`, [userId]);
+            if (users.length === 0 || users[0].coins < minConvert) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Minimum ${minConvert} coins required to exchange.` 
+                });
+            }
+
+            const currentCoins = users[0].coins;
+            const usdAmount = (currentCoins / coinsPerUsd).toFixed(4); // ডলার অ্যামাউন্ট হিসাব
+
+            //১. মূল 'users' টেবিলে ব্যালেন্স (USD) যোগ
+            await conn.query(`
+                UPDATE users 
+                SET balance = balance + ? 
+                WHERE telegram_id = ? OR id = ?
+            `, [usdAmount, userId, userId]);
+
+            // ২. অ্যাড টাস্কের কয়েন ০ করে দেওয়া
+            await conn.query(`
+                UPDATE ad_task_users 
+                SET coins = 0 
+                WHERE user_id = ?
+            `, [userId]);
+
+            return res.json({ 
+                success: true, 
+                message: `Successfully exchanged ${currentCoins} coins for $${usdAmount}!`,
+                convertedUsd: usdAmount 
+            });
+
+        } catch (error) {
+            console.error("Exchange Error:", error);
+            return res.status(500).json({ success: false, message: "Server error during exchange" });
+        } finally {
+            if (conn) await conn.end();
+        }
+    });
+
+    /**
+     * ৩. অসম্পূর্ণ অ্যাড ট্র্যাকিং
      */
     router.post('/track-incomplete', async (req, res) => {
         let conn;
@@ -152,7 +195,7 @@ module.exports = function (dbConfig) {
     });
 
     /**
-     * ৩. ইউজারের অ্যাড ডাটা ও কয়েন পাওয়ার API
+     * ৪. ইউজারের অ্যাড ডাটা পাওয়ার এপিআই
      */
     router.get('/user-stats/:userId', async (req, res) => {
         let conn;
@@ -179,7 +222,7 @@ module.exports = function (dbConfig) {
     });
 
     /**
-     * ৪. অ্যাডমিন সেটিংস আপডেট API
+     * ৫. অ্যাডমিন সেটিংস আপডেট
      */
     router.post('/admin/update-settings', async (req, res) => {
         let conn;
@@ -203,4 +246,3 @@ module.exports = function (dbConfig) {
 
     return router;
 };
-                                                              
