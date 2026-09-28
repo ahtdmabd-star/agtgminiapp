@@ -4,6 +4,7 @@ const mysql = require('mysql2/promise');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const gmailRoutes = require('./gmail');
+const adTasksRoutes = require('./ad_tasks_api'); 
 
 // সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট ক
 const dbConfig = {
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '/')));
 app.use('/api/gmail', gmailRoutes(dbConfig));
+app.use('/api/ads', adTasksRoutes(dbConfig));
 
 // ============================================================
 // ১. GET USER API
