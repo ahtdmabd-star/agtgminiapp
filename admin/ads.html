@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adsgram Task Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; }
+    </style>
+</head>
+<body class="p-4 max-w-lg mx-auto space-y-5">
+
+    <!-- Header Card -->
+    <div class="card p-5 shadow-2xl border-l-4 border-indigo-500">
+        <h1 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-indigo-400"></i>
+            Adsgram Control Panel
+        </h1>
+        <p class="text-xs text-gray-400 mt-1">Configure Ad Rewards and Coin Rates Dynamically</p>
+    </div>
+
+    <!-- Settings Form Card -->
+    <div class="card p-5 space-y-4 shadow-xl">
+        <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-2">Reward Coins Per Completed Ad:</label>
+            <input type="number" id="taskRewardCoins" value="100" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-2">Coins Rate Per $1.00 USD:</label>
+            <input type="number" id="coinsPerUsd" value="10000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-2">Minimum Threshold Coins To Convert:</label>
+            <input type="number" id="minConvertCoins" value="1000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <button onclick="updateSettings()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-lg">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Save Configuration
+        </button>
+    </div>
+
+    <script>
+        async function updateSettings() {
+            const reward = document.getElementById('taskRewardCoins').value;
+            const rate = document.getElementById('coinsPerUsd').value;
+            const minCoins = document.getElementById('minConvertCoins').value;
+
+            try {
+                const res = await fetch('/api/ads/admin/update-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task_reward_coins: reward,
+                        coins_per_usd: rate,
+                        min_convert_coins: minCoins
+                    })
+                });
+
+                const json = await res.json();
+                if (json.success) {
+                    alert("Settings updated successfully!");
+                } else {
+                    alert("Error: " + json.message);
+                }
+            } catch (e) {
+                alert("Failed to connect to backend server.");
+            }
+        }
+    </script>
+</body>
+</html>
