@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Social Media Showcase</title>
+    <!-- Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <!-- TailwindCSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="p-4 pb-20 max-w-md mx-auto">
+
+    <!-- Header Section -->
+    <div class="glass-card p-4 mb-4 flex justify-between items-center shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+                <h2 class="font-semibold text-sm text-gray-200">Media Showcase</h2>
+                <p id="visitorStatus" class="text-xs text-gray-400">Guest Visitor Mode</p>
+            </div>
+        </div>
+        <button onclick="window.history.back()" class="bg-slate-800 text-gray-300 px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-slate-700">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </button>
+    </div>
+
+    <!-- AD BLOCKS SECTION -->
+    <div class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 pl-1">Promotional Content</h3>
+
+        <!-- Block 1: Task Ad -->
+        <div class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-200">Featured Offer</h4>
+                    <span class="text-xs text-gray-400">Interactive Partner Content</span>
+                </div>
+            </div>
+            <button onclick="triggerAd('50533')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
+                Watch
+            </button>
+        </div>
+
+        <!-- Block 2: Direct Interstitial Ad -->
+        <div class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-lg">
+                    <i class="fa-solid fa-rectangle-ad"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-200">Quick Showcase</h4>
+                    <span class="text-xs text-gray-400">Sponsored Display Ad</span>
+                </div>
+            </div>
+            <button onclick="triggerAd('int-50545')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
+                Watch
+            </button>
+        </div>
+
+        <!-- Block 3: Video Ad -->
+        <div class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+                    <i class="fa-solid fa-circle-play"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-200">Video Promo</h4>
+                    <span class="text-xs text-gray-400">Short Video Commercial</span>
+                </div>
+            </div>
+            <button onclick="triggerAd('50544')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
+                Watch
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Extract User ID if redirected from main app
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeUserId = urlParams.get('uid');
+
+        if (activeUserId) {
+            document.getElementById('visitorStatus').innerText = `Verified Member: ${activeUserId}`;
+        }
+
+        // Trigger Ad with Adsgram
+        function triggerAd(blockId) {
+            if (!window.Adsgram) {
+                alert("Adsgram SDK unavailable. Please reload.");
+                return;
+            }
+
+            const AdController = window.Adsgram.init({ blockId: String(blockId), debug: false });
+
+            AdController.show().then((result) => {
+                // If user came from main app, credit reward
+                if (activeUserId) {
+                    alert("Content completed! Credits will be added to your account.");
+                } else {
+                    alert("Thank you for watching!");
+                }
+            }).catch((error) => {
+                if (activeUserId) {
+                    fetch('/api/ads/track-incomplete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: activeUserId })
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
