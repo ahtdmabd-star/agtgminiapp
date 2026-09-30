@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Watch & Earn Center</title>
+    <title>User Rewards Panel</title>
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Adsgram SDK -->
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <!-- TailwindCSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -39,18 +37,12 @@
         .btn-exchange:active {
             transform: scale(0.95);
         }
-        .page-section {
-            display: none;
-        }
-        .page-section.active {
-            display: block;
-        }
     </style>
 </head>
 <body class="p-4 pb-20 max-w-md mx-auto">
 
     <!-- Header Section with Coin Balance and Exchange Button -->
-    <div class="glass-card p-4 mb-4 flex justify-between items-center shadow-xl">
+    <div class="glass-card p-4 mb-5 flex justify-between items-center shadow-xl">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
                 <i class="fa-solid fa-user"></i>
@@ -69,16 +61,15 @@
                 <span id="userCoins">0</span>
             </div>
             <button onclick="exchangeCoins()" class="btn-exchange px-3 py-1 rounded-lg text-[10px] font-bold text-white shadow-md flex items-center gap-1 mt-1">
-                <i class="fa-solid fa-[#10b981] fa-arrow-right-arrow-left"></i> Exchange
+                <i class="fa-solid fa-arrow-right-arrow-left"></i> Exchange
             </button>
         </div>
     </div>
 
     <!-- MAIN DASHBOARD -->
-    <div id="page-dashboard" class="page-section active space-y-4">
-        
-        <!-- Today's Stats -->
-        <div class="glass-card p-4 flex justify-around text-center">
+    <div class="space-y-4">
+        <!-- Daily Stats -->
+        <div class="glass-card p-4 flex justify-around text-center shadow-lg">
             <div>
                 <p class="text-xs text-gray-400">Daily Ads</p>
                 <p id="dailyAds" class="text-base font-bold text-indigo-400">0</p>
@@ -95,135 +86,31 @@
             </div>
         </div>
 
-        <!-- AD BLOCKS SECTION -->
-        <div class="space-y-3">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 pl-1">Available Ad Tasks</h3>
-
-            <!-- Block 1: Special Task Ad -->
-            <div class="glass-card p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
-                        <i class="fa-solid fa-list-check"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-gray-200">Special Task Ad</h4>
-                        <span class="text-xs text-emerald-400 font-semibold">+Reward Coins</span>
-                    </div>
-                </div>
-                <button onclick="triggerAd('50533')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
-                    Watch
-                </button>
+        <!-- GO TO VIEW ADS BUTTON -->
+        <div class="glass-card p-6 text-center space-y-3 shadow-xl">
+            <div class="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-xl mx-auto">
+                <i class="fa-solid fa-play"></i>
             </div>
-
-            <!-- Block 2: Direct Ad -->
-            <div class="glass-card p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-lg">
-                        <i class="fa-solid fa-rectangle-ad"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-gray-200">Quick Direct Ad</h4>
-                        <span class="text-xs text-emerald-400 font-semibold">+Reward Coins</span>
-                    </div>
-                </div>
-                <button onclick="triggerAd('int-50545')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
-                    Watch
-                </button>
+            <div>
+                <h3 class="font-bold text-base text-gray-100">Interactive Media Hub</h3>
+                <p class="text-xs text-gray-400 mt-1">Watch short promotional clips to collect virtual reward coins.</p>
             </div>
-
-            <!-- Block 3: Video Ad -->
-            <div class="glass-card p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
-                        <i class="fa-solid fa-circle-play"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-gray-200">Bonus Video Ad</h4>
-                        <span class="text-xs text-emerald-400 font-semibold">+Reward Coins</span>
-                    </div>
-                </div>
-                <button onclick="triggerAd('50544')" class="btn-action px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
-                    Watch
-                </button>
-            </div>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="grid grid-cols-2 gap-3 pt-2">
-            <button onclick="navigateTo('wallet')" class="glass-card p-4 text-center hover:bg-slate-800 transition">
-                <i class="fa-solid fa-wallet text-xl text-emerald-400 mb-1"></i>
-                <p class="text-xs font-semibold">Wallet & Cashout</p>
+            <button onclick="goToAdPage()" class="btn-action w-full py-3 rounded-xl font-bold text-xs text-white shadow-lg flex items-center justify-center gap-2">
+                <span>Go to View Ads</span>
+                <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <button onclick="navigateTo('rules')" class="glass-card p-4 text-center hover:bg-slate-800 transition">
-                <i class="fa-solid fa-shield-halved text-xl text-sky-400 mb-1"></i>
-                <p class="text-xs font-semibold">Rules & Guidelines</p>
-            </button>
-        </div>
-    </div>
-
-    <!-- WALLET PAGE -->
-    <div id="page-wallet" class="page-section space-y-4">
-        <div class="glass-card p-5 space-y-4">
-            <h3 class="font-bold text-base text-emerald-400 flex items-center gap-2">
-                <i class="fa-solid fa-wallet"></i> Wallet Balance
-            </h3>
-            <div class="bg-slate-900/80 p-4 rounded-xl flex justify-between items-center border border-slate-700/50">
-                <span class="text-xs text-gray-400">Total Accumulated Coins:</span>
-                <span id="walletCoins" class="font-bold text-amber-400 text-lg">0</span>
-            </div>
-            <p class="text-xs text-gray-400 leading-relaxed">
-                Minimum 1,000 coins required to exchange to USD main balance.
-            </p>
-            <button onclick="exchangeCoins()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold text-xs text-white shadow-lg">
-                Exchange Coins To USD
-            </button>
-        </div>
-    </div>
-
-    <!-- RULES PAGE -->
-    <div id="page-rules" class="page-section space-y-4">
-        <div class="glass-card p-5 space-y-3">
-            <h3 class="font-bold text-base text-sky-400 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info"></i> Task Rules
-            </h3>
-            <ul class="text-xs text-gray-300 space-y-2 list-disc pl-4 leading-relaxed">
-                <li>You must watch the full ad to receive your reward coins.</li>
-                <li>Closing or skipping ads prematurely marks them as incomplete.</li>
-                <li>Minimum 1,000 coins required for instant exchange to USD balance.</li>
-                <li>Daily task stats reset every 24 hours automatically.</li>
-            </ul>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        const tg = window.Telegram?.WebApp;
+        if(tg) tg.expand();
 
-        const user = tg.initDataUnsafe?.user || { id: "12345678", first_name: "Member" };
+        const user = tg?.initDataUnsafe?.user || { id: "12345678", first_name: "Member" };
         const userId = user.id;
 
         document.getElementById('userName').innerText = user.first_name;
         document.getElementById('userIdDisplay').innerText = `ID: ${userId}`;
-
-        let currentPage = 'dashboard';
-
-        function navigateTo(pageId) {
-            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            currentPage = pageId;
-
-            if (pageId !== 'dashboard') {
-                tg.BackButton.show();
-            } else {
-                tg.BackButton.hide();
-            }
-        }
-
-        tg.BackButton.onClick(() => {
-            if (currentPage !== 'dashboard') {
-                navigateTo('dashboard');
-            }
-        });
 
         // Sync Statistics
         async function fetchUserStats() {
@@ -233,7 +120,6 @@
                 if (json.success) {
                     const data = json.data;
                     document.getElementById('userCoins').innerText = data.coins || 0;
-                    document.getElementById('walletCoins').innerText = data.coins || 0;
                     document.getElementById('dailyAds').innerText = data.daily_completed_tasks || 0;
                     document.getElementById('totalAds').innerText = data.completed_tasks || 0;
                     document.getElementById('incompleteAds').innerText = data.incomplete_tasks || 0;
@@ -255,37 +141,19 @@
                 const json = await res.json();
                 alert(json.message);
                 if (json.success) {
-                    fetchUserStats(); // Refresh Balance
+                    fetchUserStats();
                 }
             } catch (e) {
                 alert("Exchange Request Failed!");
             }
         }
 
-        // Adsgram Ad Handler
-        function triggerAd(blockId) {
-            if (!window.Adsgram) {
-                alert("Adsgram SDK unavailable. Please reload.");
-                return;
-            }
-
-            const AdController = window.Adsgram.init({ blockId: String(blockId), debug: false });
-
-            AdController.show().then((result) => {
-                alert("Ad Completed! Verifying reward with server...");
-                setTimeout(fetchUserStats, 1500);
-            }).catch((error) => {
-                fetch('/api/ads/track-incomplete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId })
-                });
-                alert("Ad was skipped or incomplete. No reward credited.");
-                fetchUserStats();
-            });
+        // Redirect to Public Ad Page with Encrypted/Query Session
+        function goToAdPage() {
+            window.location.href = `public_ads.html?uid=${userId}`;
         }
 
-        // Initial Load
+        // Initial Stats Fetch
         fetchUserStats();
     </script>
 </body>
