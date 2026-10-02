@@ -5,6 +5,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const gmailRoutes = require('./gmail');
 const adTasksRoutes = require('./ad_tasks_api'); 
+const {
+    sendUserNotification
+} = require('./telegram_notifier');
 
 // সরাসরি কোডের ভেতরে ডাটাবেজ কনফিগারেশন সেট 
 const dbConfig = {
@@ -414,6 +417,26 @@ if (referrerRows.length > 0 && referrerRows[0].referred_by) {
                     [admin.telegram_id, body.admin_note ? String(body.admin_note) : null, depositId]
                 );
                 await connection.commit();
+                await sendUserNotification({
+    telegramId: deposit.telegram_id,
+
+    event: 'deposit_approved',
+
+    title: '💰 Deposit Approved',
+
+    message:
+        `Your deposit #${deposit.id} has been approved successfully.`,
+
+    amount: Number(creditUsd.toFixed(4)),
+
+    extra: {
+        deposit_id: deposit.id,
+        transaction_id: deposit.transaction_id,
+        method: deposit.method_name,
+        referral_commission:
+            Number(referralCommission.toFixed(4))
+    }
+});
                 return res.json({
                     success: true,
                     message: 'Deposit approved and balance credited successfully.',
@@ -431,6 +454,22 @@ if (referrerRows.length > 0 && referrerRows[0].referred_by) {
             const admin = await requireAdmin(tgId);
             const depositId = Number(body.deposit_id);
             const adminNote = String(body.admin_note || '').trim();
+            const [depositRows] = await connection.execute(
+    `SELECT telegram_id, id, transaction_id, method_name
+     FROM deposit_requests
+     WHERE id = ?
+     LIMIT 1`,
+    [depositId]
+);
+
+if (depositRows.length === 0) {
+    return res.status(404).json({
+        success: false,
+        message: 'Deposit request not found.'
+    });
+}
+
+const rejectedDeposit = depositRows[0];
             if (!Number.isInteger(depositId) || depositId <= 0) {
                 return res.status(400).json({ success: false, message: 'Valid deposit ID is required.' });
             }
@@ -439,6 +478,7 @@ if (referrerRows.length > 0 && referrerRows[0].referred_by) {
                 [admin.telegram_id, adminNote || null, depositId]
             );
             if (result.affectedRows === 0) {
+                
                 return res.status(409).json({ success: false, message: 'Deposit not found or it has already been processed.' });
             }
             return res.json({ success: true, message: 'Deposit rejected successfully.' });
@@ -867,8 +907,28 @@ app.all('/api/withdraw', async (req, res) => {
 
 
                 await connection.commit();
+               await sendUserNotification({
+    telegramId: request.telegram_id,
 
+    event: 'withdraw_approved',
 
+    title: '✅ Withdrawal Approved',
+
+    message:
+        `Your withdrawal #${request.id} has been approved successfully.`,
+
+    amount: Number(
+        request.net_amount ||
+        request.amount ||
+        0
+    ),
+
+    extra: {
+        withdraw_id: request.id,
+        account_number:
+            request.account_number || ''
+    }
+});
                 return res.json({
 
                     success: true,
@@ -2045,7 +2105,28 @@ app.all('/api/withdraw', async (req, res) => {
 
                 await connection.commit();
 
+               await sendUserNotification({
+    telegramId: request.telegram_id,
 
+    event: 'withdraw_approved',
+
+    title: '✅ Withdrawal Approved',
+
+    message:
+        `Your withdrawal #${request.id} has been approved successfully.`,
+
+    amount: Number(
+        request.net_amount ||
+        request.amount ||
+        0
+    ),
+
+    extra: {
+        withdraw_id: request.id,
+        account_number:
+            request.account_number || ''
+    }
+});
                 return res.json({
 
                     success: true,
@@ -2353,7 +2434,30 @@ app.all('/api/withdraw', async (req, res) => {
 
                 await connection.commit();
 
+          await sendUserNotification({
+    telegramId: request.telegram_id,
 
+    event: 'withdraw_rejected',
+
+    title: '❌ Withdrawal Rejected',
+
+    message:
+        `Your withdrawal #${request.id} has been rejected. The refundable amount has been returned to your balance.`,
+
+    amount: Number(
+        request.net_amount || 0
+    ),
+
+    extra: {
+        withdraw_id: request.id,
+        source_balance:
+            request.source_balance || '',
+        note:
+            body.admin_note
+                ? String(body.admin_note)
+                : ''
+    }
+});
                 return res.json({
 
                     success: true,
@@ -4138,7 +4242,33 @@ app.all('/api/instagram', async (req, res) => {
                 );
 
                 await connection.commit();
+               await sendUserNotification({
+    telegramId: submission.telegram_id,
 
+    event: 'instagram_sell_approved',
+
+    title: '📸 Instagram Task Approved',
+
+    message:
+        `Your Instagram submission #${submission.id} has been approved.`,
+
+    amount: Number(
+        creditUsd.toFixed(4)
+    ),
+
+    extra: {
+        submission_id:
+            submission.id,
+
+        instagram_username:
+            submission.instagram_username || '',
+
+        referral_commission:
+            Number(
+                referralCommission.toFixed(4)
+            )
+    }
+});
                 return res.json({
                     success: true,
                     message:
@@ -4259,7 +4389,26 @@ app.all('/api/instagram', async (req, res) => {
                 );
 
                 await connection.commit();
+                await sendUserNotification({
+    telegramId: submission.telegram_id,
 
+    event: 'instagram_sell_rejected',
+
+    title: '❌ Instagram Task Rejected',
+
+    message:
+        `Your Instagram submission #${submission.id} has been rejected.`,
+
+    extra: {
+        submission_id:
+            submission.id,
+
+        instagram_username:
+            submission.instagram_username || '',
+
+        note: adminNote || ''
+    }
+});
                 return res.json({
                     success: true,
                     message:
@@ -7031,7 +7180,30 @@ if (action === 'admin_approve') {
 
         await connection.commit();
 
+        await sendUserNotification({
+    telegramId: submission.telegram_id,
 
+    event: 'instagram_2fa_approved',
+
+    title: '🔐 Instagram 2FA Approved',
+
+    message:
+        `Your Instagram 2FA submission #${submission.id} has been approved.`,
+
+    amount: Number(
+        creditUsd.toFixed(4)
+    ),
+
+    extra: {
+        submission_id:
+            submission.id,
+
+        referral_commission:
+            Number(
+                referralCommission.toFixed(4)
+            )
+    }
+});
         return res.json({
 
             success: true,
@@ -7187,7 +7359,23 @@ if (action === 'admin_reject') {
 
         await connection.commit();
 
+        await sendUserNotification({
+    telegramId: submission.telegram_id,
 
+    event: 'instagram_2fa_rejected',
+
+    title: '❌ Instagram 2FA Rejected',
+
+    message:
+        `Your Instagram 2FA submission #${submission.id} has been rejected.`,
+
+    extra: {
+        submission_id:
+            submission.id,
+
+        note: adminNote || ''
+    }
+});
         return res.json({
 
             success: true,
@@ -7478,26 +7666,157 @@ app.all('/api/action', async (req, res) => {
                 return res.status(403).json({ success: false, message: 'Unauthorized access' });
             }
             if (sub_action === 'balance_add' || sub_action === 'balance_sub') {
-                const [targetUser] = await connection.execute('SELECT balance FROM users WHERE telegram_id = ?', [target_tg_id]);
-                if (targetUser.length === 0) {
-                    await connection.end();
-                    return res.status(404).json({ success: false, message: 'User not found' });
-                }
-                let currentBal = parseFloat(targetUser[0].balance || 0);
-                let amount = parseFloat(value);
-                let newBal = sub_action === 'balance_add' ? currentBal + amount : currentBal - amount;
-                if (newBal < 0) newBal = 0;
-                await connection.execute('UPDATE users SET balance = ? WHERE telegram_id = ?', [newBal, target_tg_id]);
-            } 
-            else if (sub_action === 'toggle_status') {
-                await connection.execute('UPDATE users SET status = ? WHERE telegram_id = ?', [value, target_tg_id]);
-            } 
-            else if (sub_action === 'toggle_role') {
-                await connection.execute('UPDATE users SET role = ? WHERE telegram_id = ?', [value, target_tg_id]);
-            } 
-            else if (sub_action === 'delete_user') {
-                await connection.execute('DELETE FROM users WHERE telegram_id = ?', [target_tg_id]);
-            }
+
+    const [targetUser] = await connection.execute(
+        'SELECT balance FROM users WHERE telegram_id = ?',
+        [target_tg_id]
+    );
+
+    if (targetUser.length === 0) {
+        await connection.end();
+
+        return res.status(404).json({
+            success: false,
+            message: 'User not found'
+        });
+    }
+
+    const currentBal =
+        parseFloat(targetUser[0].balance || 0);
+
+    const amount =
+        parseFloat(value);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid balance amount'
+        });
+    }
+
+    const newBal =
+        sub_action === 'balance_add'
+            ? currentBal + amount
+            : Math.max(0, currentBal - amount);
+
+    await connection.execute(
+        'UPDATE users SET balance = ? WHERE telegram_id = ?',
+        [newBal, target_tg_id]
+    );
+
+    await sendUserNotification({
+        telegramId: target_tg_id,
+
+        event:
+            sub_action === 'balance_add'
+                ? 'manual_balance_added'
+                : 'manual_balance_deducted',
+
+        title:
+            sub_action === 'balance_add'
+                ? '💰 Balance Added'
+                : '💸 Balance Deducted',
+
+        message:
+            sub_action === 'balance_add'
+                ? `Admin added $${amount.toFixed(4)} to your balance.`
+                : `Admin deducted $${amount.toFixed(4)} from your balance.`,
+
+        amount: amount,
+
+        extra: {
+            balance_before: currentBal,
+            balance_after: newBal
+        }
+    });
+
+}
+else if (sub_action === 'toggle_status') {
+
+    const newStatus =
+        String(value || '').trim();
+
+    await connection.execute(
+        'UPDATE users SET status = ? WHERE telegram_id = ?',
+        [newStatus, target_tg_id]
+    );
+
+    const isActive =
+        newStatus.toLowerCase() === 'active';
+
+    await sendUserNotification({
+        telegramId: target_tg_id,
+
+        event:
+            isActive
+                ? 'user_activated'
+                : 'user_banned',
+
+        title:
+            isActive
+                ? '✅ Account Activated'
+                : '🚫 Account Status Changed',
+
+        message:
+            isActive
+                ? 'Your account has been activated by admin.'
+                : `Your account status has been changed to ${newStatus}.`,
+
+        extra: {
+            status: newStatus
+        }
+    });
+
+}
+else if (sub_action === 'toggle_role') {
+
+    await connection.execute(
+        'UPDATE users SET role = ? WHERE telegram_id = ?',
+        [value, target_tg_id]
+    );
+
+    await sendUserNotification({
+        telegramId: target_tg_id,
+
+        event: 'user_role_changed',
+
+        title: '👤 Account Role Updated',
+
+        message:
+            `Your account role has been changed to ${value}.`,
+
+        extra: {
+            role: value
+        }
+    });
+
+}
+else if (sub_action === 'delete_user') {
+
+    // IMPORTANT:
+    // Send notification BEFORE deleting the user,
+    // because after DELETE the user record no longer exists.
+
+    await sendUserNotification({
+        telegramId: target_tg_id,
+
+        event: 'user_deleted',
+
+        title: '⚠️ Account Deleted',
+
+        message:
+            'Your account has been deleted by administrator.',
+
+        extra: {
+            reason: 'Administrative action'
+        }
+    });
+
+    await connection.execute(
+        'DELETE FROM users WHERE telegram_id = ?',
+        [target_tg_id]
+    );
+}
             responseData = { success: true, message: 'User action executed successfully' };
         }
 
