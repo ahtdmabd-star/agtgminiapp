@@ -6,6 +6,9 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const router = express.Router();
+const {
+    sendUserNotification
+} = require('./telegram_notifier');
 
 module.exports = function(dbConfig) {
 
@@ -293,11 +296,39 @@ module.exports = function(dbConfig) {
 
                 // ১. যদি শুধু 'Checking' বা 'Rejected' করা হয়
                 if (newStatus === 'checking' || newStatus === 'rejected') {
-                    await connection.execute(
-                        'UPDATE `gmail_submissions` SET `status` = ?, `reviewed_at` = CURRENT_TIMESTAMP WHERE `id` = ?',
-                        [newStatus, submissionId]
-                    );
-                    return res.json({ success: true, message: `Submission marked as ${newStatus}.` });
+
+    await connection.execute(
+        'UPDATE `gmail_submissions` SET `status` = ?, `reviewed_at` = CURRENT_TIMESTAMP WHERE `id` = ?',
+        [newStatus, submissionId]
+    );
+
+    // ============================================
+    // TELEGRAM NOTIFICATION - GMAIL REJECTED
+    // ============================================
+
+    if (newStatus === 'rejected') {
+
+        await sendUserNotification({
+            telegramId: sub.telegram_id,
+
+            event: 'gmail_rejected',
+
+            title: '❌ Gmail Submission Rejected',
+
+            message:
+                `Your Gmail submission #${sub.id} has been rejected.`,
+
+            extra: {
+                submission_id: sub.id,
+                email: sub.email
+            }
+        });
+    }
+
+    return res.json({
+        success: true,
+        message: `Submission marked as ${newStatus}.`
+    });
                 }
 
                 // ২. যদি 'Approved' করা হয়
@@ -369,6 +400,29 @@ module.exports = function(dbConfig) {
                                         );
 
                                         await connection.execute('UPDATE `referral_commissions` SET `commission_transaction_id` = ? WHERE `id` = ?', [commTx.insertId, commIns.insertId]);
+                                        // ============================================
+// TELEGRAM NOTIFICATION - REFERRAL COMMISSION
+// ============================================
+
+await sendUserNotification({
+    telegramId: referrerTgId,
+
+    event: 'referral_commission',
+
+    title: '🎁 Referral Commission',
+
+    message:
+        `You received $${refComm.toFixed(4)} referral commission from Gmail submission #${sub.id}.`,
+
+    amount: Number(refComm.toFixed(4)),
+
+    extra: {
+        source: 'gmail',
+        submission_id: sub.id,
+        referred_telegram_id:
+            String(sub.telegram_id)
+    }
+});
                                     }
                                 }
                             }
@@ -382,6 +436,27 @@ await connection.execute(
                         
 
                         await connection.commit();
+                        // ============================================
+// TELEGRAM NOTIFICATION - GMAIL APPROVED
+// ============================================
+
+await sendUserNotification({
+    telegramId: sub.telegram_id,
+
+    event: 'gmail_approved',
+
+    title: '📧 Gmail Submission Approved',
+
+    message:
+        `Your Gmail submission #${sub.id} has been approved.`,
+
+    amount: Number(creditAmount.toFixed(4)),
+
+    extra: {
+        submission_id: sub.id,
+        email: sub.email
+    }
+});
                         return res.json({ success: true, message: 'Submission approved, balance credited, and referral commission distributed.' });
 
                     } catch (err) {
